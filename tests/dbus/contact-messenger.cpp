@@ -247,12 +247,12 @@ QString CDMessagesAdaptor::SendMessage(const QDBusObjectPath &account,
     Q_FOREACH(ClientObserverInterface *iface, observers) {
         TpDBus::ChannelDetails chan = { QDBusObjectPath(test->mChan->objectPath()), test->mChan->immutableProperties() };
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(iface->ObserveChannels(
+            new QDBusPendingCallWatcher(iface->ObserveChannel(
                 QDBusObjectPath(test->mAccount->objectPath()),
                 QDBusObjectPath(test->mChan->connection()->objectPath()),
-                TpDBus::ChannelDetailsList() << chan,
+                chan.channel, chan.properties,
                 QDBusObjectPath(QLatin1String("/")),
-                TpDBus::ObjectPathList(),
+                TpDBus::ObjectImmutablePropertiesMap(),
                 QVariantMap()));
 
         connect(watcher,
@@ -522,12 +522,12 @@ void TestContactMessenger::testReceived()
     QList<ClientObserverInterface *> observers = ourObservers();
     Q_FOREACH(ClientObserverInterface *iface, observers) {
         TpDBus::ChannelDetails chan = { QDBusObjectPath(mChan->objectPath()), mChan->immutableProperties() };
-        iface->ObserveChannels(
+        iface->ObserveChannel(
                 QDBusObjectPath(mAccount->objectPath()),
                 QDBusObjectPath(mChan->connection()->objectPath()),
-                TpDBus::ChannelDetailsList() << chan,
+                chan.channel, chan.properties,
                 QDBusObjectPath(QLatin1String("/")),
-                TpDBus::ObjectPathList(),
+                TpDBus::ObjectImmutablePropertiesMap(),
                 QVariantMap());
     }
 
@@ -562,12 +562,12 @@ void TestContactMessenger::testReceivedFromContact()
     QList<ClientObserverInterface *> observers = ourObservers();
     Q_FOREACH(ClientObserverInterface *iface, observers) {
         TpDBus::ChannelDetails chan = { QDBusObjectPath(mChan->objectPath()), mChan->immutableProperties() };
-        iface->ObserveChannels(
+        iface->ObserveChannel(
                 QDBusObjectPath(mAccount->objectPath()),
                 QDBusObjectPath(mChan->connection()->objectPath()),
-                TpDBus::ChannelDetailsList() << chan,
+                chan.channel, chan.properties,
                 QDBusObjectPath(QLatin1String("/")),
-                TpDBus::ObjectPathList(),
+                TpDBus::ObjectImmutablePropertiesMap(),
                 QVariantMap());
     }
 

@@ -530,12 +530,12 @@ void TestSimpleObserver::testCrossTalk()
                         QDBusObjectPath(mTextChans[i]->objectPath()),
                         mTextChans[i]->immutableProperties()
                     };
-                    observerIface->ObserveChannels(
+                    observerIface->ObserveChannel(
                             QDBusObjectPath(mAccounts[i]->objectPath()),
                             QDBusObjectPath(mTextChans[i]->connection()->objectPath()),
-                            TpDBus::ChannelDetailsList() << textChan,
+                            textChan.channel, textChan.properties,
                             QDBusObjectPath(QLatin1String("/")),
-                            TpDBus::ObjectPathList(),
+                            TpDBus::ObjectImmutablePropertiesMap(),
                             QVariantMap());
                     break;
                 }
@@ -548,12 +548,12 @@ void TestSimpleObserver::testCrossTalk()
                         QDBusObjectPath(mCallChans[i]->objectPath()),
                         mCallChans[i]->immutableProperties()
                     };
-                    observerIface->ObserveChannels(
+                    observerIface->ObserveChannel(
                             QDBusObjectPath(mAccounts[i]->objectPath()),
                             QDBusObjectPath(mCallChans[i]->connection()->objectPath()),
-                            TpDBus::ChannelDetailsList() << smChan,
+                            smChan.channel, smChan.properties,
                             QDBusObjectPath(QLatin1String("/")),
-                            TpDBus::ObjectPathList(),
+                            TpDBus::ObjectImmutablePropertiesMap(),
                             QVariantMap());
                     break;
                 }
