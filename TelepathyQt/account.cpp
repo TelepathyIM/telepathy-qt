@@ -590,10 +590,7 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       coreFinished(false),
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified),
-      usingConnectionCaps(false),
-      dispatcherInterface(new Client::ChannelDispatcherInterface(parent->dbusConnection(),
-                                                                 TP_QT_CHANNEL_DISPATCHER_BUS_NAME,
-                                                                 TP_QT_CHANNEL_DISPATCHER_OBJECT_PATH))
+      usingConnectionCaps(false)
 {
     // FIXME: QRegExp probably isn't the most efficient possible way to parse
     //        this :-)
@@ -3510,7 +3507,7 @@ Client::AccountInterface *Account::baseInterface() const
  */
 Client::ChannelDispatcherInterface *Account::dispatcherInterface() const
 {
-    return mPriv->dispatcherInterface;
+    return mPriv->dispatcherContext->iface;
 }
 
 /**** Private ****/
