@@ -915,11 +915,13 @@ void TestStreamTubeHandlers::testBasicTcpExport()
     // Invoke the handler, verifying that we're notified when that happens with the correct tube
     // details
     TpDBus::ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
-    handler->HandleChannels(
+    TpDBus::ObjectImmutablePropertiesMap requestsSatisfied;
+    requestsSatisfied.insert(requestPath, QVariant());
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList() << QDBusObjectPath(requestPath),
+            details.channel, details.properties,
+            requestsSatisfied,
             userActionTime.toTime_t(),
             QVariantMap());
 
@@ -996,13 +998,12 @@ void TestStreamTubeHandlers::testFailedExport()
     // although we're exporting a TCP one - which is always supported in real CMs
     QPair<QString, QVariantMap> chan = createTubeChannel(true, EntityTypeContact, false, true);
     TpDBus::ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
-
     // We should initially get tubeRequested just fine
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             QDateTime::currentDateTime().toTime_t(),
             QVariantMap());
 
@@ -1045,11 +1046,11 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
                 SLOT(onServerTubeClosed(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QString,QString))));
 
     TpDBus::ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             QDateTime::currentDateTime().toTime_t(),
             QVariantMap());
 
@@ -1218,11 +1219,11 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
 
     TpDBus::ChannelDetails details = { QDBusObjectPath(textChanPath),
         ChannelClassSpec::textChat().allProperties() };
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             QDateTime::currentDateTime().toTime_t(),
             QVariantMap());
     processDBusQueue(mConn->client().data());
@@ -1234,11 +1235,11 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
     details.channel = QDBusObjectPath(tubeChan.first);
     details.properties = tubeChan.second;
 
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             QDateTime::currentDateTime().toTime_t(),
             QVariantMap());
     processDBusQueue(mConn->client().data());
@@ -1249,11 +1250,11 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
     details.channel = QDBusObjectPath(QString::fromLatin1("/does/not/exist"));
     details.properties = ChannelClassSpec::outgoingStreamTube(QLatin1String("ftp")).allProperties();
 
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             QDateTime::currentDateTime().toTime_t(),
             QVariantMap());
     processDBusQueue(mConn->client().data());
@@ -1269,11 +1270,11 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
     details.channel = QDBusObjectPath(tubeChan.first);
     details.properties = tubeChan.second;
 
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             QDateTime::currentDateTime().toTime_t(),
             QVariantMap());
     processDBusQueue(mConn->client().data());
@@ -1346,11 +1347,11 @@ void TestStreamTubeHandlers::testClientBasicTcp()
     // Invoke the handler, verifying that we're notified when that happens with the correct tube
     // details
     TpDBus::ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             0, // not an user action
             QVariantMap());
 
@@ -1437,11 +1438,11 @@ void TestStreamTubeHandlers::testClientTcpGeneratorIgnore()
     // Invoke the handler, verifying that we're notified when that happens with the correct tube
     // details
     TpDBus::ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             0, // not an user action
             QVariantMap());
 
@@ -1516,11 +1517,11 @@ void TestStreamTubeHandlers::testClientTcpUnsupported()
     // Invoke the handler, verifying that we're notified when that happens with the correct tube
     // details
     TpDBus::ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             0, // not an user action
             QVariantMap());
 
@@ -1578,11 +1579,11 @@ void TestStreamTubeHandlers::testClientBasicUnix()
     // Invoke the handler, verifying that we're notified when that happens with the correct tube
     // details
     TpDBus::ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             0, // not an user action
             QVariantMap());
 
@@ -1659,11 +1660,11 @@ void TestStreamTubeHandlers::testClientUnixCredsIgnore()
     // Invoke the handler, verifying that we're notified when that happens with the correct tube
     // details
     TpDBus::ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             0, // not an user action
             QVariantMap());
 
@@ -1736,11 +1737,11 @@ void TestStreamTubeHandlers::testClientConnMonitoring()
                         Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr))));
 
     TpDBus::ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
-    handler->HandleChannels(
+    handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            TpDBus::ChannelDetailsList() << details,
-            TpDBus::ObjectPathList(),
+            details.channel, details.properties,
+            TpDBus::ObjectImmutablePropertiesMap(),
             QDateTime::currentDateTime().toTime_t(),
             QVariantMap());
 
