@@ -269,7 +269,7 @@ public:
     void handleChannel(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
-            const ChannelPtr &channel,
+            const ChannelPtr &channel, const QVariantMap &channelProperties,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
             const AbstractClientHandler::HandlerInfo &handlerInfo)
@@ -281,12 +281,10 @@ public:
         mHandleChannelsUserActionTime = userActionTime;
         mHandleChannelsHandlerInfo = handlerInfo;
 
-        Q_FOREACH (const ChannelPtr &channel, channels) {
-            connect(channel.data(),
-                    SIGNAL(invalidated(Tp::DBusProxy *,
-                                       const QString &, const QString &)),
-                    SIGNAL(channelClosed()));
-        }
+        connect(channel.data(),
+                SIGNAL(invalidated(Tp::DBusProxy *,
+                                    const QString &, const QString &)),
+                SIGNAL(channelClosed()));
 
         context->setFinished();
         QTimer::singleShot(0, this, SIGNAL(handleChannelsFinished()));
@@ -314,7 +312,7 @@ public:
     QList<ChannelRequestPtr> mObserveChannelsRequestsSatisfied;
     AbstractClientObserver::ObserverInfo mObserveChannelsObserverInfo;
 
-    QList<ChannelPtr> mAddDispatchOperationChannel;
+    ChannelPtr mAddDispatchOperationChannel;
     ChannelDispatchOperationPtr mAddDispatchOperationDispatchOperation;
 
     bool mBypassApproval;
@@ -648,11 +646,7 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     connect(client,
             SIGNAL(observeChannelsFinished()),
             SLOT(expectSignalEmission()));
-    TpDBus::ChannelDetailsList channelDetailsList;
-    TpDBus::ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
-    channelDetailsList.append(channelDetails);
 
-    QVariantMap observerInfo;
     TpDBus::ObjectImmutablePropertiesMap reqPropsMap;
     QVariantMap channelReqImmutableProps;
     channelReqImmutableProps.insert(
@@ -660,18 +654,18 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     channelReqImmutableProps.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Account"),
             qVariantFromValue(QDBusObjectPath(mAccount->objectPath())));
     reqPropsMap.insert(QDBusObjectPath(mChannelRequestPath), channelReqImmutableProps);
-    observerInfo.insert(QLatin1String("request-properties"), qVariantFromValue(reqPropsMap));
-    observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
+    
+    observeIface->ObserveChannel(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            channelDetailsList,
+            QDBusObjectPath(mText1ChanPath), QVariantMap(),
             QDBusObjectPath("/"),
-            TpDBus::ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
-            observerInfo);
+            reqPropsMap,
+            QVariantMap());
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client->mObserveChannelsAccount->objectPath(), mAccount->objectPath());
     QCOMPARE(client->mObserveChannelsConnection->objectPath(), mConn->objectPath());
-    QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
+    QCOMPARE(client->mObserveChannelsChannel->objectPath(), mText1ChanPath);
     QVERIFY(client->mObserveChannelsDispatchOperation.isNull());
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->immutableProperties().contains(
@@ -722,14 +716,14 @@ void TestClient::testAddDispatchOperation()
     QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.isEmpty());
 
-    approverIface->AddDispatchOperation(mCDO->Channels(), QDBusObjectPath(mCDOPath),
+    approverIface->AddDispatchOperation(QDBusObjectPath(mCDOPath),
             dispatchOperationProperties);
     QCOMPARE(mLoop->exec(), 0);
     while (!mClaimFinished) {
         mLoop->processEvents();
     }
 
-    QCOMPARE(client->mAddDispatchOperationChannels.first()->objectPath(), mText1ChanPath);
+    QCOMPARE(client->mAddDispatchOperationChannel, mText1ChanPath);
     QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), mCDOPath);
 
     // Claim finished, Handler.HandledChannels should be populated now
@@ -756,20 +750,19 @@ void TestClient::testHandleChannels()
     connect(client1,
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));
-    TpDBus::ChannelDetailsList channelDetailsList;
-    TpDBus::ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
-    channelDetailsList.append(channelDetails);
-    handler1Iface->HandleChannels(QDBusObjectPath(mAccount->objectPath()),
+    TpDBus::ObjectImmutablePropertiesMap requestsSatisfied;
+    requestsSatisfied.insert(QDBusObjectPath(mChannelRequestPath), QVariantMap());
+    handler1Iface->HandleChannel(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            channelDetailsList,
-            TpDBus::ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
+            QDBusObjectPath(mText1ChanPath), QVariantMap(),
+            requestsSatisfied,
             mUserActionTime,
             QVariantMap());
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client1->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
     QCOMPARE(client1->mHandleChannelsConnection->objectPath(), mConn->objectPath());
-    QCOMPARE(client1->mHandleChannelsChannels.first()->objectPath(), mText1ChanPath);
+    QCOMPARE(client1->mHandleChannelsChannel->objectPath(), mText1ChanPath);
     QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QCOMPARE(client1->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
@@ -784,20 +777,19 @@ void TestClient::testHandleChannels()
     connect(client2,
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));
-    channelDetailsList.clear();
-    channelDetails.channel = QDBusObjectPath(mText2ChanPath);
-    channelDetailsList.append(channelDetails);
-    handler2Iface->HandleChannels(QDBusObjectPath(mAccount->objectPath()),
+    requestsSatisfied.clear();
+    requestsSatisfied.insert(QDBusObjectPath(mChannelRequestPath), QVariantMap());
+    handler2Iface->HandleChannel(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
-            channelDetailsList,
-            TpDBus::ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
+            QDBusObjectPath(mText2ChanPath), QVariantMap(),
+            requestsSatisfied,
             mUserActionTime,
             QVariantMap());
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client2->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
     QCOMPARE(client2->mHandleChannelsConnection->objectPath(), mConn->objectPath());
-    QCOMPARE(client2->mHandleChannelsChannels.first()->objectPath(), mText2ChanPath);
+    QCOMPARE(client2->mHandleChannelsChannel->objectPath(), mText2ChanPath);
     QCOMPARE(client2->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QCOMPARE(client2->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 

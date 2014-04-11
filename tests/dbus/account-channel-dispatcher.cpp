@@ -351,10 +351,12 @@ private:
                     channelHandlerPath, this);
 
         TpDBus::ChannelDetails channelDetails = { QDBusObjectPath(mChanPath), mChanProps };
+        TpDBus::ObjectImmutablePropertiesMap requestsSatisfied;
+        requestsSatisfied.insert(QDBusObjectPath(mCurRequestPath), QVariantMap());
         clientHandlerInterface->HandleChannel(mCurRequest->Account(),
                 QDBusObjectPath(mConnPath),
-                TpDBus::ChannelDetailsList() << channelDetails,
-                TpDBus::ObjectPathList() << QDBusObjectPath(mCurRequestPath),
+                channelDetails.channel, channelDetails.properties,
+                requestsSatisfied,
                 userActionTime, QVariantMap());
     }
 

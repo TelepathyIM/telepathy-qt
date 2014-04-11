@@ -121,7 +121,7 @@ TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, ServiceName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, DisplayName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, IconName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, Nickname)
-TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const TpDBus::Avatar &, TpDBus::Avatar)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const TpDBus::Avatar &, Avatar)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QVariantMap &, Parameters)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const ConnectionCapabilities &, Capabilities)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(bool, ConnectsAutomatically)
@@ -332,7 +332,7 @@ void TestAccountBasics::testBasics()
     QVERIFY(acc->isReady(Account::FeatureAvatar));
 
     TpDBus::Avatar expectedAvatar = { QByteArray("asdfg"), QLatin1String("image/jpeg") };
-    TEST_VERIFY_PROPERTY_CHANGE(acc, Avatar, Avatar, avatar, expectedAvatar);
+    TEST_VERIFY_PROPERTY_CHANGE(acc, TpDBus::Avatar, Avatar, avatar, expectedAvatar);
 
     QVariantMap expectedParameters = acc->parameters();
     expectedParameters[QLatin1String("foo")] = QLatin1String("bar");
