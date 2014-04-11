@@ -58,7 +58,7 @@ public:
 
     static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties,
-            const QList<ChannelPtr> &initialChannels,
+            const ChannelPtr &channel,
             const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory,
@@ -69,7 +69,7 @@ public:
 
     AccountPtr account() const;
 
-    QList<ChannelPtr> channels() const;
+    ChannelPtr channel() const;
 
     QStringList possibleHandlers() const;
 
@@ -78,14 +78,10 @@ public:
     PendingOperation *claim();
     PendingOperation *claim(const AbstractClientHandlerPtr &handler);
 
-Q_SIGNALS:
-    void channelLost(const Tp::ChannelPtr &channel, const QString &errorName,
-            const QString &errorMessage);
-
 protected:
     ChannelDispatchOperation(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties,
-            const QList<ChannelPtr> &initialChannels,
+            const ChannelPtr &channel,
             const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory,
@@ -96,8 +92,6 @@ protected:
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onFinished();
     TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void onChannelLost(const QDBusObjectPath &channelObjectPath,
-        const QString &errorName, const QString &errorMessage);
     TP_QT_NO_EXPORT void onProxiesPrepared(Tp::PendingOperation *op);
 
 private:

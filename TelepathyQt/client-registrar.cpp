@@ -178,11 +178,9 @@ void ClientObserverAdaptor::ObserveChannel(const QDBusObjectPath &accountPath,
         // props.insert(TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".PossibleHandlers"),
         //         QVariant::fromValue(QStringList()));
 
-        QList<ChannelPtr> chans;
-        chans << invocation->chan;
         invocation->dispatchOp = ChannelDispatchOperation::create(mBus, dispatchOperationPath.path(),
                 props,
-                chans,
+                channel,
                 accFactory,
                 connFactory,
                 chanFactory,
@@ -299,7 +297,7 @@ void ClientApproverAdaptor::AddDispatchOperation(const TpDBus::ChannelDetailsLis
     }
 
     invocation->dispatchOp = ChannelDispatchOperation::create(mBus,
-            dispatchOperationPath.path(), properties, invocation->chans, accFactory, connFactory,
+            dispatchOperationPath.path(), properties, invocation->chans.first(), accFactory, connFactory,
             chanFactory, contactFactory);
     readyOps.append(invocation->dispatchOp->becomeReady());
 

@@ -76,7 +76,7 @@ struct TP_QT_NO_EXPORT ChannelDispatchOperation::Private
     QVariantMap immutableProperties;
     ConnectionPtr connection;
     AccountPtr account;
-    QList<ChannelPtr> channels;
+    ChannelPtr channel;
     QStringList possibleHandlers;
     bool gotPossibleHandlers;
 };
@@ -128,7 +128,7 @@ void ChannelDispatchOperation::Private::introspectMain(ChannelDispatchOperation:
         }
     }
 
-    if (!self->channels.isEmpty() && mainProps.contains(QLatin1String("Account"))
+    if (self->channel && mainProps.contains(QLatin1String("Account"))
             && mainProps.contains(QLatin1String("Connection"))
             && mainProps.contains(QLatin1String("Interfaces"))
             && mainProps.contains(QLatin1String("PossibleHandlers"))) {
@@ -181,27 +181,14 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
     }
 
     if (!immutableProperties) {
-        // If we're here, it means we had to introspect the object, and now for sure have the
-        // correct channels list, so let's overwrite the initial channels - but keep the refs around
-        // for a while as an optimization enabling the factory to still return the same ones instead
-        // of constructing everything anew. Note that this is not done at all in the case the
-        // immutable props and initial channels etc were sufficient.
-        QList<ChannelPtr> saveChannels = channels;
-        channels.clear();
-
-        TpDBus::ChannelDetailsList channelDetailsList =
-            qdbus_cast<TpDBus::ChannelDetailsList>(props.value(QLatin1String("Channels")));
-        ChannelPtr channel;
-        foreach (const TpDBus::ChannelDetails &channelDetails, channelDetailsList) {
-            PendingReady *readyOp =
-                chanFactory->proxy(connection,
-                        channelDetails.channel.path(), channelDetails.properties);
-            channels.append(ChannelPtr::qObjectCast(readyOp->proxy()));
-            readyOps.append(readyOp);
-        }
-
-        // saveChannels goes out of scope now, so any initial channels which don't exist anymore are
-        // freed
+        QDBusObjectPath channelPath =
+            qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Channel")));
+        QVariantMap channelProperties =
+            qdbus_cast<QVariantMap>(props.value(QLatin1String("ChannelProperties")));
+        PendingReady *readyOp = chanFactory->proxy(connection,
+                channelPath.path(), channelProperties);
+        channel = ChannelPtr::qObjectCast(readyOp->proxy());
+        readyOps.append(readyOp);
     }
 
     if (props.contains(QLatin1String("PossibleHandlers"))) {
@@ -242,8 +229,9 @@ void ChannelDispatchOperation::PendingClaim::onClaimFinished(
         debug() << "CDO.Claim returned successfully, updating HandledChannels";
         if (mHandler) {
             // register the channels in HandledChannels
-            FakeHandlerManager::instance()->registerChannels(
-                    mDispatchOp->channels());
+            QList<ChannelPtr> chans;
+            chans << mDispatchOp->channel();
+            FakeHandlerManager::instance()->registerChannels(chans);
         }
         setFinished();
     } else {
@@ -328,14 +316,14 @@ const Feature ChannelDispatchOperation::FeatureCore = Feature(QLatin1String(Chan
  */
 ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties,
-        const QList<ChannelPtr> &initialChannels,
+        const ChannelPtr &channel,
         const AccountFactoryConstPtr &accountFactory,
         const ConnectionFactoryConstPtr &connectionFactory,
         const ChannelFactoryConstPtr &channelFactory,
         const ContactFactoryConstPtr &contactFactory)
 {
     return ChannelDispatchOperationPtr(new ChannelDispatchOperation(
-                bus, objectPath, immutableProperties, initialChannels, accountFactory,
+                bus, objectPath, immutableProperties, channel, accountFactory,
                 connectionFactory, channelFactory, contactFactory));
 }
 
@@ -354,7 +342,7 @@ ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnecti
  */
 ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties,
-        const QList<ChannelPtr> &initialChannels,
+        const ChannelPtr &channel,
         const AccountFactoryConstPtr &accountFactory,
         const ConnectionFactoryConstPtr &connectionFactory,
         const ChannelFactoryConstPtr &channelFactory,
@@ -377,7 +365,7 @@ ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
         warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
     }
 
-    mPriv->channels = initialChannels;
+    mPriv->channel = channel;
 
     mPriv->accFactory = accountFactory;
     mPriv->connFactory = connectionFactory;
@@ -422,19 +410,19 @@ AccountPtr ChannelDispatchOperation::account() const
 }
 
 /**
- * Return the channels to be dispatched.
+ * Return the channel to be dispatched.
  *
  * This method requires ChannelDispatchOperation::FeatureCore to be ready.
  *
- * \return A list of pointers to Channel objects.
+ * \return A pointer to the Channel object.
  */
-QList<ChannelPtr> ChannelDispatchOperation::channels() const
+ChannelPtr ChannelDispatchOperation::channel() const
 {
     if (!isReady()) {
-        warning() << "ChannelDispatchOperation::channels called with channel "
+        warning() << "ChannelDispatchOperation::channel called with channel "
             "not ready";
     }
-    return mPriv->channels;
+    return mPriv->channel;
 }
 
 /**
@@ -598,19 +586,6 @@ void ChannelDispatchOperation::gotMainProperties(QDBusPendingCallWatcher *watche
                 false, reply.error());
         warning().nospace() << "Properties::GetAll(ChannelDispatchOperation) failed with "
             << reply.error().name() << ": " << reply.error().message();
-    }
-}
-
-void ChannelDispatchOperation::onChannelLost(
-        const QDBusObjectPath &channelObjectPath,
-        const QString &errorName, const QString &errorMessage)
-{
-    foreach (const ChannelPtr &channel, mPriv->channels) {
-        if (channel->objectPath() == channelObjectPath.path()) {
-            emit channelLost(channel, errorName, errorMessage);
-            mPriv->channels.removeOne(channel);
-            return;
-        }
     }
 }
 
