@@ -49,7 +49,7 @@ RosterWindow::RosterWindow(const QString &accountName, QWidget *parent)
             QDBusConnection::sessionBus(), Connection::FeatureConnected |
                 Connection::FeatureRoster | Connection::FeatureRosterGroups);
     ContactFactoryPtr contactFactory = ContactFactory::create(
-            Contact::FeatureAlias | Contact::FeatureSimplePresence);
+            Contact::FeatureAlias | Contact::FeaturePresence);
 
     mAccount = Account::create(TP_QT_ACCOUNT_MANAGER_BUS_NAME,
             TP_QT_ACCOUNT_OBJECT_PATH_BASE + QLatin1Char('/') + accountName,
