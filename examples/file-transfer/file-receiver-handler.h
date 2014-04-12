@@ -44,13 +44,7 @@ public:
 
     bool bypassApproval() const;
 
-    void handleChannels(const MethodInvocationContextPtr<> &context,
-            const AccountPtr &account,
-            const ConnectionPtr &connection,
-            const QList<ChannelPtr> &channels,
-            const QList<ChannelRequestPtr> &requestsSatisfied,
-            const QDateTime &userActionTime,
-            const HandlerInfo &handlerInfo);
+    virtual void handleChannel(const MethodInvocationContextPtr<>& context, const AccountPtr& account, const ConnectionPtr& connection, const ChannelPtr& channel, const QVariantMap& channelProperties, const QList< ChannelRequestPtr >& requestsSatisfied, const QDateTime& userActionTime, const HandlerInfo& handlerInfo);
 
 private Q_SLOTS:
     void onReceiveFinished(Tp::PendingOperation *op);
