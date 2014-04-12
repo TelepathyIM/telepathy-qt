@@ -70,9 +70,9 @@ private Q_SLOTS:
     void onNicknameChanged(const QString &);
     void onConnectsAutomaticallyPropertyChanged(bool);
     void onChangingPresenceChanged(bool);
-    void onAutomaticPresenceChanged(const Tp::SimplePresence &);
-    void onCurrentPresenceChanged(const Tp::SimplePresence &);
-    void onRequestedPresenceChanged(const Tp::SimplePresence &);
+    void onAutomaticPresenceChanged(const Tp::Presence &);
+    void onCurrentPresenceChanged(const Tp::Presence &);
+    void onRequestedPresenceChanged(const Tp::Presence &);
     void onStatusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason,
             const QString &error, const QVariantMap &errorDetails);
     void onHaveConnectionChanged(bool);

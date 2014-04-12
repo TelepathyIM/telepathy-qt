@@ -142,22 +142,22 @@ void AccountItem::onChangingPresenceChanged(bool value)
     item->setText((value ? QLatin1String("true") : QLatin1String("false")));
 }
 
-void AccountItem::onAutomaticPresenceChanged(const Tp::SimplePresence &presence)
+void AccountItem::onAutomaticPresenceChanged(const Tp::Presence &presence)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnAutomaticPresence);
-    item->setText(presence.status);
+    item->setText(presence.status());
 }
 
-void AccountItem::onCurrentPresenceChanged(const Tp::SimplePresence &presence)
+void AccountItem::onCurrentPresenceChanged(const Tp::Presence &presence)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnCurrentPresence);
-    item->setText(presence.status);
+    item->setText(presence.status());
 }
 
-void AccountItem::onRequestedPresenceChanged(const Tp::SimplePresence &presence)
+void AccountItem::onRequestedPresenceChanged(const Tp::Presence &presence)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnRequestedPresence);
-    item->setText(presence.status);
+    item->setText(presence.status());
 }
 
 void AccountItem::onStatusChanged(Tp::ConnectionStatus status,
