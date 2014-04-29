@@ -9,7 +9,7 @@ import dbus
 from dbus.bus import NAME_FLAG_DO_NOT_QUEUE, REQUEST_NAME_REPLY_EXISTS
 from dbus.mainloop.glib import DBusGMainLoop
 from dbus.service import Object, method, signal
-from gobject import MainLoop
+from gi.repository.GObject import MainLoop
 
 TP = 'org.freedesktop.Telepathy'
 
