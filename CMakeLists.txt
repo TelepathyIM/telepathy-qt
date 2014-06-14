@@ -112,7 +112,7 @@ else (${TP_QT_NANO_VERSION} EQUAL 0)
 endif (${TP_QT_NANO_VERSION} EQUAL 0)
 
 # Add an option for compiling tp-qt-service
-option(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT "Enable compilation of experimental and unstable service side bindings for Telepathy-Qt" FALSE)
+option(ENABLE_SERVICE_SUPPORT "Enable compilation of service side bindings for Telepathy-Qt" TRUE)
 # Add an option for compiling examples
 option(ENABLE_EXAMPLES "Enable compilation of examples for Telepathy-Qt" TRUE)
 # Add an option for compiling Farstream
@@ -120,9 +120,9 @@ option(ENABLE_FARSTREAM "Enable compilation of Farstream bindings" TRUE)
 # Add an option for building tests
 option(ENABLE_TESTS "Enable compilation of automated tests" TRUE)
 
-if (ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
+if (ENABLE_SERVICE_SUPPORT)
     message(STATUS "You have enabled experimental service support for Telepathy-Qt. Be aware there are no guarantees of API stability yet for service-side classes.")
-endif (ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
+endif (ENABLE_SERVICE_SUPPORT)
 
 # The doxygen macro requires Qt to have been looked up to enable crosslinking
 include(Doxygen)

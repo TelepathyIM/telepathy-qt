@@ -1,4 +1,4 @@
-if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
+if(ENABLE_SERVICE_SUPPORT)
     set(cm_SRCS
         protocol.h
         protocol.cpp
@@ -18,4 +18,4 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         telepathy-qt${QT_VERSION_MAJOR}
         telepathy-qt${QT_VERSION_MAJOR}-service
         ${TP_QT_EXECUTABLE_LINKER_FLAGS})
-endif(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
+endif(ENABLE_SERVICE_SUPPORT)

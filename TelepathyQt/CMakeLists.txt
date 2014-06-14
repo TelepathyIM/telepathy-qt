@@ -850,7 +850,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVe
 
 add_subdirectory(Farstream)
 
-if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
+if(ENABLE_SERVICE_SUPPORT)
     # lets build tp-qt service side support as a separate library until we can guarantee API/ABI
     # stability
     set(telepathy_qt_service_SRCS
@@ -1010,4 +1010,4 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
             DESTINATION ${_TelepathyQtServiceConfig_INSTALL_DIR}
             COMPONENT headers)
 
-endif(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
+endif(ENABLE_SERVICE_SUPPORT)
