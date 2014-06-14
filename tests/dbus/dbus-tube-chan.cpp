@@ -39,11 +39,6 @@ TestContext contexts[] = {
   { FALSE, (TpSocketAddressType) NUM_TP_SOCKET_ADDRESS_TYPES, (TpSocketAccessControl) NUM_TP_SOCKET_ACCESS_CONTROLS }
 };
 
-void destroySocketControlList(gpointer data)
-{
-    g_array_free((GArray *) data, TRUE);
-}
-
 }
 
 class TestDBusTubeChan : public Test
