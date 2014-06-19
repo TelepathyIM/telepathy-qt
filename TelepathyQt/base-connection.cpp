@@ -415,6 +415,39 @@ BaseChannelPtr BaseConnection::ensureChannel(const QString &channelType, uint ta
     return createChannel(channelType, targetHandleType, targetHandle, initiatorHandle, suppressHandler, error);
 }
 
+void BaseConnection::addChannel(BaseChannelPtr channel)
+{
+    if (mPriv->channels.contains(channel)) {
+        qDebug() << "BaseConnection::addChannel: Channel already added.";
+        return;
+    }
+
+    mPriv->channels.insert(channel);
+
+    BaseConnectionRequestsInterfacePtr reqIface =
+        BaseConnectionRequestsInterfacePtr::dynamicCast(interface(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS));
+
+    if (!reqIface.isNull()) {
+        //emit after return
+        QMetaObject::invokeMethod(reqIface.data(), "newChannels",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(Tp::ChannelDetailsList, ChannelDetailsList() << channel->details()));
+    }
+
+    //emit after return
+    QMetaObject::invokeMethod(mPriv->adaptee, "newChannel",
+                              Qt::QueuedConnection,
+                              Q_ARG(QDBusObjectPath, QDBusObjectPath(channel->objectPath())),
+                              Q_ARG(QString, channel->channelType()),
+                              Q_ARG(uint, channel->targetHandleType()),
+                              Q_ARG(uint, channel->targetHandle()),
+                              Q_ARG(bool, false));
+
+    QObject::connect(channel.data(),
+                     SIGNAL(closed()),
+                     SLOT(removeChannel()));
+}
+
 void BaseConnection::removeChannel()
 {
     BaseChannelPtr channel = BaseChannelPtr(
