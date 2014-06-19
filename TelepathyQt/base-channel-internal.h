@@ -191,6 +191,55 @@ public:
     BaseChannelCaptchaAuthenticationInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelSASLAuthenticationInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QStringList availableMechanisms READ availableMechanisms)
+    Q_PROPERTY(bool hasInitialData READ hasInitialData)
+    Q_PROPERTY(bool canTryAgain READ canTryAgain)
+    Q_PROPERTY(uint saslStatus READ saslStatus)
+    Q_PROPERTY(QString saslError READ saslError)
+    Q_PROPERTY(QVariantMap saslErrorDetails READ saslErrorDetails)
+    Q_PROPERTY(QString authorizationIdentity READ authorizationIdentity)
+    Q_PROPERTY(QString defaultUsername READ defaultUsername)
+    Q_PROPERTY(QString defaultRealm READ defaultRealm)
+    Q_PROPERTY(bool maySaveResponse READ maySaveResponse)
+
+public:
+    Adaptee(BaseChannelSASLAuthenticationInterface *interface);
+    ~Adaptee();
+
+    QStringList availableMechanisms() const;
+    bool hasInitialData() const;
+    bool canTryAgain() const;
+    uint saslStatus() const;
+    QString saslError() const;
+    QVariantMap saslErrorDetails() const;
+    QString authorizationIdentity() const;
+    QString defaultUsername() const;
+    QString defaultRealm() const;
+    bool maySaveResponse() const;
+
+private Q_SLOTS:
+    void startMechanism(const QString &mechanism,
+            const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::StartMechanismContextPtr &context);
+    void startMechanismWithData(const QString &mechanism, const QByteArray &initialData,
+            const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::StartMechanismWithDataContextPtr &context);
+    void respond(const QByteArray &responseData,
+            const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::RespondContextPtr &context);
+    void acceptSasl(
+            const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::AcceptSASLContextPtr &context);
+    void abortSasl(uint reason, const QString &debugMessage,
+            const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::AbortSASLContextPtr &context);
+
+signals:
+    void saslStatusChanged(uint status, const QString &reason, const QVariantMap &details);
+    void newChallenge(const QByteArray &challengeData);
+
+private:
+    BaseChannelSASLAuthenticationInterface *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseChannelGroupInterface::Adaptee : public QObject
 {
     Q_OBJECT

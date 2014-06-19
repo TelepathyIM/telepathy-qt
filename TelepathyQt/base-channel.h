@@ -287,6 +287,109 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelSASLAuthenticationInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelSASLAuthenticationInterface)
+
+public:
+    static BaseChannelSASLAuthenticationInterfacePtr create(const QStringList &availableMechanisms,
+                                                            bool hasInitialData,
+                                                            bool canTryAgain,
+                                                            const QString &authorizationIdentity,
+                                                            const QString &defaultUsername,
+                                                            const QString &defaultRealm,
+                                                            bool maySaveResponse)
+    {
+        return BaseChannelSASLAuthenticationInterfacePtr(new BaseChannelSASLAuthenticationInterface(availableMechanisms,
+                                                                                                    hasInitialData,
+                                                                                                    canTryAgain,
+                                                                                                    authorizationIdentity,
+                                                                                                    defaultUsername,
+                                                                                                    defaultRealm,
+                                                                                                    maySaveResponse));
+    }
+    template<typename BaseChannelSASLAuthenticationInterfaceSubclass>
+    static SharedPtr<BaseChannelSASLAuthenticationInterfaceSubclass> create(const QStringList &availableMechanisms,
+                                                                            bool hasInitialData,
+                                                                            bool canTryAgain,
+                                                                            const QString &authorizationIdentity,
+                                                                            const QString &defaultUsername,
+                                                                            const QString &defaultRealm,
+                                                                            bool maySaveResponse)
+    {
+        return SharedPtr<BaseChannelSASLAuthenticationInterfaceSubclass>(
+                new BaseChannelSASLAuthenticationInterfaceSubclass(availableMechanisms,
+                                                                   hasInitialData,
+                                                                   canTryAgain,
+                                                                   authorizationIdentity,
+                                                                   defaultUsername,
+                                                                   defaultRealm,
+                                                                   maySaveResponse));
+    }
+
+    virtual ~BaseChannelSASLAuthenticationInterface();
+
+    QVariantMap immutableProperties() const;
+
+    QStringList availableMechanisms() const;
+    bool hasInitialData() const;
+    bool canTryAgain() const;
+    QString authorizationIdentity() const;
+    QString defaultUsername() const;
+    QString defaultRealm() const;
+    bool maySaveResponse() const;
+
+    uint saslStatus() const;
+    void setSaslStatus(uint status, const QString &reason, const QVariantMap &details);
+
+    QString saslError() const;
+    void setSaslError(const QString &saslError);
+
+    QVariantMap saslErrorDetails() const;
+    void setSaslErrorDetails(const QVariantMap &saslErrorDetails);
+
+    typedef Callback2<void, const QString &, DBusError*> StartMechanismCallback;
+    void setStartMechanismCallback(const StartMechanismCallback &cb);
+    void startMechanism(const QString &mechanism, DBusError *error);
+
+    typedef Callback3<void, const QString &, const QByteArray &, DBusError*> StartMechanismWithDataCallback;
+    void setStartMechanismWithDataCallback(const StartMechanismWithDataCallback &cb);
+    void startMechanismWithData(const QString &mechanism, const QByteArray &initialData, DBusError *error);
+
+    typedef Callback2<void, const QByteArray &, DBusError*> RespondCallback;
+    void setRespondCallback(const RespondCallback &cb);
+    void respond(const QByteArray &responseData, DBusError *error);
+
+    typedef Callback1<void, DBusError*> AcceptSASLCallback;
+    void setAcceptSaslCallback(const AcceptSASLCallback &cb);
+    void acceptSasl(DBusError *error);
+
+    typedef Callback3<void, uint, const QString &, DBusError*> AbortSASLCallback;
+    void setAbortSaslCallback(const AbortSASLCallback &cb);
+    void abortSasl(uint reason, const QString &debugMessage, DBusError *error);
+
+    void newChallenge(const QByteArray &challengeData);
+
+protected:
+    BaseChannelSASLAuthenticationInterface(const QStringList &availableMechanisms,
+                                           bool hasInitialData,
+                                           bool canTryAgain,
+                                           const QString &authorizationIdentity,
+                                           const QString &defaultUsername,
+                                           const QString &defaultRealm,
+                                           bool maySaveResponse);
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 class TP_QT_EXPORT BaseChannelGroupInterface : public AbstractChannelInterface
 {
     Q_OBJECT

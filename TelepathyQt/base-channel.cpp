@@ -985,6 +985,378 @@ void BaseChannelCaptchaAuthenticationInterface::setCaptchaErrorDetails(const QVa
     mPriv->captchaErrorDetails = error;
 }
 
+//Chan.I.SASLAuthentication
+struct TP_QT_NO_EXPORT BaseChannelSASLAuthenticationInterface::Private {
+    Private(BaseChannelSASLAuthenticationInterface *parent,
+            const QStringList &availableMechanisms,
+            bool hasInitialData,
+            bool canTryAgain,
+            const QString &authorizationIdentity,
+            const QString &defaultUsername,
+            const QString &defaultRealm,
+            bool maySaveResponse)
+        : availableMechanisms(availableMechanisms),
+          hasInitialData(hasInitialData),
+          canTryAgain(canTryAgain),
+          saslStatus(0),
+          authorizationIdentity(authorizationIdentity),
+          defaultUsername(defaultUsername),
+          defaultRealm(defaultRealm),
+          maySaveResponse(maySaveResponse),
+          adaptee(new BaseChannelSASLAuthenticationInterface::Adaptee(parent))
+    {
+    }
+
+    QStringList availableMechanisms;
+    bool hasInitialData;
+    bool canTryAgain;
+    uint saslStatus;
+    QString saslError;
+    QVariantMap saslErrorDetails;
+    QString authorizationIdentity;
+    QString defaultUsername;
+    QString defaultRealm;
+    bool maySaveResponse;
+    StartMechanismCallback startMechanismCB;
+    StartMechanismWithDataCallback startMechanismWithDataCB;
+    RespondCallback respondCB;
+    AcceptSASLCallback acceptSaslCB;
+    AbortSASLCallback abortSaslCB;
+    BaseChannelSASLAuthenticationInterface::Adaptee *adaptee;
+};
+
+BaseChannelSASLAuthenticationInterface::Adaptee::Adaptee(BaseChannelSASLAuthenticationInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelSASLAuthenticationInterface::Adaptee::~Adaptee()
+{
+}
+
+QStringList BaseChannelSASLAuthenticationInterface::Adaptee::availableMechanisms() const
+{
+    return mInterface->availableMechanisms();
+}
+
+bool BaseChannelSASLAuthenticationInterface::Adaptee::hasInitialData() const
+{
+    return mInterface->hasInitialData();
+}
+
+bool BaseChannelSASLAuthenticationInterface::Adaptee::canTryAgain() const
+{
+    return mInterface->canTryAgain();
+}
+
+uint BaseChannelSASLAuthenticationInterface::Adaptee::saslStatus() const
+{
+    return mInterface->saslStatus();
+}
+
+QString BaseChannelSASLAuthenticationInterface::Adaptee::saslError() const
+{
+    return mInterface->saslError();
+}
+
+QVariantMap BaseChannelSASLAuthenticationInterface::Adaptee::saslErrorDetails() const
+{
+    return mInterface->saslErrorDetails();
+}
+
+QString BaseChannelSASLAuthenticationInterface::Adaptee::authorizationIdentity() const
+{
+    return mInterface->authorizationIdentity();
+}
+
+QString BaseChannelSASLAuthenticationInterface::Adaptee::defaultUsername() const
+{
+    return mInterface->defaultUsername();
+}
+
+QString BaseChannelSASLAuthenticationInterface::Adaptee::defaultRealm() const
+{
+    return mInterface->defaultRealm();
+}
+
+bool BaseChannelSASLAuthenticationInterface::Adaptee::maySaveResponse() const
+{
+    return mInterface->maySaveResponse();
+}
+
+void BaseChannelSASLAuthenticationInterface::Adaptee::startMechanism(const QString &mechanism,
+        const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::StartMechanismContextPtr &context)
+{
+    qDebug() << "BaseChannelSASLAuthenticationInterface::Adaptee::startMechanism";
+    DBusError error;
+    mInterface->startMechanism(mechanism, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelSASLAuthenticationInterface::Adaptee::startMechanismWithData(const QString &mechanism, const QByteArray &initialData,
+        const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::StartMechanismWithDataContextPtr &context)
+{
+    qDebug() << "BaseChannelSASLAuthenticationInterface::Adaptee::startMechanismWithData";
+    DBusError error;
+    mInterface->startMechanismWithData(mechanism, initialData, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelSASLAuthenticationInterface::Adaptee::respond(const QByteArray &responseData,
+        const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::RespondContextPtr &context)
+{
+    qDebug() << "BaseChannelSASLAuthenticationInterface::Adaptee::respond";
+    DBusError error;
+    mInterface->respond(responseData, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelSASLAuthenticationInterface::Adaptee::acceptSasl(
+        const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::AcceptSASLContextPtr &context)
+{
+    qDebug() << "BaseChannelSASLAuthenticationInterface::Adaptee::acceptSasl";
+    DBusError error;
+    mInterface->acceptSasl(&error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelSASLAuthenticationInterface::Adaptee::abortSasl(uint reason, const QString &debugMessage,
+        const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::AbortSASLContextPtr &context)
+{
+    qDebug() << "BaseChannelSASLAuthenticationInterface::Adaptee::abortSasl";
+    DBusError error;
+    mInterface->abortSasl(reason, debugMessage, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+/**
+ * \class BaseChannelSASLAuthenticationInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.SASLAuthentication
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelSASLAuthenticationInterface::BaseChannelSASLAuthenticationInterface(const QStringList &availableMechanisms,
+                                                                               bool hasInitialData,
+                                                                               bool canTryAgain,
+                                                                               const QString &authorizationIdentity,
+                                                                               const QString &defaultUsername,
+                                                                               const QString &defaultRealm,
+                                                                               bool maySaveResponse)
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION),
+      mPriv(new Private(this, availableMechanisms, hasInitialData, canTryAgain, authorizationIdentity, defaultUsername, defaultRealm, maySaveResponse))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelSASLAuthenticationInterface::~BaseChannelSASLAuthenticationInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelSASLAuthenticationInterface::immutableProperties() const
+{
+    QVariantMap map;
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION + QLatin1String(".AvailableMechanisms"),
+               QVariant::fromValue(mPriv->adaptee->availableMechanisms()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION + QLatin1String(".HasInitialData"),
+               QVariant::fromValue(mPriv->adaptee->hasInitialData()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION + QLatin1String(".CanTryAgain"),
+               QVariant::fromValue(mPriv->adaptee->canTryAgain()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION + QLatin1String(".AuthorizationIdentity"),
+               QVariant::fromValue(mPriv->adaptee->authorizationIdentity()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION + QLatin1String(".DefaultUsername"),
+               QVariant::fromValue(mPriv->adaptee->defaultUsername()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION + QLatin1String(".DefaultRealm"),
+               QVariant::fromValue(mPriv->adaptee->defaultRealm()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION + QLatin1String(".MaySaveResponse"),
+               QVariant::fromValue(mPriv->adaptee->maySaveResponse()));
+    return map;
+}
+
+QStringList BaseChannelSASLAuthenticationInterface::availableMechanisms() const
+{
+    return mPriv->availableMechanisms;
+}
+
+bool BaseChannelSASLAuthenticationInterface::hasInitialData() const
+{
+    return mPriv->hasInitialData;
+}
+
+bool BaseChannelSASLAuthenticationInterface::canTryAgain() const
+{
+    return mPriv->canTryAgain;
+}
+
+uint BaseChannelSASLAuthenticationInterface::saslStatus() const
+{
+    return mPriv->saslStatus;
+}
+
+void BaseChannelSASLAuthenticationInterface::setSaslStatus(uint status, const QString &reason, const QVariantMap &details)
+{
+    mPriv->saslStatus = status;
+    QMetaObject::invokeMethod(mPriv->adaptee, "saslStatusChanged", Q_ARG(uint, status), Q_ARG(QString, reason), Q_ARG(QVariantMap, details)); //Can simply use emit in Qt5
+}
+
+QString BaseChannelSASLAuthenticationInterface::saslError() const
+{
+    return mPriv->saslError;
+}
+
+void BaseChannelSASLAuthenticationInterface::setSaslError(const QString &saslError)
+{
+    mPriv->saslError = saslError;
+}
+
+QVariantMap BaseChannelSASLAuthenticationInterface::saslErrorDetails() const
+{
+    return mPriv->saslErrorDetails;
+}
+
+void BaseChannelSASLAuthenticationInterface::setSaslErrorDetails(const QVariantMap &saslErrorDetails)
+{
+    mPriv->saslErrorDetails = saslErrorDetails;
+}
+
+QString BaseChannelSASLAuthenticationInterface::authorizationIdentity() const
+{
+    return mPriv->authorizationIdentity;
+}
+
+QString BaseChannelSASLAuthenticationInterface::defaultUsername() const
+{
+    return mPriv->defaultUsername;
+}
+
+QString BaseChannelSASLAuthenticationInterface::defaultRealm() const
+{
+    return mPriv->defaultRealm;
+}
+
+bool BaseChannelSASLAuthenticationInterface::maySaveResponse() const
+{
+    return mPriv->maySaveResponse;
+}
+
+void BaseChannelSASLAuthenticationInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceSASLAuthenticationAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseChannelSASLAuthenticationInterface::setStartMechanismCallback(const BaseChannelSASLAuthenticationInterface::StartMechanismCallback &cb)
+{
+    mPriv->startMechanismCB = cb;
+}
+
+void BaseChannelSASLAuthenticationInterface::startMechanism(const QString &mechanism, DBusError *error)
+{
+    if (!mPriv->startMechanismCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->startMechanismCB(mechanism, error);
+}
+
+void BaseChannelSASLAuthenticationInterface::setStartMechanismWithDataCallback(const BaseChannelSASLAuthenticationInterface::StartMechanismWithDataCallback &cb)
+{
+    mPriv->startMechanismWithDataCB = cb;
+}
+
+void BaseChannelSASLAuthenticationInterface::startMechanismWithData(const QString &mechanism, const QByteArray &initialData, DBusError *error)
+{
+    if (!mPriv->startMechanismWithDataCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->startMechanismWithDataCB(mechanism, initialData, error);
+}
+
+void BaseChannelSASLAuthenticationInterface::setRespondCallback(const BaseChannelSASLAuthenticationInterface::RespondCallback &cb)
+{
+    mPriv->respondCB = cb;
+}
+
+void BaseChannelSASLAuthenticationInterface::respond(const QByteArray &responseData, DBusError *error)
+{
+    if (!mPriv->respondCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->respondCB(responseData, error);
+}
+
+void BaseChannelSASLAuthenticationInterface::setAcceptSaslCallback(const BaseChannelSASLAuthenticationInterface::AcceptSASLCallback &cb)
+{
+    mPriv->acceptSaslCB = cb;
+}
+
+void BaseChannelSASLAuthenticationInterface::acceptSasl(DBusError *error)
+{
+    if (!mPriv->acceptSaslCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->acceptSaslCB(error);
+}
+
+void BaseChannelSASLAuthenticationInterface::setAbortSaslCallback(const BaseChannelSASLAuthenticationInterface::AbortSASLCallback &cb)
+{
+    mPriv->abortSaslCB = cb;
+}
+
+void BaseChannelSASLAuthenticationInterface::abortSasl(uint reason, const QString &debugMessage, DBusError *error)
+{
+    if (!mPriv->abortSaslCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->abortSaslCB(reason, debugMessage, error);
+}
+
+void BaseChannelSASLAuthenticationInterface::newChallenge(const QByteArray &challengeData)
+{
+    QMetaObject::invokeMethod(mPriv->adaptee, "newChallenge", Q_ARG(QByteArray, challengeData)); //Can simply use emit in Qt5
+}
+
 //Chan.I.Group
 BaseChannelGroupInterface::Adaptee::Adaptee(BaseChannelGroupInterface *interface)
     : QObject(interface),
