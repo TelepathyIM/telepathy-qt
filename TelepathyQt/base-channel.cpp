@@ -939,7 +939,7 @@ BaseChannelCaptchaAuthenticationInterface::~BaseChannelCaptchaAuthenticationInte
 QVariantMap BaseChannelCaptchaAuthenticationInterface::immutableProperties() const
 {
     QVariantMap map;
-    map.insert(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION + QLatin1String(".CanRetryCaptcha"),
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION + QLatin1String(".CanRetryCaptcha"),
                QVariant::fromValue(mPriv->adaptee->canRetryCaptcha()));
     return map;
 }
