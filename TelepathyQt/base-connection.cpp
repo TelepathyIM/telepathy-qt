@@ -1276,11 +1276,11 @@ struct TP_QT_NO_EXPORT BaseConnectionAddressingInterface::Private {
 };
 
 /**
- * \class BaseProtocolPresenceInterface
+ * \class BaseConnectionAddressingInterface
  * \ingroup servicecm
- * \headerfile TelepathyQt/base-protocol.h <TelepathyQt/BaseProtocolPresenceInterface>
+ * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
  *
- * \brief Base class for implementations of Protocol.Interface.Presence
+ * \brief Base class for implementations of Connection.Interface.Addressing
  */
 
 /**
