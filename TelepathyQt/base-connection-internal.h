@@ -202,6 +202,36 @@ private:
     BaseConnectionContactListInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseConnectionContactInfoInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(uint contactInfoFlags READ contactInfoFlags)
+    Q_PROPERTY(Tp::FieldSpecs supportedFields READ supportedFields)
+
+public:
+    Adaptee(BaseConnectionContactInfoInterface *interface);
+    ~Adaptee();
+
+    uint contactInfoFlags() const;
+    Tp::FieldSpecs supportedFields() const;
+
+private Q_SLOTS:
+    void getContactInfo(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceContactInfoAdaptor::GetContactInfoContextPtr &context);
+    void refreshContactInfo(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceContactInfoAdaptor::RefreshContactInfoContextPtr &context);
+    void requestContactInfo(uint contact,
+            const Tp::Service::ConnectionInterfaceContactInfoAdaptor::RequestContactInfoContextPtr &context);
+    void setContactInfo(const Tp::ContactInfoFieldList &contactInfo,
+            const Tp::Service::ConnectionInterfaceContactInfoAdaptor::SetContactInfoContextPtr &context);
+
+signals:
+    void contactInfoChanged(uint contact, const Tp::ContactInfoFieldList &contactInfo);
+
+private:
+    BaseConnectionContactInfoInterface *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseConnectionAddressingInterface::Adaptee : public QObject
 {
     Q_OBJECT

@@ -31,6 +31,7 @@
 #include <TelepathyQt/Global>
 #include <TelepathyQt/Types>
 #include <TelepathyQt/Callbacks>
+#include <TelepathyQt/Constants>
 
 #include <QDBusConnection>
 
@@ -344,6 +345,64 @@ public:
 
 protected:
     BaseConnectionContactListInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseConnectionContactInfoInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionContactInfoInterface)
+
+public:
+    static BaseConnectionContactInfoInterfacePtr create()
+    {
+        return BaseConnectionContactInfoInterfacePtr(new BaseConnectionContactInfoInterface());
+    }
+    template<typename BaseConnectionContactInfoInterfaceSubclass>
+    static SharedPtr<BaseConnectionContactInfoInterfaceSubclass> create()
+    {
+        return SharedPtr<BaseConnectionContactInfoInterfaceSubclass>(
+                new BaseConnectionContactInfoInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionContactInfoInterface();
+
+    QVariantMap immutableProperties() const;
+
+    Tp::ContactInfoFlags contactInfoFlags() const;
+    void setContactInfoFlags(const Tp::ContactInfoFlags &contactInfoFlags);
+
+    Tp::FieldSpecs supportedFields() const;
+    void setSupportedFields(const Tp::FieldSpecs &supportedFields);
+
+    typedef Callback2<Tp::ContactInfoMap, const Tp::UIntList &, DBusError*> GetContactInfoCallback;
+    void setGetContactInfoCallback(const GetContactInfoCallback &cb);
+    Tp::ContactInfoMap getContactInfo(const Tp::UIntList &contacts, DBusError *error);
+
+    typedef Callback2<void, const Tp::UIntList &, DBusError*> RefreshContactInfoCallback;
+    void setRefreshContactInfoCallback(const RefreshContactInfoCallback &cb);
+    void refreshContactInfo(const Tp::UIntList &contacts, DBusError *error);
+
+    typedef Callback2<Tp::ContactInfoFieldList, uint, DBusError*> RequestContactInfoCallback;
+    void setRequestContactInfoCallback(const RequestContactInfoCallback &cb);
+    Tp::ContactInfoFieldList requestContactInfo(uint contact, DBusError *error);
+
+    typedef Callback2<void, const Tp::ContactInfoFieldList &, DBusError*> SetContactInfoCallback;
+    void setSetContactInfoCallback(const SetContactInfoCallback &cb);
+    void setContactInfo(const Tp::ContactInfoFieldList &contactInfo, DBusError *error);
+
+    void contactInfoChanged(uint contact, const Tp::ContactInfoFieldList &contactInfo);
+
+protected:
+    BaseConnectionContactInfoInterface();
 
 private:
     void createAdaptor();

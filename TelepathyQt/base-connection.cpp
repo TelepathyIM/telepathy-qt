@@ -29,7 +29,6 @@
 #include "TelepathyQt/debug-internal.h"
 
 #include <TelepathyQt/BaseChannel>
-#include <TelepathyQt/Constants>
 #include <TelepathyQt/DBusObject>
 #include <TelepathyQt/Utils>
 #include <TelepathyQt/AbstractProtocolInterface>
@@ -1439,6 +1438,220 @@ void BaseConnectionContactListInterface::download(DBusError *error)
 void BaseConnectionContactListInterface::contactsChangedWithID(const Tp::ContactSubscriptionMap &changes, const Tp::HandleIdentifierMap &identifiers, const Tp::HandleIdentifierMap &removals)
 {
     QMetaObject::invokeMethod(mPriv->adaptee, "contactsChangedWithID", Q_ARG(Tp::ContactSubscriptionMap, changes), Q_ARG(Tp::HandleIdentifierMap, identifiers), Q_ARG(Tp::HandleIdentifierMap, removals)); //Can simply use emit in Qt5
+}
+
+// Conn.I.ContactInfo
+struct TP_QT_NO_EXPORT BaseConnectionContactInfoInterface::Private {
+    Private(BaseConnectionContactInfoInterface *parent)
+        : adaptee(new BaseConnectionContactInfoInterface::Adaptee(parent))
+    {
+    }
+
+    Tp::ContactInfoFlags contactInfoFlags;
+    Tp::FieldSpecs supportedFields;
+    GetContactInfoCallback getContactInfoCB;
+    RefreshContactInfoCallback refreshContactInfoCB;
+    RequestContactInfoCallback requestContactInfoCB;
+    SetContactInfoCallback setContactInfoCB;
+    BaseConnectionContactInfoInterface::Adaptee *adaptee;
+};
+
+BaseConnectionContactInfoInterface::Adaptee::Adaptee(BaseConnectionContactInfoInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseConnectionContactInfoInterface::Adaptee::~Adaptee()
+{
+}
+
+uint BaseConnectionContactInfoInterface::Adaptee::contactInfoFlags() const
+{
+    return mInterface->contactInfoFlags();
+}
+
+Tp::FieldSpecs BaseConnectionContactInfoInterface::Adaptee::supportedFields() const
+{
+    return mInterface->supportedFields();
+}
+
+void BaseConnectionContactInfoInterface::Adaptee::getContactInfo(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceContactInfoAdaptor::GetContactInfoContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactInfoInterface::Adaptee::getContactInfo";
+    DBusError error;
+    Tp::ContactInfoMap contactInfo = mInterface->getContactInfo(contacts, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(contactInfo);
+}
+
+void BaseConnectionContactInfoInterface::Adaptee::refreshContactInfo(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceContactInfoAdaptor::RefreshContactInfoContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactInfoInterface::Adaptee::refreshContactInfo";
+    DBusError error;
+    mInterface->refreshContactInfo(contacts, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseConnectionContactInfoInterface::Adaptee::requestContactInfo(uint contact,
+        const Tp::Service::ConnectionInterfaceContactInfoAdaptor::RequestContactInfoContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactInfoInterface::Adaptee::requestContactInfo";
+    DBusError error;
+    Tp::ContactInfoFieldList contactInfo = mInterface->requestContactInfo(contact, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(contactInfo);
+}
+
+void BaseConnectionContactInfoInterface::Adaptee::setContactInfo(const Tp::ContactInfoFieldList &contactInfo,
+        const Tp::Service::ConnectionInterfaceContactInfoAdaptor::SetContactInfoContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactInfoInterface::Adaptee::setContactInfo";
+    DBusError error;
+    mInterface->setContactInfo(contactInfo, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+/**
+ * \class BaseConnectionContactInfoInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
+ *
+ * \brief Base class for implementations of Connection.Interface.Contact.Info
+ */
+
+/**
+ * Class constructor.
+ */
+BaseConnectionContactInfoInterface::BaseConnectionContactInfoInterface()
+    : AbstractConnectionInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO),
+      mPriv(new Private(this))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseConnectionContactInfoInterface::~BaseConnectionContactInfoInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseConnectionContactInfoInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+Tp::ContactInfoFlags BaseConnectionContactInfoInterface::contactInfoFlags() const
+{
+    return mPriv->contactInfoFlags;
+}
+
+void BaseConnectionContactInfoInterface::setContactInfoFlags(const Tp::ContactInfoFlags &contactInfoFlags)
+{
+    mPriv->contactInfoFlags = contactInfoFlags;
+}
+
+Tp::FieldSpecs BaseConnectionContactInfoInterface::supportedFields() const
+{
+    return mPriv->supportedFields;
+}
+
+void BaseConnectionContactInfoInterface::setSupportedFields(const Tp::FieldSpecs &supportedFields)
+{
+    mPriv->supportedFields = supportedFields;
+}
+
+void BaseConnectionContactInfoInterface::createAdaptor()
+{
+    (void) new Service::ConnectionInterfaceContactInfoAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseConnectionContactInfoInterface::setGetContactInfoCallback(const BaseConnectionContactInfoInterface::GetContactInfoCallback &cb)
+{
+    mPriv->getContactInfoCB = cb;
+}
+
+Tp::ContactInfoMap BaseConnectionContactInfoInterface::getContactInfo(const Tp::UIntList &contacts, DBusError *error)
+{
+    if (!mPriv->getContactInfoCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return Tp::ContactInfoMap();
+    }
+    return mPriv->getContactInfoCB(contacts, error);
+}
+
+void BaseConnectionContactInfoInterface::setRefreshContactInfoCallback(const BaseConnectionContactInfoInterface::RefreshContactInfoCallback &cb)
+{
+    mPriv->refreshContactInfoCB = cb;
+}
+
+void BaseConnectionContactInfoInterface::refreshContactInfo(const Tp::UIntList &contacts, DBusError *error)
+{
+    if (!mPriv->refreshContactInfoCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->refreshContactInfoCB(contacts, error);
+}
+
+void BaseConnectionContactInfoInterface::setRequestContactInfoCallback(const BaseConnectionContactInfoInterface::RequestContactInfoCallback &cb)
+{
+    mPriv->requestContactInfoCB = cb;
+}
+
+Tp::ContactInfoFieldList BaseConnectionContactInfoInterface::requestContactInfo(uint contact, DBusError *error)
+{
+    if (!mPriv->requestContactInfoCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return Tp::ContactInfoFieldList();
+    }
+    return mPriv->requestContactInfoCB(contact, error);
+}
+
+void BaseConnectionContactInfoInterface::setSetContactInfoCallback(const BaseConnectionContactInfoInterface::SetContactInfoCallback &cb)
+{
+    mPriv->setContactInfoCB = cb;
+}
+
+void BaseConnectionContactInfoInterface::setContactInfo(const Tp::ContactInfoFieldList &contactInfo, DBusError *error)
+{
+    if (!mPriv->setContactInfoCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->setContactInfoCB(contactInfo, error);
+}
+
+void BaseConnectionContactInfoInterface::contactInfoChanged(uint contact, const Tp::ContactInfoFieldList &contactInfo)
+{
+    QMetaObject::invokeMethod(mPriv->adaptee, "contactInfoChanged", Q_ARG(uint, contact), Q_ARG(Tp::ContactInfoFieldList, contactInfo)); //Can simply use emit in Qt5
 }
 
 // Conn.I.Addressing
