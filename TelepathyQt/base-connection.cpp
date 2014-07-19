@@ -867,7 +867,7 @@ BaseConnectionContactsInterface::~BaseConnectionContactsInterface()
 }
 
 /**
- * Return the immutable properties of this<interface.
+ * Return the immutable properties of this interface.
  *
  * Immutable properties cannot change after the interface has been registered
  * on a service on the bus with registerInterface().
@@ -959,7 +959,7 @@ BaseConnectionSimplePresenceInterface::~BaseConnectionSimplePresenceInterface()
 }
 
 /**
- * Return the immutable properties of this<interface.
+ * Return the immutable properties of this interface.
  *
  * Immutable properties cannot change after the interface has been registered
  * on a service on the bus with registerInterface().
@@ -1132,7 +1132,7 @@ BaseConnectionContactListInterface::~BaseConnectionContactListInterface()
 }
 
 /**
- * Return the immutable properties of this<interface.
+ * Return the immutable properties of this interface.
  *
  * Immutable properties cannot change after the interface has been registered
  * on a service on the bus with registerInterface().
@@ -1301,7 +1301,7 @@ BaseConnectionAddressingInterface::~BaseConnectionAddressingInterface()
 }
 
 /**
- * Return the immutable properties of this<interface.
+ * Return the immutable properties of this interface.
  *
  * Immutable properties cannot change after the interface has been registered
  * on a service on the bus with registerInterface().
