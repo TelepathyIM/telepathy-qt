@@ -152,20 +152,20 @@ public:
 
     bool isFromChannel(const TextChannelPtr &channel) const;
 
-private:
+protected:
     friend class TextChannel;
 
-    TP_QT_NO_EXPORT ReceivedMessage(const MessagePartList &parts,
+    ReceivedMessage(const MessagePartList &parts,
             const TextChannelPtr &channel);
-    TP_QT_NO_EXPORT ReceivedMessage();
+    ReceivedMessage();
 
-    TP_QT_NO_EXPORT uint senderHandle() const;
-    TP_QT_NO_EXPORT QString senderId() const;
-    TP_QT_NO_EXPORT uint pendingId() const;
+    uint senderHandle() const;
+    QString senderId() const;
+    uint pendingId() const;
 
-    TP_QT_NO_EXPORT void setForceNonText();
-    TP_QT_NO_EXPORT void clearSenderHandle();
-    TP_QT_NO_EXPORT void setSender(const ContactPtr &sender);
+    void setForceNonText();
+    void clearSenderHandle();
+    void setSender(const ContactPtr &sender);
 };
 
 } // Tp
