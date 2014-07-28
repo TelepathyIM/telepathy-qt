@@ -1077,6 +1077,32 @@ void BaseConnectionSimplePresenceInterface::Adaptee::getPresences(const Tp::UInt
 }
 
 // Conn.I.ContactList
+struct TP_QT_NO_EXPORT BaseConnectionContactListInterface::Private {
+    Private(BaseConnectionContactListInterface *parent)
+        : contactListState(ContactListStateNone),
+          contactListPersists(false),
+          canChangeContactList(true),
+          requestUsesMessage(false),
+          downloadAtConnection(false),
+          adaptee(new BaseConnectionContactListInterface::Adaptee(parent))
+    {
+    }
+
+    uint contactListState;
+    bool contactListPersists;
+    bool canChangeContactList;
+    bool requestUsesMessage;
+    bool downloadAtConnection;
+    GetContactListAttributesCallback getContactListAttributesCB;
+    RequestSubscriptionCallback requestSubscriptionCB;
+    AuthorizePublicationCallback authorizePublicationCB;
+    RemoveContactsCallback removeContactsCB;
+    UnsubscribeCallback unsubscribeCB;
+    UnpublishCallback unpublishCB;
+    DownloadCallback downloadCB;
+    BaseConnectionContactListInterface::Adaptee *adaptee;
+};
+
 BaseConnectionContactListInterface::Adaptee::Adaptee(BaseConnectionContactListInterface *interface)
     : QObject(interface),
       mInterface(interface)
@@ -1087,24 +1113,121 @@ BaseConnectionContactListInterface::Adaptee::~Adaptee()
 {
 }
 
-struct TP_QT_NO_EXPORT BaseConnectionContactListInterface::Private {
-    Private(BaseConnectionContactListInterface *parent)
-        : contactListState(ContactListStateNone),
-          contactListPersists(false),
-          canChangeContactList(true),
-          requestUsesMessage(false),
-          downloadAtConnection(false),
-          adaptee(new BaseConnectionContactListInterface::Adaptee(parent)) {
+uint BaseConnectionContactListInterface::Adaptee::contactListState() const
+{
+    return mInterface->contactListState();
+}
+
+bool BaseConnectionContactListInterface::Adaptee::contactListPersists() const
+{
+    return mInterface->contactListPersists();
+}
+
+bool BaseConnectionContactListInterface::Adaptee::canChangeContactList() const
+{
+    return mInterface->canChangeContactList();
+}
+
+bool BaseConnectionContactListInterface::Adaptee::requestUsesMessage() const
+{
+    return mInterface->requestUsesMessage();
+}
+
+bool BaseConnectionContactListInterface::Adaptee::downloadAtConnection() const
+{
+    return mInterface->downloadAtConnection();
+}
+
+void BaseConnectionContactListInterface::Adaptee::getContactListAttributes(const QStringList &interfaces, bool hold,
+        const Tp::Service::ConnectionInterfaceContactListAdaptor::GetContactListAttributesContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactListInterface::Adaptee::getContactListAttributes";
+    DBusError error;
+    Tp::ContactAttributesMap attributes = mInterface->getContactListAttributes(interfaces, hold, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
     }
-    uint contactListState;
-    bool contactListPersists;
-    bool canChangeContactList;
-    bool requestUsesMessage;
-    bool downloadAtConnection;
-    GetContactListAttributesCallback getContactListAttributesCB;
-    RequestSubscriptionCallback requestSubscriptionCB;
-    BaseConnectionContactListInterface::Adaptee *adaptee;
-};
+    context->setFinished(attributes);
+}
+
+void BaseConnectionContactListInterface::Adaptee::requestSubscription(const Tp::UIntList &contacts, const QString &message,
+        const Tp::Service::ConnectionInterfaceContactListAdaptor::RequestSubscriptionContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactListInterface::Adaptee::requestSubscription";
+    DBusError error;
+    mInterface->requestSubscription(contacts, message, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseConnectionContactListInterface::Adaptee::authorizePublication(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceContactListAdaptor::AuthorizePublicationContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactListInterface::Adaptee::authorizePublication";
+    DBusError error;
+    mInterface->authorizePublication(contacts, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseConnectionContactListInterface::Adaptee::removeContacts(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceContactListAdaptor::RemoveContactsContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactListInterface::Adaptee::removeContacts";
+    DBusError error;
+    mInterface->removeContacts(contacts, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseConnectionContactListInterface::Adaptee::unsubscribe(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceContactListAdaptor::UnsubscribeContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactListInterface::Adaptee::unsubscribe";
+    DBusError error;
+    mInterface->unsubscribe(contacts, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseConnectionContactListInterface::Adaptee::unpublish(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceContactListAdaptor::UnpublishContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactListInterface::Adaptee::unpublish";
+    DBusError error;
+    mInterface->unpublish(contacts, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseConnectionContactListInterface::Adaptee::download(
+        const Tp::Service::ConnectionInterfaceContactListAdaptor::DownloadContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactListInterface::Adaptee::download";
+    DBusError error;
+    mInterface->download(&error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
 
 /**
  * \class BaseConnectionContactListInterface
@@ -1145,22 +1268,24 @@ QVariantMap BaseConnectionContactListInterface::immutableProperties() const
     return map;
 }
 
-void BaseConnectionContactListInterface::createAdaptor()
+uint BaseConnectionContactListInterface::contactListState() const
 {
-    (void) new Service::ConnectionInterfaceContactListAdaptor(dbusObject()->dbusConnection(),
-            mPriv->adaptee, dbusObject());
+    return mPriv->contactListState;
 }
 
 void BaseConnectionContactListInterface::setContactListState(uint contactListState)
 {
-    bool changed = (contactListState != mPriv->contactListState);
-    mPriv->contactListState = contactListState;
-    if (changed)
-        //emit after return
-        QMetaObject::invokeMethod(mPriv->adaptee, "contactListStateChanged",
-                                  Qt::QueuedConnection,
-                                  Q_ARG(uint, contactListState));
+    if (mPriv->contactListState == contactListState) {
+        return;
+    }
 
+    mPriv->contactListState = contactListState;
+    QMetaObject::invokeMethod(mPriv->adaptee, "contactListStateChanged", Q_ARG(uint, contactListState)); //Can simply use emit in Qt5
+}
+
+bool BaseConnectionContactListInterface::contactListPersists() const
+{
+    return mPriv->contactListPersists;
 }
 
 void BaseConnectionContactListInterface::setContactListPersists(bool contactListPersists)
@@ -1168,9 +1293,19 @@ void BaseConnectionContactListInterface::setContactListPersists(bool contactList
     mPriv->contactListPersists = contactListPersists;
 }
 
+bool BaseConnectionContactListInterface::canChangeContactList() const
+{
+    return mPriv->canChangeContactList;
+}
+
 void BaseConnectionContactListInterface::setCanChangeContactList(bool canChangeContactList)
 {
     mPriv->canChangeContactList = canChangeContactList;
+}
+
+bool BaseConnectionContactListInterface::requestUsesMessage() const
+{
+    return mPriv->requestUsesMessage;
 }
 
 void BaseConnectionContactListInterface::setRequestUsesMessage(bool requestUsesMessage)
@@ -1178,81 +1313,123 @@ void BaseConnectionContactListInterface::setRequestUsesMessage(bool requestUsesM
     mPriv->requestUsesMessage = requestUsesMessage;
 }
 
+bool BaseConnectionContactListInterface::downloadAtConnection() const
+{
+    return mPriv->downloadAtConnection;
+}
+
 void BaseConnectionContactListInterface::setDownloadAtConnection(bool downloadAtConnection)
 {
     mPriv->downloadAtConnection = downloadAtConnection;
 }
 
-void BaseConnectionContactListInterface::setGetContactListAttributesCallback(const GetContactListAttributesCallback &cb)
+void BaseConnectionContactListInterface::createAdaptor()
+{
+    (void) new Service::ConnectionInterfaceContactListAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseConnectionContactListInterface::setGetContactListAttributesCallback(const BaseConnectionContactListInterface::GetContactListAttributesCallback &cb)
 {
     mPriv->getContactListAttributesCB = cb;
 }
 
-void BaseConnectionContactListInterface::setRequestSubscriptionCallback(const RequestSubscriptionCallback &cb)
+Tp::ContactAttributesMap BaseConnectionContactListInterface::getContactListAttributes(const QStringList &interfaces, bool hold, DBusError *error)
+{
+    if (!mPriv->getContactListAttributesCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return Tp::ContactAttributesMap();
+    }
+    return mPriv->getContactListAttributesCB(interfaces, hold, error);
+}
+
+void BaseConnectionContactListInterface::setRequestSubscriptionCallback(const BaseConnectionContactListInterface::RequestSubscriptionCallback &cb)
 {
     mPriv->requestSubscriptionCB = cb;
 }
 
+void BaseConnectionContactListInterface::requestSubscription(const Tp::UIntList &contacts, const QString &message, DBusError *error)
+{
+    if (!mPriv->requestSubscriptionCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->requestSubscriptionCB(contacts, message, error);
+}
+
+void BaseConnectionContactListInterface::setAuthorizePublicationCallback(const BaseConnectionContactListInterface::AuthorizePublicationCallback &cb)
+{
+    mPriv->authorizePublicationCB = cb;
+}
+
+void BaseConnectionContactListInterface::authorizePublication(const Tp::UIntList &contacts, DBusError *error)
+{
+    if (!mPriv->authorizePublicationCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->authorizePublicationCB(contacts, error);
+}
+
+void BaseConnectionContactListInterface::setRemoveContactsCallback(const BaseConnectionContactListInterface::RemoveContactsCallback &cb)
+{
+    mPriv->removeContactsCB = cb;
+}
+
+void BaseConnectionContactListInterface::removeContacts(const Tp::UIntList &contacts, DBusError *error)
+{
+    if (!mPriv->removeContactsCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->removeContactsCB(contacts, error);
+}
+
+void BaseConnectionContactListInterface::setUnsubscribeCallback(const BaseConnectionContactListInterface::UnsubscribeCallback &cb)
+{
+    mPriv->unsubscribeCB = cb;
+}
+
+void BaseConnectionContactListInterface::unsubscribe(const Tp::UIntList &contacts, DBusError *error)
+{
+    if (!mPriv->unsubscribeCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->unsubscribeCB(contacts, error);
+}
+
+void BaseConnectionContactListInterface::setUnpublishCallback(const BaseConnectionContactListInterface::UnpublishCallback &cb)
+{
+    mPriv->unpublishCB = cb;
+}
+
+void BaseConnectionContactListInterface::unpublish(const Tp::UIntList &contacts, DBusError *error)
+{
+    if (!mPriv->unpublishCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->unpublishCB(contacts, error);
+}
+
+void BaseConnectionContactListInterface::setDownloadCallback(const BaseConnectionContactListInterface::DownloadCallback &cb)
+{
+    mPriv->downloadCB = cb;
+}
+
+void BaseConnectionContactListInterface::download(DBusError *error)
+{
+    if (!mPriv->downloadCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->downloadCB(error);
+}
+
 void BaseConnectionContactListInterface::contactsChangedWithID(const Tp::ContactSubscriptionMap &changes, const Tp::HandleIdentifierMap &identifiers, const Tp::HandleIdentifierMap &removals)
 {
-    QMetaObject::invokeMethod(mPriv->adaptee,"contactsChangedWithID", Q_ARG(Tp::ContactSubscriptionMap, changes), Q_ARG(Tp::HandleIdentifierMap, identifiers), Q_ARG(Tp::HandleIdentifierMap,removals)); //Can simply use emit in Qt5
-}
-
-uint BaseConnectionContactListInterface::Adaptee::contactListState() const
-{
-    return mInterface->mPriv->contactListState;
-}
-
-bool BaseConnectionContactListInterface::Adaptee::contactListPersists() const
-{
-    return mInterface->mPriv->contactListPersists;
-}
-
-bool BaseConnectionContactListInterface::Adaptee::canChangeContactList() const
-{
-    return mInterface->mPriv->canChangeContactList;
-}
-
-bool BaseConnectionContactListInterface::Adaptee::requestUsesMessage() const
-{
-    return mInterface->mPriv->requestUsesMessage;
-}
-
-bool BaseConnectionContactListInterface::Adaptee::downloadAtConnection() const
-{
-    return mInterface->mPriv->downloadAtConnection;
-}
-
-void BaseConnectionContactListInterface::Adaptee::getContactListAttributes(const QStringList &interfaces,
-        bool hold, const Tp::Service::ConnectionInterfaceContactListAdaptor::GetContactListAttributesContextPtr &context)
-{
-    if (!mInterface->mPriv->getContactListAttributesCB.isValid()) {
-        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-        return;
-    }
-    DBusError error;
-    Tp::ContactAttributesMap contactAttributesMap = mInterface->mPriv->getContactListAttributesCB(interfaces, hold, &error);
-    if (error.isValid()) {
-        context->setFinishedWithError(error.name(), error.message());
-        return;
-    }
-    context->setFinished(contactAttributesMap);
-}
-
-void BaseConnectionContactListInterface::Adaptee::requestSubscription(const Tp::UIntList &contacts,
-        const QString &message, const Tp::Service::ConnectionInterfaceContactListAdaptor::RequestSubscriptionContextPtr &context)
-{
-    if (!mInterface->mPriv->requestSubscriptionCB.isValid()) {
-        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-        return;
-    }
-    DBusError error;
-    mInterface->mPriv->requestSubscriptionCB(contacts, message, &error);
-    if (error.isValid()) {
-        context->setFinishedWithError(error.name(), error.message());
-        return;
-    }
-    context->setFinished();
+    QMetaObject::invokeMethod(mPriv->adaptee, "contactsChangedWithID", Q_ARG(Tp::ContactSubscriptionMap, changes), Q_ARG(Tp::HandleIdentifierMap, identifiers), Q_ARG(Tp::HandleIdentifierMap, removals)); //Can simply use emit in Qt5
 }
 
 // Conn.I.Addressing

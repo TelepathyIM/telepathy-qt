@@ -279,32 +279,66 @@ class TP_QT_EXPORT BaseConnectionContactListInterface : public AbstractConnectio
     Q_DISABLE_COPY(BaseConnectionContactListInterface)
 
 public:
-    static BaseConnectionContactListInterfacePtr create() {
+    static BaseConnectionContactListInterfacePtr create()
+    {
         return BaseConnectionContactListInterfacePtr(new BaseConnectionContactListInterface());
     }
     template<typename BaseConnectionContactListInterfaceSubclass>
-    static SharedPtr<BaseConnectionContactListInterfaceSubclass> create() {
+    static SharedPtr<BaseConnectionContactListInterfaceSubclass> create()
+    {
         return SharedPtr<BaseConnectionContactListInterfaceSubclass>(
-                   new BaseConnectionContactListInterfaceSubclass());
+                new BaseConnectionContactListInterfaceSubclass());
     }
 
     virtual ~BaseConnectionContactListInterface();
 
     QVariantMap immutableProperties() const;
 
+    uint contactListState() const;
     void setContactListState(uint contactListState);
-    void setContactListPersists(bool);
-    void setCanChangeContactList(bool);
-    void setRequestUsesMessage(bool);
-    void setDownloadAtConnection(bool);
 
-    typedef Callback3<Tp::ContactAttributesMap, const QStringList&, bool, DBusError*> GetContactListAttributesCallback;
+    bool contactListPersists() const;
+    void setContactListPersists(bool contactListPersists);
+
+    bool canChangeContactList() const;
+    void setCanChangeContactList(bool canChangeContactList);
+
+    bool requestUsesMessage() const;
+    void setRequestUsesMessage(bool requestUsesMessage);
+
+    bool downloadAtConnection() const;
+    void setDownloadAtConnection(bool downloadAtConnection);
+
+    typedef Callback3<Tp::ContactAttributesMap, const QStringList &, bool, DBusError*> GetContactListAttributesCallback;
     void setGetContactListAttributesCallback(const GetContactListAttributesCallback &cb);
+    Tp::ContactAttributesMap getContactListAttributes(const QStringList &interfaces, bool hold, DBusError *error);
 
-    typedef Callback3<void, const Tp::UIntList&, const QString&, DBusError*> RequestSubscriptionCallback;
+    typedef Callback3<void, const Tp::UIntList &, const QString &, DBusError*> RequestSubscriptionCallback;
     void setRequestSubscriptionCallback(const RequestSubscriptionCallback &cb);
+    void requestSubscription(const Tp::UIntList &contacts, const QString &message, DBusError *error);
+
+    typedef Callback2<void, const Tp::UIntList &, DBusError*> AuthorizePublicationCallback;
+    void setAuthorizePublicationCallback(const AuthorizePublicationCallback &cb);
+    void authorizePublication(const Tp::UIntList &contacts, DBusError *error);
+
+    typedef Callback2<void, const Tp::UIntList &, DBusError*> RemoveContactsCallback;
+    void setRemoveContactsCallback(const RemoveContactsCallback &cb);
+    void removeContacts(const Tp::UIntList &contacts, DBusError *error);
+
+    typedef Callback2<void, const Tp::UIntList &, DBusError*> UnsubscribeCallback;
+    void setUnsubscribeCallback(const UnsubscribeCallback &cb);
+    void unsubscribe(const Tp::UIntList &contacts, DBusError *error);
+
+    typedef Callback2<void, const Tp::UIntList &, DBusError*> UnpublishCallback;
+    void setUnpublishCallback(const UnpublishCallback &cb);
+    void unpublish(const Tp::UIntList &contacts, DBusError *error);
+
+    typedef Callback1<void, DBusError*> DownloadCallback;
+    void setDownloadCallback(const DownloadCallback &cb);
+    void download(DBusError *error);
 
     void contactsChangedWithID(const Tp::ContactSubscriptionMap &changes, const Tp::HandleIdentifierMap &identifiers, const Tp::HandleIdentifierMap &removals);
+
 protected:
     BaseConnectionContactListInterface();
 

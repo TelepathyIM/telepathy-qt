@@ -167,6 +167,7 @@ class TP_QT_NO_EXPORT BaseConnectionContactListInterface::Adaptee : public QObje
     Q_PROPERTY(bool canChangeContactList READ canChangeContactList)
     Q_PROPERTY(bool requestUsesMessage READ requestUsesMessage)
     Q_PROPERTY(bool downloadAtConnection READ downloadAtConnection)
+
 public:
     Adaptee(BaseConnectionContactListInterface *interface);
     ~Adaptee();
@@ -176,20 +177,28 @@ public:
     bool canChangeContactList() const;
     bool requestUsesMessage() const;
     bool downloadAtConnection() const;
+
 private Q_SLOTS:
-    void getContactListAttributes(const QStringList &interfaces, bool hold, const Tp::Service::ConnectionInterfaceContactListAdaptor::GetContactListAttributesContextPtr &context);
-    void requestSubscription(const Tp::UIntList &contacts, const QString &message, const Tp::Service::ConnectionInterfaceContactListAdaptor::RequestSubscriptionContextPtr &context);
-    //void authorizePublication(const Tp::UIntList &contacts, const Tp::Service::ConnectionInterfaceContactListAdaptor::AuthorizePublicationContextPtr &context);
-    //void removeContacts(const Tp::UIntList &contacts, const Tp::Service::ConnectionInterfaceContactListAdaptor::RemoveContactsContextPtr &context);
-    //void unsubscribe(const Tp::UIntList &contacts, const Tp::Service::ConnectionInterfaceContactListAdaptor::UnsubscribeContextPtr &context);
-    //void unpublish(const Tp::UIntList &contacts, const Tp::Service::ConnectionInterfaceContactListAdaptor::UnpublishContextPtr &context);
-    //void download(const Tp::Service::ConnectionInterfaceContactListAdaptor::DownloadContextPtr &context);
+    void getContactListAttributes(const QStringList &interfaces, bool hold,
+            const Tp::Service::ConnectionInterfaceContactListAdaptor::GetContactListAttributesContextPtr &context);
+    void requestSubscription(const Tp::UIntList &contacts, const QString &message,
+            const Tp::Service::ConnectionInterfaceContactListAdaptor::RequestSubscriptionContextPtr &context);
+    void authorizePublication(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceContactListAdaptor::AuthorizePublicationContextPtr &context);
+    void removeContacts(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceContactListAdaptor::RemoveContactsContextPtr &context);
+    void unsubscribe(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceContactListAdaptor::UnsubscribeContextPtr &context);
+    void unpublish(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceContactListAdaptor::UnpublishContextPtr &context);
+    void download(
+            const Tp::Service::ConnectionInterfaceContactListAdaptor::DownloadContextPtr &context);
+
 Q_SIGNALS:
     void contactListStateChanged(uint contactListState);
     void contactsChangedWithID(const Tp::ContactSubscriptionMap &changes, const Tp::HandleIdentifierMap &identifiers, const Tp::HandleIdentifierMap &removals);
-    void contactsChanged(const Tp::ContactSubscriptionMap &changes, const Tp::UIntList &removals);
 
-public:
+private:
     BaseConnectionContactListInterface *mInterface;
 };
 
