@@ -396,6 +396,59 @@ private:
     friend struct Private;
     Private *mPriv;
 };
+
+class TP_QT_EXPORT BaseConnectionAliasingInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionAliasingInterface)
+
+public:
+    static BaseConnectionAliasingInterfacePtr create()
+    {
+        return BaseConnectionAliasingInterfacePtr(new BaseConnectionAliasingInterface());
+    }
+    template<typename BaseConnectionAliasingInterfaceSubclass>
+    static SharedPtr<BaseConnectionAliasingInterfaceSubclass> create()
+    {
+        return SharedPtr<BaseConnectionAliasingInterfaceSubclass>(
+                new BaseConnectionAliasingInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionAliasingInterface();
+
+    QVariantMap immutableProperties() const;
+
+    typedef Callback1<Tp::ConnectionAliasFlags, DBusError*> GetAliasFlagsCallback;
+    void setGetAliasFlagsCallback(const GetAliasFlagsCallback &cb);
+    Tp::ConnectionAliasFlags getAliasFlags(DBusError *error);
+
+    typedef Callback2<QStringList, const Tp::UIntList &, DBusError*> RequestAliasesCallback;
+    void setRequestAliasesCallback(const RequestAliasesCallback &cb);
+    QStringList requestAliases(const Tp::UIntList &contacts, DBusError *error);
+
+    typedef Callback2<Tp::AliasMap, const Tp::UIntList &, DBusError*> GetAliasesCallback;
+    void setGetAliasesCallback(const GetAliasesCallback &cb);
+    Tp::AliasMap getAliases(const Tp::UIntList &contacts, DBusError *error);
+
+    typedef Callback2<void, const Tp::AliasMap &, DBusError*> SetAliasesCallback;
+    void setSetAliasesCallback(const SetAliasesCallback &cb);
+    void setAliases(const Tp::AliasMap &aliases, DBusError *error);
+
+    void aliasesChanged(const Tp::AliasPairList &aliases);
+
+protected:
+    BaseConnectionAliasingInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 }
 
 #endif

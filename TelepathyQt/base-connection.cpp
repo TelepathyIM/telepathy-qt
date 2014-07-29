@@ -1561,4 +1561,186 @@ void BaseConnectionAddressingInterface::Adaptee::getContactsByURI(const QStringL
     context->setFinished(addressingNormalizationMap, contactAttributesMap);
 }
 
+// Conn.I.Aliasing
+struct TP_QT_NO_EXPORT BaseConnectionAliasingInterface::Private {
+    Private(BaseConnectionAliasingInterface *parent)
+        : adaptee(new BaseConnectionAliasingInterface::Adaptee(parent))
+    {
+    }
+
+    GetAliasFlagsCallback getAliasFlagsCB;
+    RequestAliasesCallback requestAliasesCB;
+    GetAliasesCallback getAliasesCB;
+    SetAliasesCallback setAliasesCB;
+    BaseConnectionAliasingInterface::Adaptee *adaptee;
+};
+
+BaseConnectionAliasingInterface::Adaptee::Adaptee(BaseConnectionAliasingInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseConnectionAliasingInterface::Adaptee::~Adaptee()
+{
+}
+
+void BaseConnectionAliasingInterface::Adaptee::getAliasFlags(
+        const Tp::Service::ConnectionInterfaceAliasingAdaptor::GetAliasFlagsContextPtr &context)
+{
+    qDebug() << "BaseConnectionAliasingInterface::Adaptee::getAliasFlags";
+    DBusError error;
+    Tp::ConnectionAliasFlags aliasFlags = mInterface->getAliasFlags(&error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(aliasFlags);
+}
+
+void BaseConnectionAliasingInterface::Adaptee::requestAliases(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceAliasingAdaptor::RequestAliasesContextPtr &context)
+{
+    qDebug() << "BaseConnectionAliasingInterface::Adaptee::requestAliases";
+    DBusError error;
+    QStringList aliases = mInterface->requestAliases(contacts, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(aliases);
+}
+
+void BaseConnectionAliasingInterface::Adaptee::getAliases(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceAliasingAdaptor::GetAliasesContextPtr &context)
+{
+    qDebug() << "BaseConnectionAliasingInterface::Adaptee::getAliases";
+    DBusError error;
+    Tp::AliasMap aliases = mInterface->getAliases(contacts, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(aliases);
+}
+
+void BaseConnectionAliasingInterface::Adaptee::setAliases(const Tp::AliasMap &aliases,
+        const Tp::Service::ConnectionInterfaceAliasingAdaptor::SetAliasesContextPtr &context)
+{
+    qDebug() << "BaseConnectionAliasingInterface::Adaptee::setAliases";
+    DBusError error;
+    mInterface->setAliases(aliases, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+/**
+ * \class BaseConnectionAliasingInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
+ *
+ * \brief Base class for implementations of Connection.Interface.Aliasing
+ */
+
+/**
+ * Class constructor.
+ */
+BaseConnectionAliasingInterface::BaseConnectionAliasingInterface()
+    : AbstractConnectionInterface(TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING),
+      mPriv(new Private(this))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseConnectionAliasingInterface::~BaseConnectionAliasingInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseConnectionAliasingInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+void BaseConnectionAliasingInterface::createAdaptor()
+{
+    (void) new Service::ConnectionInterfaceAliasingAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseConnectionAliasingInterface::setGetAliasFlagsCallback(const BaseConnectionAliasingInterface::GetAliasFlagsCallback &cb)
+{
+    mPriv->getAliasFlagsCB = cb;
+}
+
+Tp::ConnectionAliasFlags BaseConnectionAliasingInterface::getAliasFlags(DBusError *error)
+{
+    if (!mPriv->getAliasFlagsCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return Tp::ConnectionAliasFlags();
+    }
+    return mPriv->getAliasFlagsCB(error);
+}
+
+void BaseConnectionAliasingInterface::setRequestAliasesCallback(const BaseConnectionAliasingInterface::RequestAliasesCallback &cb)
+{
+    mPriv->requestAliasesCB = cb;
+}
+
+QStringList BaseConnectionAliasingInterface::requestAliases(const Tp::UIntList &contacts, DBusError *error)
+{
+    if (!mPriv->requestAliasesCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return QStringList();
+    }
+    return mPriv->requestAliasesCB(contacts, error);
+}
+
+void BaseConnectionAliasingInterface::setGetAliasesCallback(const BaseConnectionAliasingInterface::GetAliasesCallback &cb)
+{
+    mPriv->getAliasesCB = cb;
+}
+
+Tp::AliasMap BaseConnectionAliasingInterface::getAliases(const Tp::UIntList &contacts, DBusError *error)
+{
+    if (!mPriv->getAliasesCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return Tp::AliasMap();
+    }
+    return mPriv->getAliasesCB(contacts, error);
+}
+
+void BaseConnectionAliasingInterface::setSetAliasesCallback(const BaseConnectionAliasingInterface::SetAliasesCallback &cb)
+{
+    mPriv->setAliasesCB = cb;
+}
+
+void BaseConnectionAliasingInterface::setAliases(const Tp::AliasMap &aliases, DBusError *error)
+{
+    if (!mPriv->setAliasesCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->setAliasesCB(aliases, error);
+}
+
+void BaseConnectionAliasingInterface::aliasesChanged(const Tp::AliasPairList &aliases)
+{
+    QMetaObject::invokeMethod(mPriv->adaptee, "aliasesChanged", Q_ARG(Tp::AliasPairList, aliases)); //Can simply use emit in Qt5
+}
+
 }

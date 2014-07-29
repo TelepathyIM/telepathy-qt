@@ -220,4 +220,29 @@ public:
     BaseConnectionAddressingInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseConnectionAliasingInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+
+public:
+    Adaptee(BaseConnectionAliasingInterface *interface);
+    ~Adaptee();
+
+private Q_SLOTS:
+    void getAliasFlags(
+            const Tp::Service::ConnectionInterfaceAliasingAdaptor::GetAliasFlagsContextPtr &context);
+    void requestAliases(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceAliasingAdaptor::RequestAliasesContextPtr &context);
+    void getAliases(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceAliasingAdaptor::GetAliasesContextPtr &context);
+    void setAliases(const Tp::AliasMap &aliases,
+            const Tp::Service::ConnectionInterfaceAliasingAdaptor::SetAliasesContextPtr &context);
+
+Q_SIGNALS:
+    void aliasesChanged(const Tp::AliasPairList &aliases);
+
+private:
+    BaseConnectionAliasingInterface *mInterface;
+};
+
 }
