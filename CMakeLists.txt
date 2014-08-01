@@ -210,7 +210,7 @@ endif()
 
 if(ENABLE_FARSTREAM)
     # Find tp-farstream
-    set(FARSTREAM_MIN_VERSION "0.1.0")
+    set(FARSTREAM_MIN_VERSION "0.2.0")
     find_package(Farstream)
     macro_log_feature(FARSTREAM_FOUND "Farstream"
                       "A Framework for dealing with audio/video conferencing protocols"
@@ -218,7 +218,7 @@ if(ENABLE_FARSTREAM)
                       "Needed, together with GStreamer and Telepathy-Farstream, to build telepathy-qt-farstream")
 
     # Find tp-farstream
-    set(TELEPATHY_FARSTREAM_MIN_VERSION "0.2.2")
+    set(TELEPATHY_FARSTREAM_MIN_VERSION "0.6.0")
     find_package(TelepathyFarstream)
     macro_log_feature(TELEPATHYFARSTREAM_FOUND "Telepathy-Farstream"
                       "A Framework for dealing with audio/video conferencing protocols"
