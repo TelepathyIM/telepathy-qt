@@ -252,16 +252,19 @@ public:
 
     QVariantMap immutableProperties() const;
 
+    Tp::SimpleStatusSpecMap statuses() const;
+    void setStatuses(const Tp::SimpleStatusSpecMap &statuses);
+
+    int maximumStatusMessageLength() const;
+    void setMaxmimumStatusMessageLength(uint maxmimumStatusMessageLength);
+
     typedef Callback3<uint, const QString&, const QString&, DBusError*> SetPresenceCallback;
     void setSetPresenceCallback(const SetPresenceCallback &cb);
 
     void setPresences(const Tp::SimpleContactPresences &presences);
-    void setStatuses(const SimpleStatusSpecMap &statuses);
-    void setMaxmimumStatusMessageLength(uint maxmimumStatusMessageLength);
+
 protected:
     BaseConnectionSimplePresenceInterface();
-    Tp::SimpleStatusSpecMap statuses() const;
-    int maximumStatusMessageLength() const;
 
 private:
     void createAdaptor();

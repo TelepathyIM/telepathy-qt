@@ -994,16 +994,25 @@ void BaseConnectionSimplePresenceInterface::setSetPresenceCallback(const SetPres
     mPriv->setPresenceCB = cb;
 }
 
+Tp::SimpleStatusSpecMap BaseConnectionSimplePresenceInterface::statuses() const
+{
+    return mPriv->statuses;
+}
+
 void BaseConnectionSimplePresenceInterface::setStatuses(const SimpleStatusSpecMap &statuses)
 {
     mPriv->statuses = statuses;
+}
+
+int BaseConnectionSimplePresenceInterface::maximumStatusMessageLength() const
+{
+    return mPriv->maxmimumStatusMessageLength;
 }
 
 void BaseConnectionSimplePresenceInterface::setMaxmimumStatusMessageLength(uint maxmimumStatusMessageLength)
 {
     mPriv->maxmimumStatusMessageLength = maxmimumStatusMessageLength;
 }
-
 
 Tp::SimpleStatusSpecMap BaseConnectionSimplePresenceInterface::Adaptee::statuses() const
 {
