@@ -54,6 +54,7 @@ class BaseChannelMessagesInterface;
 class BaseChannelServerAuthenticationType;
 class BaseChannelSASLAuthenticationInterface;
 class BaseChannelCaptchaAuthenticationInterface;
+class BaseChannelSecurableInterface;
 class BaseChannelGroupInterface;
 class DBusService;
 
@@ -81,6 +82,7 @@ typedef SharedPtr<BaseChannelMessagesInterface> BaseChannelMessagesInterfacePtr;
 typedef SharedPtr<BaseChannelServerAuthenticationType> BaseChannelServerAuthenticationTypePtr;
 typedef SharedPtr<BaseChannelSASLAuthenticationInterface> BaseChannelSASLAuthenticationInterfacePtr;
 typedef SharedPtr<BaseChannelCaptchaAuthenticationInterface> BaseChannelCaptchaAuthenticationInterfacePtr;
+typedef SharedPtr<BaseChannelSecurableInterface> BaseChannelSecurableInterfacePtr;
 typedef SharedPtr<BaseChannelGroupInterface> BaseChannelGroupInterfacePtr;
 typedef SharedPtr<DBusService> DBusServicePtr;
 

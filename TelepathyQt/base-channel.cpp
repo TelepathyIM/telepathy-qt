@@ -1357,6 +1357,105 @@ void BaseChannelSASLAuthenticationInterface::newChallenge(const QByteArray &chal
     QMetaObject::invokeMethod(mPriv->adaptee, "newChallenge", Q_ARG(QByteArray, challengeData)); //Can simply use emit in Qt5
 }
 
+// Chan.I.Securable
+struct TP_QT_NO_EXPORT BaseChannelSecurableInterface::Private {
+    Private(BaseChannelSecurableInterface *parent)
+        : encrypted(false),
+          verified(false),
+          adaptee(new BaseChannelSecurableInterface::Adaptee(parent))
+    {
+    }
+
+    bool encrypted;
+    bool verified;
+    BaseChannelSecurableInterface::Adaptee *adaptee;
+};
+
+BaseChannelSecurableInterface::Adaptee::Adaptee(BaseChannelSecurableInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelSecurableInterface::Adaptee::~Adaptee()
+{
+}
+
+bool BaseChannelSecurableInterface::Adaptee::encrypted() const
+{
+    return mInterface->encrypted();
+}
+
+bool BaseChannelSecurableInterface::Adaptee::verified() const
+{
+    return mInterface->verified();
+}
+
+/**
+ * \class BaseChannelSecurableInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.Securable
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelSecurableInterface::BaseChannelSecurableInterface()
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_INTERFACE_SECURABLE),
+      mPriv(new Private(this))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelSecurableInterface::~BaseChannelSecurableInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelSecurableInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+bool BaseChannelSecurableInterface::encrypted() const
+{
+    return mPriv->encrypted;
+}
+
+void BaseChannelSecurableInterface::setEncrypted(bool encrypted)
+{
+    mPriv->encrypted = encrypted;
+}
+
+bool BaseChannelSecurableInterface::verified() const
+{
+    return mPriv->verified;
+}
+
+void BaseChannelSecurableInterface::setVerified(bool verified)
+{
+    mPriv->verified = verified;
+}
+
+void BaseChannelSecurableInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceSecurableAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
 //Chan.I.Group
 BaseChannelGroupInterface::Adaptee::Adaptee(BaseChannelGroupInterface *interface)
     : QObject(interface),

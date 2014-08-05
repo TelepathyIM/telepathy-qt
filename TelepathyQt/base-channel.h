@@ -390,6 +390,46 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelSecurableInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelSecurableInterface)
+
+public:
+    static BaseChannelSecurableInterfacePtr create()
+    {
+        return BaseChannelSecurableInterfacePtr(new BaseChannelSecurableInterface());
+    }
+    template<typename BaseChannelSecurableInterfaceSubclass>
+    static SharedPtr<BaseChannelSecurableInterfaceSubclass> create()
+    {
+        return SharedPtr<BaseChannelSecurableInterfaceSubclass>(
+                new BaseChannelSecurableInterfaceSubclass());
+    }
+
+    virtual ~BaseChannelSecurableInterface();
+
+    QVariantMap immutableProperties() const;
+
+    bool encrypted() const;
+    void setEncrypted(bool encrypted);
+
+    bool verified() const;
+    void setVerified(bool verified);
+
+protected:
+    BaseChannelSecurableInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 class TP_QT_EXPORT BaseChannelGroupInterface : public AbstractChannelInterface
 {
     Q_OBJECT

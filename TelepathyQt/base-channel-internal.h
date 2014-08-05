@@ -240,6 +240,23 @@ private:
     BaseChannelSASLAuthenticationInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelSecurableInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool encrypted READ encrypted)
+    Q_PROPERTY(bool verified READ verified)
+
+public:
+    Adaptee(BaseChannelSecurableInterface *interface);
+    ~Adaptee();
+
+    bool encrypted() const;
+    bool verified() const;
+
+private:
+    BaseChannelSecurableInterface *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseChannelGroupInterface::Adaptee : public QObject
 {
     Q_OBJECT
