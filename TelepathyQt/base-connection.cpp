@@ -203,6 +203,10 @@ BaseConnection::BaseConnection(const QDBusConnection &dbusConnection,
  */
 BaseConnection::~BaseConnection()
 {
+    foreach (BaseChannelPtr channel, mPriv->channels) {
+        channel->close();
+    }
+
     delete mPriv;
 }
 
