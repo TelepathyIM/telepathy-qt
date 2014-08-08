@@ -89,13 +89,7 @@ QStringList BaseChannel::Adaptee::interfaces() const
 
 void BaseChannel::Adaptee::close(const Tp::Service::ChannelAdaptor::CloseContextPtr &context)
 {
-    //emit after return
-    QMetaObject::invokeMethod(this, "closed",
-                              Qt::QueuedConnection);
-    //emit after return
-    QMetaObject::invokeMethod(mChannel, "closed",
-                              Qt::QueuedConnection);
-
+    mChannel->close();
     context->setFinished();
 }
 
@@ -226,6 +220,13 @@ void BaseChannel::setTargetID(const QString &targetID)
 void BaseChannel::setRequested(bool requested)
 {
     mPriv->requested = requested;
+}
+
+void BaseChannel::close()
+{
+    // Method is used in destructor, so (to be sure that adaptee is exists) we should use DirectConnection
+    QMetaObject::invokeMethod(mPriv->adaptee, "closed", Qt::DirectConnection);
+    emit closed();
 }
 
 /**

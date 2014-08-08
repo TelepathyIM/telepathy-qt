@@ -73,6 +73,8 @@ public:
     void setTargetID(const QString &targetID);
     void setRequested(bool requested);
 
+    void close();
+
     bool plugInterface(const AbstractChannelInterfacePtr &interface);
 
 Q_SIGNALS:
