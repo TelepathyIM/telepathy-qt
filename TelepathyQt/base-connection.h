@@ -178,8 +178,10 @@ public:
                        QDBusObjectPath &channel, QVariantMap &details, DBusError* error);
     void createChannel(const QVariantMap &request, QDBusObjectPath &channel,
                        QVariantMap &details, DBusError* error);
+
 public Q_SLOTS:
     void newChannels(const Tp::ChannelDetailsList &channels);
+    void channelClosed(const QDBusObjectPath &removed);
 
 protected:
     BaseConnectionRequestsInterface(BaseConnection* connection);

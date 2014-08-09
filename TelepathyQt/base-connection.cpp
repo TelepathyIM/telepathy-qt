@@ -457,6 +457,14 @@ void BaseConnection::removeChannel()
                                  qobject_cast<BaseChannel*>(sender()));
     Q_ASSERT(channel);
     Q_ASSERT(mPriv->channels.contains(channel));
+
+    BaseConnectionRequestsInterfacePtr reqIface =
+        BaseConnectionRequestsInterfacePtr::dynamicCast(interface(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS));
+
+    if (!reqIface.isNull()) {
+        reqIface->channelClosed(QDBusObjectPath(channel->objectPath()));
+    }
+
     mPriv->channels.remove(channel);
 }
 
@@ -736,6 +744,11 @@ Tp::ChannelDetailsList BaseConnectionRequestsInterface::Adaptee::channels() cons
 void BaseConnectionRequestsInterface::newChannels(const Tp::ChannelDetailsList &channels)
 {
     QMetaObject::invokeMethod(mPriv->adaptee,"newChannels", Q_ARG(Tp::ChannelDetailsList,channels)); //Can replace by a direct call in Qt5
+}
+
+void BaseConnectionRequestsInterface::channelClosed(const QDBusObjectPath &removed)
+{
+    QMetaObject::invokeMethod(mPriv->adaptee,"channelClosed", Q_ARG(QDBusObjectPath, removed)); //Can replace by a direct call in Qt5
 }
 
 void BaseConnectionRequestsInterface::ensureChannel(const QVariantMap &request, bool &yours,
