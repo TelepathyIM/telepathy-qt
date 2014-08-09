@@ -60,7 +60,7 @@ private Q_SLOTS:
     }
 
     void getProtocol(const Tp::Service::ConnectionAdaptor::GetProtocolContextPtr &context) {
-        context->setFinished(QLatin1String("whosthere"));
+        context->setFinished(mConnection->protocolName());
     }
 
     void holdHandles(uint handleType, const Tp::UIntList &handles, const Tp::Service::ConnectionAdaptor::HoldHandlesContextPtr &context) {
