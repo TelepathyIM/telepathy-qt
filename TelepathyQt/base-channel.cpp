@@ -1457,6 +1457,120 @@ void BaseChannelSecurableInterface::createAdaptor()
             mPriv->adaptee, dbusObject());
 }
 
+// Chan.I.ChatState
+struct TP_QT_NO_EXPORT BaseChannelChatStateInterface::Private {
+    Private(BaseChannelChatStateInterface *parent)
+        : adaptee(new BaseChannelChatStateInterface::Adaptee(parent))
+    {
+    }
+
+    Tp::ChatStateMap chatStates;
+    SetChatStateCallback setChatStateCB;
+    BaseChannelChatStateInterface::Adaptee *adaptee;
+};
+
+BaseChannelChatStateInterface::Adaptee::Adaptee(BaseChannelChatStateInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelChatStateInterface::Adaptee::~Adaptee()
+{
+}
+
+Tp::ChatStateMap BaseChannelChatStateInterface::Adaptee::chatStates() const
+{
+    return mInterface->chatStates();
+}
+
+void BaseChannelChatStateInterface::Adaptee::setChatState(uint state,
+        const Tp::Service::ChannelInterfaceChatStateAdaptor::SetChatStateContextPtr &context)
+{
+    qDebug() << "BaseChannelChatStateInterface::Adaptee::setChatState";
+    DBusError error;
+    mInterface->setChatState(state, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+/**
+ * \class BaseChannelChatStateInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.Chat.State
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelChatStateInterface::BaseChannelChatStateInterface()
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CHAT_STATE),
+      mPriv(new Private(this))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelChatStateInterface::~BaseChannelChatStateInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelChatStateInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+Tp::ChatStateMap BaseChannelChatStateInterface::chatStates() const
+{
+    return mPriv->chatStates;
+}
+
+void BaseChannelChatStateInterface::setChatStates(const Tp::ChatStateMap &chatStates)
+{
+    mPriv->chatStates = chatStates;
+}
+
+void BaseChannelChatStateInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceChatStateAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseChannelChatStateInterface::setSetChatStateCallback(const BaseChannelChatStateInterface::SetChatStateCallback &cb)
+{
+    mPriv->setChatStateCB = cb;
+}
+
+void BaseChannelChatStateInterface::setChatState(uint state, DBusError *error)
+{
+    if (!mPriv->setChatStateCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->setChatStateCB(state, error);
+}
+
+void BaseChannelChatStateInterface::chatStateChanged(uint contact, uint state)
+{
+    QMetaObject::invokeMethod(mPriv->adaptee, "chatStateChanged", Q_ARG(uint, contact), Q_ARG(uint, state)); //Can simply use emit in Qt5
+}
+
 //Chan.I.Group
 BaseChannelGroupInterface::Adaptee::Adaptee(BaseChannelGroupInterface *interface)
     : QObject(interface),

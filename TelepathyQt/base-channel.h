@@ -432,6 +432,49 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelChatStateInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelChatStateInterface)
+
+public:
+    static BaseChannelChatStateInterfacePtr create()
+    {
+        return BaseChannelChatStateInterfacePtr(new BaseChannelChatStateInterface());
+    }
+    template<typename BaseChannelChatStateInterfaceSubclass>
+    static SharedPtr<BaseChannelChatStateInterfaceSubclass> create()
+    {
+        return SharedPtr<BaseChannelChatStateInterfaceSubclass>(
+                new BaseChannelChatStateInterfaceSubclass());
+    }
+
+    virtual ~BaseChannelChatStateInterface();
+
+    QVariantMap immutableProperties() const;
+
+    Tp::ChatStateMap chatStates() const;
+    void setChatStates(const Tp::ChatStateMap &chatStates);
+
+    typedef Callback2<void, uint, DBusError*> SetChatStateCallback;
+    void setSetChatStateCallback(const SetChatStateCallback &cb);
+    void setChatState(uint state, DBusError *error);
+
+    void chatStateChanged(uint contact, uint state);
+
+protected:
+    BaseChannelChatStateInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 class TP_QT_EXPORT BaseChannelGroupInterface : public AbstractChannelInterface
 {
     Q_OBJECT

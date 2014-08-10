@@ -257,6 +257,28 @@ private:
     BaseChannelSecurableInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelChatStateInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(Tp::ChatStateMap chatStates READ chatStates)
+
+public:
+    Adaptee(BaseChannelChatStateInterface *interface);
+    ~Adaptee();
+
+    Tp::ChatStateMap chatStates() const;
+
+private Q_SLOTS:
+    void setChatState(uint state,
+            const Tp::Service::ChannelInterfaceChatStateAdaptor::SetChatStateContextPtr &context);
+
+signals:
+    void chatStateChanged(uint contact, uint state);
+
+private:
+    BaseChannelChatStateInterface *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseChannelGroupInterface::Adaptee : public QObject
 {
     Q_OBJECT
