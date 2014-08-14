@@ -689,12 +689,19 @@ QString BaseChannelMessagesInterface::sendMessage(const Tp::MessagePartList &mes
         error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
         return QString();
     }
-    QString token = mPriv->sendMessageCB(message, flags, error);
+    const QString token = mPriv->sendMessageCB(message, flags, error);
+
+    Tp::MessagePartList messageWithToken = message;
+
+    MessagePart header = messageWithToken.front();
+    header[QLatin1String("message-token")] = QDBusVariant(token);
+
+    messageWithToken.replace(0, header);
 
     //emit after return
     QMetaObject::invokeMethod(mPriv->adaptee, "messageSent",
                               Qt::QueuedConnection,
-                              Q_ARG(Tp::MessagePartList, message),
+                              Q_ARG(Tp::MessagePartList, messageWithToken),
                               Q_ARG(uint, flags),
                               Q_ARG(QString, token));
 
@@ -702,7 +709,6 @@ QString BaseChannelMessagesInterface::sendMessage(const Tp::MessagePartList &mes
         warning() << "Sending empty message";
         return token;
     }
-    const MessagePart &header = message.front();
 
     uint timestamp = 0;
     if (header.count(QLatin1String("message-received")))
