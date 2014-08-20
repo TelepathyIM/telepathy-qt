@@ -32,6 +32,8 @@
 #include <TelepathyQt/DBusObject>
 #include <TelepathyQt/Utils>
 #include <TelepathyQt/AbstractProtocolInterface>
+
+#include <QDateTime>
 #include <QString>
 #include <QVariantMap>
 
@@ -691,17 +693,25 @@ QString BaseChannelMessagesInterface::sendMessage(const Tp::MessagePartList &mes
     }
     const QString token = mPriv->sendMessageCB(message, flags, error);
 
-    Tp::MessagePartList messageWithToken = message;
+    Tp::MessagePartList fixedMessage = message;
 
-    MessagePart header = messageWithToken.front();
+    MessagePart header = fixedMessage.front();
     header[QLatin1String("message-token")] = QDBusVariant(token);
 
-    messageWithToken.replace(0, header);
+    uint timestamp = 0;
+    if (header.count(QLatin1String("message-sent"))) {
+        timestamp = header[QLatin1String("message-sent")].variant().toUInt();
+    } else {
+        timestamp = QDateTime::currentMSecsSinceEpoch() / 1000;
+        header[QLatin1String("message-sent")] = QDBusVariant(timestamp);
+    }
+
+    fixedMessage.replace(0, header);
 
     //emit after return
     QMetaObject::invokeMethod(mPriv->adaptee, "messageSent",
                               Qt::QueuedConnection,
-                              Q_ARG(Tp::MessagePartList, messageWithToken),
+                              Q_ARG(Tp::MessagePartList, fixedMessage),
                               Q_ARG(uint, flags),
                               Q_ARG(QString, token));
 
@@ -710,9 +720,6 @@ QString BaseChannelMessagesInterface::sendMessage(const Tp::MessagePartList &mes
         return token;
     }
 
-    uint timestamp = 0;
-    if (header.count(QLatin1String("message-received")))
-        timestamp = header[QLatin1String("message-received")].variant().toUInt();
 
     uint type = ChannelTextMessageTypeNormal;
     if (header.count(QLatin1String("message-type")))
