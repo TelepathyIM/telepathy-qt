@@ -49,12 +49,23 @@ struct TP_QT_NO_EXPORT BaseChannel::Private {
           targetHandle(targetHandle),
           targetHandleType(targetHandleType),
           adaptee(new BaseChannel::Adaptee(dbusConnection, parent)) {
+        static uint s_channelIncrementalId = 0;
+
+        QString baseName;
+        static const QString s_channelTypePrefix = TP_QT_IFACE_CHANNEL + QLatin1String(".Type.");
+        if (channelType.startsWith(s_channelTypePrefix)) {
+            baseName = channelType.mid(s_channelTypePrefix.length());
+        }
+
+        uniqueName = baseName + QLatin1String("Channel") + QString::number(s_channelIncrementalId);
+        ++s_channelIncrementalId;
     }
 
     BaseChannel *parent;
     BaseConnection* connection;
     QString channelType;
     QHash<QString, AbstractChannelInterfacePtr> interfaces;
+    QString uniqueName;
     uint targetHandle;
     QString targetID;
     uint targetHandleType;
@@ -129,7 +140,7 @@ BaseChannel::~BaseChannel()
  */
 QString BaseChannel::uniqueName() const
 {
-    return QString(QLatin1String("_%1")).arg((quintptr) this, 0, 16);
+    return mPriv->uniqueName;
 }
 
 bool BaseChannel::registerObject(DBusError *error)
