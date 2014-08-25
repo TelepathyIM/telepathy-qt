@@ -75,7 +75,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
         non-virtual-dtor)
     set(undesired
         missing-field-initializers
-        unused-parameter)
+        unused-parameter
+        unused-local-typedefs)
     compiler_warnings(CMAKE_CXX_FLAGS_WARNINGS cxx ${NOT_RELEASE} "${desired}" "${undesired}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_WARNINGS}")
 
@@ -93,7 +94,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
         init-self)
     set(undesired_c
         missing-field-initializers
-        unused-parameter)
+        unused-parameter
+        unused-local-typedefs)
     compiler_warnings(CMAKE_C_FLAGS_WARNINGS c ${NOT_RELEASE} "${desired_c}" "${undesired_c}")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_WARNINGS}")
 
