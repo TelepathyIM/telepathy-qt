@@ -64,7 +64,7 @@ struct TP_QT_NO_EXPORT PendingChannelRequest::Private
  * the reply to an asynchronous ChannelRequest request.
  *
  * Instances of this class cannot be constructed directly; the only way to get
- * one is trough Account.
+ * one is through Account.
  *
  * See \ref async_model
  */
