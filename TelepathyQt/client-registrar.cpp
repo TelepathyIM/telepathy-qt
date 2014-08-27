@@ -193,6 +193,12 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
     ObjectImmutablePropertiesMap reqPropsMap = qdbus_cast<ObjectImmutablePropertiesMap>(
             observerInfo.value(QLatin1String("request-properties")));
     foreach (const QDBusObjectPath &reqPath, requestsSatisfied) {
+        //don't load the channelRequest objects in requestsSatisfied if the properties are not supplied with the handler info
+        //as the channelRequest is probably invalid
+        //this works around https://bugs.freedesktop.org/show_bug.cgi?id=77986
+        if (reqPropsMap.value(reqPath).isEmpty()) {
+            continue;
+        }
         ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
                 reqPath.path(), reqPropsMap.value(reqPath));
         invocation->chanReqs.append(channelRequest);
@@ -435,6 +441,12 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
     ObjectImmutablePropertiesMap reqPropsMap = qdbus_cast<ObjectImmutablePropertiesMap>(
     handlerInfo.value(QLatin1String("request-properties")));
     foreach (const QDBusObjectPath &reqPath, requestsSatisfied) {
+        //don't load the channelRequest objects in requestsSatisfied if the properties are not supplied with the handler info
+        //as the channelRequest is probably invalid
+        //this works around https://bugs.freedesktop.org/show_bug.cgi?id=77986
+        if (reqPropsMap.value(reqPath).isEmpty()) {
+            continue;
+        }
         ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
                 reqPath.path(), reqPropsMap.value(reqPath));
         invocation->chanReqs.append(channelRequest);
