@@ -351,11 +351,25 @@ private:
                     channelHandlerPath, this);
 
         ChannelDetails channelDetails = { QDBusObjectPath(mChanPath), mChanProps };
+
+
+        ObjectImmutablePropertiesMap channelRequestProperties;
+        QVariantMap currentChannelRequestProperties;
+        currentChannelRequestProperties.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Account"), QVariant::fromValue(mCurRequest->Account()));
+        currentChannelRequestProperties.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".UserActionTime"), mCurRequest->UserActionTime());
+        currentChannelRequestProperties.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".PreferredHandler"), mCurRequest->PreferredHandler());
+        currentChannelRequestProperties.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Requests"), QVariant::fromValue(mCurRequest->Requests()));
+        currentChannelRequestProperties.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Interfaces"), QVariant::fromValue(mCurRequest->Interfaces()));
+        channelRequestProperties[QDBusObjectPath(mCurRequestPath)] = currentChannelRequestProperties;
+
+        QVariantMap handlerInfo;
+        handlerInfo.insert(QLatin1String("request-properties"), QVariant::fromValue(channelRequestProperties));
+
         clientHandlerInterface->HandleChannels(mCurRequest->Account(),
                 QDBusObjectPath(mConnPath),
                 ChannelDetailsList() << channelDetails,
                 ObjectPathList() << QDBusObjectPath(mCurRequestPath),
-                userActionTime, QVariantMap());
+                userActionTime, handlerInfo);
     }
 
     QDBusConnection mBus;
