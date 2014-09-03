@@ -47,7 +47,6 @@ struct TP_QT_NO_EXPORT BaseConnection::Private {
           protocolName(protocolName),
           parameters(parameters),
           status(Tp::ConnectionStatusDisconnected),
-          requestsIface(Tp::BaseConnectionRequestsInterface::create(connection)),
           selfHandle(0),
           adaptee(new BaseConnection::Adaptee(dbusConnection, parent)) {
     }
@@ -58,9 +57,6 @@ struct TP_QT_NO_EXPORT BaseConnection::Private {
     QVariantMap parameters;
     uint status;
     QHash<QString, AbstractConnectionInterfacePtr> interfaces;
-
-    BaseConnectionRequestsInterfacePtr requestsIface;
-
     QSet<BaseChannelPtr> channels;
     CreateChannelCallback createChannelCB;
     RequestHandlesCallback requestHandlesCB;
@@ -200,7 +196,6 @@ BaseConnection::BaseConnection(const QDBusConnection &dbusConnection,
     : DBusService(dbusConnection),
       mPriv(new Private(this, dbusConnection, cmName, protocolName, parameters))
 {
-    plugInterface(mPriv->requestsIface);
 }
 
 /**
@@ -342,10 +337,15 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QString &channelType,
 
     mPriv->channels.insert(channel);
 
-    //emit after return
-    QMetaObject::invokeMethod(mPriv->requestsIface.data(), "newChannels",
-                              Qt::QueuedConnection,
-                              Q_ARG(Tp::ChannelDetailsList, ChannelDetailsList() << channel->details()));
+    BaseConnectionRequestsInterfacePtr reqIface =
+        BaseConnectionRequestsInterfacePtr::dynamicCast(interface(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS));
+
+    if (!reqIface.isNull())
+        //emit after return
+        QMetaObject::invokeMethod(reqIface.data(), "newChannels",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(Tp::ChannelDetailsList, ChannelDetailsList() << channel->details()));
+
 
     //emit after return
     QMetaObject::invokeMethod(mPriv->adaptee, "newChannel",
@@ -375,21 +375,6 @@ UIntList BaseConnection::requestHandles(uint handleType, const QStringList &iden
         return UIntList();
     }
     return mPriv->requestHandlesCB(handleType, identifiers, error);
-}
-
-RequestableChannelClassList BaseConnection::requestableChannelClasses() const
-{
-    return mPriv->requestsIface->requestableChannelClasses;
-}
-
-void BaseConnection::setRequestableChannelClasses(const RequestableChannelClassList &requestableChannelClasses)
-{
-    if (mPriv->status == ConnectionStatusConnected) {
-        warning() << "BaseConnection::setRequestableChannelClasses() is called in connected state. Ignored.";
-        return;
-    }
-
-    mPriv->requestsIface->requestableChannelClasses = requestableChannelClasses;
 }
 
 Tp::ChannelInfoList BaseConnection::channelsInfo()
@@ -442,10 +427,15 @@ void BaseConnection::addChannel(BaseChannelPtr channel)
 
     mPriv->channels.insert(channel);
 
-    //emit after return
-    QMetaObject::invokeMethod(mPriv->requestsIface.data(), "newChannels",
-                              Qt::QueuedConnection,
-                              Q_ARG(Tp::ChannelDetailsList, ChannelDetailsList() << channel->details()));
+    BaseConnectionRequestsInterfacePtr reqIface =
+        BaseConnectionRequestsInterfacePtr::dynamicCast(interface(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS));
+
+    if (!reqIface.isNull()) {
+        //emit after return
+        QMetaObject::invokeMethod(reqIface.data(), "newChannels",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(Tp::ChannelDetailsList, ChannelDetailsList() << channel->details()));
+    }
 
     //emit after return
     QMetaObject::invokeMethod(mPriv->adaptee, "newChannel",
@@ -468,7 +458,13 @@ void BaseConnection::removeChannel()
     Q_ASSERT(channel);
     Q_ASSERT(mPriv->channels.contains(channel));
 
-    mPriv->requestsIface->channelClosed(QDBusObjectPath(channel->objectPath()));
+    BaseConnectionRequestsInterfacePtr reqIface =
+        BaseConnectionRequestsInterfacePtr::dynamicCast(interface(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS));
+
+    if (!reqIface.isNull()) {
+        reqIface->channelClosed(QDBusObjectPath(channel->objectPath()));
+    }
+
     mPriv->channels.remove(channel);
 }
 

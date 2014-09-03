@@ -89,9 +89,6 @@ public:
     void setRequestHandlesCallback(const RequestHandlesCallback &cb);
     UIntList requestHandles(uint handleType, const QStringList &identifiers, DBusError* error);
 
-    Tp::RequestableChannelClassList requestableChannelClasses() const;
-    void setRequestableChannelClasses(const Tp::RequestableChannelClassList &requestableChannelClasses);
-
     //typedef Callback3<uint, const QString&, const QString&, DBusError*> SetPresenceCallback;
     //void setSetPresenceCallback(const SetPresenceCallback &cb);
 
