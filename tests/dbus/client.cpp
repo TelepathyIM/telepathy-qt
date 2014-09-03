@@ -387,6 +387,7 @@ private:
     ClientRegistrarPtr mClientRegistrar;
     QString mChannelDispatcherBusName;
     QString mChannelRequestPath;
+    QVariantMap mHandlerInfo;
     ChannelDispatchOperationAdaptor *mCDO;
     QString mCDOPath;
     AbstractClientHandler::Capabilities mClientCapabilities;
@@ -480,7 +481,7 @@ void TestClient::initTestCase()
     QObject *request = new QObject(this);
 
     mUserActionTime = QDateTime::currentDateTime().toTime_t();
-    new ChannelRequestAdaptor(QDBusObjectPath(mAccount->objectPath()),
+    ChannelRequestAdaptor *channelRequest  = new ChannelRequestAdaptor(QDBusObjectPath(mAccount->objectPath()),
             mUserActionTime,
             QString(),
             QualifiedPropertyValueMapList(),
@@ -488,6 +489,18 @@ void TestClient::initTestCase()
             request);
     QVERIFY(bus.registerService(mChannelDispatcherBusName));
     QVERIFY(bus.registerObject(mChannelRequestPath, request));
+
+    ObjectImmutablePropertiesMap channelRequestProperties;
+    QVariantMap currentChannelRequestProperties;
+
+    currentChannelRequestProperties.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Account"), QVariant::fromValue(channelRequest->Account()));
+    currentChannelRequestProperties.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".UserActionTime"), channelRequest->UserActionTime());
+    currentChannelRequestProperties.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".PreferredHandler"), channelRequest->PreferredHandler());
+    currentChannelRequestProperties.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Requests"), QVariant::fromValue(channelRequest->Requests()));
+    currentChannelRequestProperties.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Interfaces"), QVariant::fromValue(channelRequest->Interfaces()));
+    channelRequestProperties[QDBusObjectPath(mChannelRequestPath)] = currentChannelRequestProperties;
+
+    mHandlerInfo.insert(QLatin1String("request-properties"), QVariant::fromValue(channelRequestProperties));
 
     // Fake ChannelDispatchOperation
 
@@ -763,12 +776,13 @@ void TestClient::testHandleChannels()
     ChannelDetailsList channelDetailsList;
     ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
     channelDetailsList.append(channelDetails);
+
     handler1Iface->HandleChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
             channelDetailsList,
             ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
             mUserActionTime,
-            QVariantMap());
+            mHandlerInfo);
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client1->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
@@ -796,7 +810,7 @@ void TestClient::testHandleChannels()
             channelDetailsList,
             ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
             mUserActionTime,
-            QVariantMap());
+            mHandlerInfo);
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client2->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
