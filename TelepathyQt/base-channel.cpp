@@ -707,7 +707,6 @@ QString BaseChannelMessagesInterface::sendMessage(const Tp::MessagePartList &mes
     Tp::MessagePartList fixedMessage = message;
 
     MessagePart header = fixedMessage.front();
-    header[QLatin1String("message-token")] = QDBusVariant(token);
 
     uint timestamp = 0;
     if (header.count(QLatin1String("message-sent"))) {
@@ -730,7 +729,6 @@ QString BaseChannelMessagesInterface::sendMessage(const Tp::MessagePartList &mes
         warning() << "Sending empty message";
         return token;
     }
-
 
     uint type = ChannelTextMessageTypeNormal;
     if (header.count(QLatin1String("message-type")))
