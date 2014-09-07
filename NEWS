@@ -1,7 +1,17 @@
 telepathy-qt 0.9.5 ()
 =================================
 
-The "..." release.
+The "Return of the Akademy Release" release.
+
+Enhancements:
+ * Added more service side bindings
+ * Service bindings now enabled by default
+ * Bump Farstream version
+ * Allow subclass of Tp::ReceivedMessage
+
+Fixes:
+ * fd.o #77986: Workaround invalid channelRequests when delegating
+
 
 telepathy-qt 0.9.4 (2014-06-14)
 =================================
