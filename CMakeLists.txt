@@ -40,8 +40,8 @@ endif(POLICY CMP0011)
 #   set nano_version to 1
 set(TP_QT_MAJOR_VERSION 0)
 set(TP_QT_MINOR_VERSION 9)
-set(TP_QT_MICRO_VERSION 4)
-set(TP_QT_NANO_VERSION  1)
+set(TP_QT_MICRO_VERSION 5)
+set(TP_QT_NANO_VERSION  0)
 
 set(PACKAGE_NAME telepathy-qt)
 
@@ -119,10 +119,6 @@ option(ENABLE_EXAMPLES "Enable compilation of examples for Telepathy-Qt" TRUE)
 option(ENABLE_FARSTREAM "Enable compilation of Farstream bindings" TRUE)
 # Add an option for building tests
 option(ENABLE_TESTS "Enable compilation of automated tests" TRUE)
-
-if (ENABLE_SERVICE_SUPPORT)
-    message(STATUS "You have enabled experimental service support for Telepathy-Qt. Be aware there are no guarantees of API stability yet for service-side classes.")
-endif (ENABLE_SERVICE_SUPPORT)
 
 # The doxygen macro requires Qt to have been looked up to enable crosslinking
 include(Doxygen)
