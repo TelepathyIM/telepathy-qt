@@ -39,7 +39,7 @@ class QString;
 namespace Tp
 {
 
-class BaseChannel : public DBusService
+class TP_QT_EXPORT BaseChannel : public DBusService
 {
     Q_OBJECT
     Q_DISABLE_COPY(BaseChannel)
