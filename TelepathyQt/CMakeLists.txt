@@ -773,6 +773,7 @@ target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTXML_LIBRARY}
     ${TP_QT_LIBRARY_LINKER_FLAGS})
+target_include_directories(telepathy-qt${QT_VERSION_MAJOR} PUBLIC "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/>")
 
 # Link - Library used by tests to test some unexported functionality
 target_link_libraries(telepathy-qt-test-backdoors
