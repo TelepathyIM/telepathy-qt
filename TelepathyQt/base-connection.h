@@ -27,6 +27,7 @@
 #error IN_TP_QT_HEADER
 #endif
 
+#include <TelepathyQt/AvatarSpec>
 #include <TelepathyQt/DBusService>
 #include <TelepathyQt/Global>
 #include <TelepathyQt/Types>
@@ -499,6 +500,62 @@ public:
 
 protected:
     BaseConnectionAliasingInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseConnectionAvatarsInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionAvatarsInterface)
+
+public:
+    static BaseConnectionAvatarsInterfacePtr create()
+    {
+        return BaseConnectionAvatarsInterfacePtr(new BaseConnectionAvatarsInterface());
+    }
+    template<typename BaseConnectionAvatarsInterfaceSubclass>
+    static SharedPtr<BaseConnectionAvatarsInterfaceSubclass> create()
+    {
+        return SharedPtr<BaseConnectionAvatarsInterfaceSubclass>(
+                new BaseConnectionAvatarsInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionAvatarsInterface();
+
+    QVariantMap immutableProperties() const;
+
+    AvatarSpec avatarDetails() const;
+    void setAvatarDetails(const AvatarSpec &spec);
+
+    typedef Callback2<Tp::AvatarTokenMap, const Tp::UIntList &, DBusError*> GetKnownAvatarTokensCallback;
+    void setGetKnownAvatarTokensCallback(const GetKnownAvatarTokensCallback &cb);
+    Tp::AvatarTokenMap getKnownAvatarTokens(const Tp::UIntList &contacts, DBusError *error);
+
+    typedef Callback2<void, const Tp::UIntList &, DBusError*> RequestAvatarsCallback;
+    void setRequestAvatarsCallback(const RequestAvatarsCallback &cb);
+    void requestAvatars(const Tp::UIntList &contacts, DBusError *error);
+
+    typedef Callback3<QString, const QByteArray &, const QString &, DBusError*> SetAvatarCallback;
+    void setSetAvatarCallback(const SetAvatarCallback &cb);
+    QString setAvatar(const QByteArray &avatar, const QString &mimeType, DBusError *error);
+
+    typedef Callback1<void, DBusError*> ClearAvatarCallback;
+    void setClearAvatarCallback(const ClearAvatarCallback &cb);
+    void clearAvatar(DBusError *error);
+
+    void avatarUpdated(uint contact, const QString &newAvatarToken);
+    void avatarRetrieved(uint contact, const QString &token, const QByteArray &avatar, const QString &type);
+
+protected:
+    BaseConnectionAvatarsInterface();
 
 private:
     void createAdaptor();

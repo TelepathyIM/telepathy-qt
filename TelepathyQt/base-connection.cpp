@@ -1973,4 +1973,244 @@ void BaseConnectionAliasingInterface::aliasesChanged(const Tp::AliasPairList &al
     QMetaObject::invokeMethod(mPriv->adaptee, "aliasesChanged", Q_ARG(Tp::AliasPairList, aliases)); //Can simply use emit in Qt5
 }
 
+// Conn.I.Avatars
+struct TP_QT_NO_EXPORT BaseConnectionAvatarsInterface::Private {
+    Private(BaseConnectionAvatarsInterface *parent)
+        : adaptee(new BaseConnectionAvatarsInterface::Adaptee(parent))
+    {
+    }
+
+    AvatarSpec avatarDetails;
+    GetKnownAvatarTokensCallback getKnownAvatarTokensCB;
+    RequestAvatarsCallback requestAvatarsCB;
+    SetAvatarCallback setAvatarCB;
+    ClearAvatarCallback clearAvatarCB;
+    BaseConnectionAvatarsInterface::Adaptee *adaptee;
+
+    friend class BaseConnectionAvatarsInterface::Adaptee;
+};
+
+BaseConnectionAvatarsInterface::Adaptee::Adaptee(BaseConnectionAvatarsInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseConnectionAvatarsInterface::Adaptee::~Adaptee()
+{
+}
+
+QStringList BaseConnectionAvatarsInterface::Adaptee::supportedAvatarMimeTypes() const
+{
+    return mInterface->mPriv->avatarDetails.supportedMimeTypes();
+}
+
+uint BaseConnectionAvatarsInterface::Adaptee::minimumAvatarHeight() const
+{
+    return mInterface->mPriv->avatarDetails.minimumHeight();
+}
+
+uint BaseConnectionAvatarsInterface::Adaptee::minimumAvatarWidth() const
+{
+    return mInterface->mPriv->avatarDetails.minimumWidth();
+}
+
+uint BaseConnectionAvatarsInterface::Adaptee::recommendedAvatarHeight() const
+{
+    return mInterface->mPriv->avatarDetails.recommendedHeight();
+}
+
+uint BaseConnectionAvatarsInterface::Adaptee::recommendedAvatarWidth() const
+{
+    return mInterface->mPriv->avatarDetails.recommendedWidth();
+}
+
+uint BaseConnectionAvatarsInterface::Adaptee::maximumAvatarHeight() const
+{
+    return mInterface->mPriv->avatarDetails.maximumHeight();
+}
+
+uint BaseConnectionAvatarsInterface::Adaptee::maximumAvatarWidth() const
+{
+    return mInterface->mPriv->avatarDetails.maximumWidth();
+}
+
+uint BaseConnectionAvatarsInterface::Adaptee::maximumAvatarBytes() const
+{
+    return mInterface->mPriv->avatarDetails.maximumBytes();
+}
+
+void BaseConnectionAvatarsInterface::Adaptee::getKnownAvatarTokens(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceAvatarsAdaptor::GetKnownAvatarTokensContextPtr &context)
+{
+    qDebug() << "BaseConnectionAvatarsInterface::Adaptee::getKnownAvatarTokens";
+    DBusError error;
+    Tp::AvatarTokenMap tokens = mInterface->getKnownAvatarTokens(contacts, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(tokens);
+}
+
+void BaseConnectionAvatarsInterface::Adaptee::requestAvatars(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceAvatarsAdaptor::RequestAvatarsContextPtr &context)
+{
+    qDebug() << "BaseConnectionAvatarsInterface::Adaptee::requestAvatars";
+    DBusError error;
+    mInterface->requestAvatars(contacts, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseConnectionAvatarsInterface::Adaptee::setAvatar(const QByteArray &avatar, const QString &mimeType,
+        const Tp::Service::ConnectionInterfaceAvatarsAdaptor::SetAvatarContextPtr &context)
+{
+    qDebug() << "BaseConnectionAvatarsInterface::Adaptee::setAvatar";
+    DBusError error;
+    QString token = mInterface->setAvatar(avatar, mimeType, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(token);
+}
+
+void BaseConnectionAvatarsInterface::Adaptee::clearAvatar(
+        const Tp::Service::ConnectionInterfaceAvatarsAdaptor::ClearAvatarContextPtr &context)
+{
+    qDebug() << "BaseConnectionAvatarsInterface::Adaptee::clearAvatar";
+    DBusError error;
+    mInterface->clearAvatar(&error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+/**
+ * \class BaseConnectionAvatarsInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
+ *
+ * \brief Base class for implementations of Connection.Interface.Avatars
+ */
+
+/**
+ * Class constructor.
+ */
+BaseConnectionAvatarsInterface::BaseConnectionAvatarsInterface()
+    : AbstractConnectionInterface(TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS),
+      mPriv(new Private(this))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseConnectionAvatarsInterface::~BaseConnectionAvatarsInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseConnectionAvatarsInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+AvatarSpec BaseConnectionAvatarsInterface::avatarDetails() const
+{
+    return mPriv->avatarDetails;
+}
+
+void BaseConnectionAvatarsInterface::setAvatarDetails(const AvatarSpec &spec)
+{
+    mPriv->avatarDetails = spec;
+}
+
+void BaseConnectionAvatarsInterface::createAdaptor()
+{
+    (void) new Service::ConnectionInterfaceAvatarsAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseConnectionAvatarsInterface::setGetKnownAvatarTokensCallback(const BaseConnectionAvatarsInterface::GetKnownAvatarTokensCallback &cb)
+{
+    mPriv->getKnownAvatarTokensCB = cb;
+}
+
+Tp::AvatarTokenMap BaseConnectionAvatarsInterface::getKnownAvatarTokens(const Tp::UIntList &contacts, DBusError *error)
+{
+    if (!mPriv->getKnownAvatarTokensCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return Tp::AvatarTokenMap();
+    }
+    return mPriv->getKnownAvatarTokensCB(contacts, error);
+}
+
+void BaseConnectionAvatarsInterface::setRequestAvatarsCallback(const BaseConnectionAvatarsInterface::RequestAvatarsCallback &cb)
+{
+    mPriv->requestAvatarsCB = cb;
+}
+
+void BaseConnectionAvatarsInterface::requestAvatars(const Tp::UIntList &contacts, DBusError *error)
+{
+    if (!mPriv->requestAvatarsCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->requestAvatarsCB(contacts, error);
+}
+
+void BaseConnectionAvatarsInterface::setSetAvatarCallback(const BaseConnectionAvatarsInterface::SetAvatarCallback &cb)
+{
+    mPriv->setAvatarCB = cb;
+}
+
+QString BaseConnectionAvatarsInterface::setAvatar(const QByteArray &avatar, const QString &mimeType, DBusError *error)
+{
+    if (!mPriv->setAvatarCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return QString();
+    }
+    return mPriv->setAvatarCB(avatar, mimeType, error);
+}
+
+void BaseConnectionAvatarsInterface::setClearAvatarCallback(const BaseConnectionAvatarsInterface::ClearAvatarCallback &cb)
+{
+    mPriv->clearAvatarCB = cb;
+}
+
+void BaseConnectionAvatarsInterface::clearAvatar(DBusError *error)
+{
+    if (!mPriv->clearAvatarCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    return mPriv->clearAvatarCB(error);
+}
+
+void BaseConnectionAvatarsInterface::avatarUpdated(uint contact, const QString &newAvatarToken)
+{
+    QMetaObject::invokeMethod(mPriv->adaptee, "avatarUpdated", Q_ARG(uint, contact), Q_ARG(QString, newAvatarToken)); //Can simply use emit in Qt5
+}
+
+void BaseConnectionAvatarsInterface::avatarRetrieved(uint contact, const QString &token, const QByteArray &avatar, const QString &type)
+{
+    QMetaObject::invokeMethod(mPriv->adaptee, "avatarRetrieved", Q_ARG(uint, contact), Q_ARG(QString, token), Q_ARG(QByteArray, avatar), Q_ARG(QString, type)); //Can simply use emit in Qt5
+}
+
 }

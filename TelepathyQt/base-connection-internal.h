@@ -275,4 +275,47 @@ private:
     BaseConnectionAliasingInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseConnectionAvatarsInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QStringList supportedAvatarMimeTypes READ supportedAvatarMimeTypes)
+    Q_PROPERTY(uint minimumAvatarHeight READ minimumAvatarHeight)
+    Q_PROPERTY(uint minimumAvatarWidth READ minimumAvatarWidth)
+    Q_PROPERTY(uint recommendedAvatarHeight READ recommendedAvatarHeight)
+    Q_PROPERTY(uint recommendedAvatarWidth READ recommendedAvatarWidth)
+    Q_PROPERTY(uint maximumAvatarHeight READ maximumAvatarHeight)
+    Q_PROPERTY(uint maximumAvatarWidth READ maximumAvatarWidth)
+    Q_PROPERTY(uint maximumAvatarBytes READ maximumAvatarBytes)
+
+public:
+    Adaptee(BaseConnectionAvatarsInterface *interface);
+    ~Adaptee();
+
+    QStringList supportedAvatarMimeTypes() const;
+    uint minimumAvatarHeight() const;
+    uint minimumAvatarWidth() const;
+    uint recommendedAvatarHeight() const;
+    uint recommendedAvatarWidth() const;
+    uint maximumAvatarHeight() const;
+    uint maximumAvatarWidth() const;
+    uint maximumAvatarBytes() const;
+
+private Q_SLOTS:
+    void getKnownAvatarTokens(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceAvatarsAdaptor::GetKnownAvatarTokensContextPtr &context);
+    void requestAvatars(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceAvatarsAdaptor::RequestAvatarsContextPtr &context);
+    void setAvatar(const QByteArray &avatar, const QString &mimeType,
+            const Tp::Service::ConnectionInterfaceAvatarsAdaptor::SetAvatarContextPtr &context);
+    void clearAvatar(
+            const Tp::Service::ConnectionInterfaceAvatarsAdaptor::ClearAvatarContextPtr &context);
+
+Q_SIGNALS:
+    void avatarUpdated(uint contact, const QString &newAvatarToken);
+    void avatarRetrieved(uint contact, const QString &token, const QByteArray &avatar, const QString &type);
+
+private:
+    BaseConnectionAvatarsInterface *mInterface;
+};
+
 }
