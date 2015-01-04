@@ -29,6 +29,26 @@
 
 #include <QtGlobal>
 
+#define TP_QT_MAJOR_VERSION @TP_QT_MAJOR_VERSION@
+#define TP_QT_MINOR_VERSION @TP_QT_MINOR_VERSION@
+#define TP_QT_MICRO_VERSION @TP_QT_MICRO_VERSION@
+#define TP_QT_VERSION ((TP_QT_MAJOR_VERSION<<16)|(TP_QT_MINOR_VERSION<<8)|(TP_QT_MICRO_VERSION))
+
+/**
+ * @def TP_QT_VERSION_CHECK
+ * @ingroup macros
+ *
+ * The TP_QT_VERSION_CHECK macro can be used to do condition compilation
+ * in TelepathyQt-based applications and libraries.
+ *
+ * \code
+ * #if (TP_QT_VERSION >= TP_QT_VERSION_CHECK(0, 9, 6))
+ *     Tp::BaseConnectionAvatarsInterfacePtr avatarsIface;
+ * #endif
+ * \endcode
+ */
+#define TP_QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
+
 #ifdef BUILDING_TP_QT
 #  define TP_QT_EXPORT Q_DECL_EXPORT
 #else

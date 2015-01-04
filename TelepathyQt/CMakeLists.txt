@@ -7,6 +7,8 @@ set(LD_FLAGS "${LD_FLAGS} ${VISIBILITY_HIDDEN_FLAGS} ${COMPILER_COVERAGE_FLAGS} 
 # We are building Telepathy-Qt
 add_definitions(-DBUILDING_TP_QT)
 
+configure_file(global.h.in ${CMAKE_CURRENT_BINARY_DIR}/global.h)
+
 # Sources for Tp-Qt
 set(telepathy_qt_SRCS
     abstract-client.cpp
@@ -346,7 +348,7 @@ set(telepathy_qt_HEADERS
     GenericPropertyFilter
     generic-property-filter.h
     Global
-    global.h
+    ${CMAKE_CURRENT_BINARY_DIR}/global.h
     HandledChannelNotifier
     handled-channel-notifier.h
     IncomingDBusTubeChannel
