@@ -601,7 +601,10 @@ bool BaseConnection::registerObject(const QString &busName,
 
 void BaseConnection::setSelfHandle(uint selfHandle)
 {
+    bool changed = (selfHandle != mPriv->selfHandle);
     mPriv->selfHandle = selfHandle;
+    if (changed)
+        emit mPriv->adaptee->selfHandleChanged(mPriv->selfHandle);
 }
 
 uint BaseConnection::selfHandle() const
