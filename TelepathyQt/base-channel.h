@@ -772,5 +772,43 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelSMSInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelSMSInterface)
+
+public:
+    static BaseChannelSMSInterfacePtr create(bool flash, bool smsChannel) {
+        return BaseChannelSMSInterfacePtr(new BaseChannelSMSInterface(flash, smsChannel));
+    }
+    template<typename BaseChannelSMSInterfaceSubclass>
+    static SharedPtr<BaseChannelSMSInterfaceSubclass> create(bool flash, bool smsChannel) {
+        return SharedPtr<BaseChannelSMSInterfaceSubclass>(
+                   new BaseChannelSMSInterfaceSubclass(flash, smsChannel));
+    }
+    virtual ~BaseChannelSMSInterface();
+
+    QVariantMap immutableProperties() const;
+
+    typedef Callback2<void, const Tp::MessagePartList &, DBusError*> GetSMSLengthCallback;
+    void setGetSMSLengthCallback(const GetSMSLengthCallback &cb);
+
+    bool flash() const;
+    bool smsChannel() const;
+
+Q_SIGNALS:
+    void smsChannelChanged(bool smsChannel);
+
+private:
+    BaseChannelSMSInterface(bool flash, bool smsChannel);
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 }
 #endif

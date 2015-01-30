@@ -66,6 +66,7 @@ class BaseChannelGroupInterface;
 class BaseChannelHoldInterface;
 class BaseChannelMergeableConferenceInterface;
 class BaseChannelSplittableInterface;
+class BaseChannelSMSInterface;
 class BaseChannelConferenceInterface;
 class DBusService;
 
@@ -105,6 +106,7 @@ typedef SharedPtr<BaseChannelGroupInterface> BaseChannelGroupInterfacePtr;
 typedef SharedPtr<BaseChannelHoldInterface> BaseChannelHoldInterfacePtr;
 typedef SharedPtr<BaseChannelMergeableConferenceInterface> BaseChannelMergeableConferenceInterfacePtr;
 typedef SharedPtr<BaseChannelSplittableInterface> BaseChannelSplittableInterfacePtr;
+typedef SharedPtr<BaseChannelSMSInterface> BaseChannelSMSInterfacePtr;
 typedef SharedPtr<BaseChannelConferenceInterface> BaseChannelConferenceInterfacePtr;
 typedef SharedPtr<DBusService> DBusServicePtr;
 

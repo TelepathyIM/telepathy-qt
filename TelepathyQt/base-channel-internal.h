@@ -418,6 +418,31 @@ public:
     BaseChannelCallType *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelSMSInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool flash READ flash)
+    Q_PROPERTY(bool smsChannel READ smsChannel)
+public:
+    Adaptee(BaseChannelSMSInterface *interface);
+    ~Adaptee();
+
+    bool flash() {
+        return mInterface->flash();
+    }
+
+    bool smsChannel() {
+        return mInterface->smsChannel();
+    }
+
+public slots:
+    void getSMSLength(const Tp::MessagePartList &messages, const Tp::Service::ChannelInterfaceSMSAdaptor::GetSMSLengthContextPtr &context);
+signals:
+    void smsChannelChanged(bool smsChannel);
+public:
+    BaseChannelSMSInterface *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseChannelHoldInterface::Adaptee : public QObject
 {
     Q_OBJECT

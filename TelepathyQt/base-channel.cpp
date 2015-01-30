@@ -2595,4 +2595,109 @@ void BaseChannelConferenceInterface::createAdaptor()
             mPriv->adaptee, dbusObject());
 }
 
+// Chan.I.SMS
+BaseChannelSMSInterface::Adaptee::Adaptee(BaseChannelSMSInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelSMSInterface::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseChannelSMSInterface::Private {
+    Private(BaseChannelSMSInterface *parent, bool flash, bool smsChannel)
+        : flash(flash),
+        smsChannel(smsChannel),
+        adaptee(new BaseChannelSMSInterface::Adaptee(parent))
+    {
+    }
+
+    bool flash;
+    bool smsChannel;
+    GetSMSLengthCallback getSMSLengthCB;
+    BaseChannelSMSInterface::Adaptee *adaptee;
+};
+
+void BaseChannelSMSInterface::Adaptee::getSMSLength(const Tp::MessagePartList & messages, const Tp::Service::ChannelInterfaceSMSAdaptor::GetSMSLengthContextPtr &context)
+{
+    if (!mInterface->mPriv->getSMSLengthCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+
+    DBusError error;
+    mInterface->mPriv->getSMSLengthCB(messages, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    // TODO: implement
+    context->setFinished(0,0,0);
+}
+
+/**
+ * \class BaseChannelSMSInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.SMS
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelSMSInterface::BaseChannelSMSInterface(bool flash, bool smsChannel)
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_INTERFACE_SMS),
+      mPriv(new Private(this, flash, smsChannel))
+{
+}
+
+void BaseChannelSMSInterface::setGetSMSLengthCallback(const GetSMSLengthCallback &cb)
+{
+    mPriv->getSMSLengthCB = cb;
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelSMSInterface::~BaseChannelSMSInterface()
+{
+    delete mPriv;
+}
+
+bool BaseChannelSMSInterface::flash() const
+{
+    return mPriv->flash;
+}
+
+bool BaseChannelSMSInterface::smsChannel() const
+{
+    return mPriv->smsChannel;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelSMSInterface::immutableProperties() const
+{
+    QVariantMap map;
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_SMS + QLatin1String(".Flash"),
+               QVariant::fromValue(mPriv->adaptee->flash()));
+    return map;
+}
+
+void BaseChannelSMSInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceSMSAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
 }
