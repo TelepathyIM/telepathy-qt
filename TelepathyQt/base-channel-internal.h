@@ -2,6 +2,7 @@
  * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2013 Matthias Gehre <gehre.matthias@gmail.com>
+ * @copyright Copyright 2013 Canonical Ltd.
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -320,6 +321,185 @@ signals:
     //All other signals are deprecated
 public:
     BaseChannelGroupInterface *mInterface;
+};
+
+class TP_QT_NO_EXPORT BaseChannelCallType::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(Tp::ObjectPathList contents READ contents)
+    Q_PROPERTY(QVariantMap callStateDetails READ callStateDetails)
+    Q_PROPERTY(uint callState READ callState)
+    Q_PROPERTY(uint callFlags READ callFlags)
+    Q_PROPERTY(Tp::CallStateReason callStateReason READ callStateReason)
+    Q_PROPERTY(bool hardwareStreaming READ hardwareStreaming)
+    Q_PROPERTY(Tp::CallMemberMap callMembers READ callMembers)
+    Q_PROPERTY(Tp::HandleIdentifierMap memberIdentifiers READ memberIdentifiers)
+    Q_PROPERTY(uint initialTransport READ initialTransport)
+    Q_PROPERTY(bool initialAudio READ initialAudio)
+    Q_PROPERTY(bool initialVideo READ initialVideo)
+    Q_PROPERTY(QString initialVideoName READ initialVideoName)
+    Q_PROPERTY(QString initialAudioName READ initialAudioName)
+    Q_PROPERTY(bool mutableContents READ mutableContents)
+
+public:
+    Adaptee(BaseChannelCallType *interface);
+    ~Adaptee();
+
+    Tp::ObjectPathList contents() const {
+        return mInterface->contents();
+    }
+
+    QVariantMap callStateDetails() const {
+        return mInterface->callStateDetails();
+    }
+
+    uint callState() const {
+        return mInterface->callState();
+    }
+
+    uint callFlags() const {
+        return mInterface->callFlags();
+    }
+
+    Tp::CallStateReason callStateReason() const {
+        return mInterface->callStateReason();
+    }
+
+    bool hardwareStreaming() const {
+        return mInterface->hardwareStreaming();
+    }
+
+    Tp::CallMemberMap callMembers() const {
+        return mInterface->callMembers();
+    }
+
+    Tp::HandleIdentifierMap memberIdentifiers() const {
+        return mInterface->memberIdentifiers();
+    }
+
+    uint initialTransport() const {
+        return mInterface->initialTransport();
+    }
+
+    bool initialAudio() const {
+        return mInterface->initialAudio();
+    }
+
+    bool initialVideo() const {
+        return mInterface->initialVideo();
+    }
+
+    QString initialVideoName() const {
+        return mInterface->initialVideoName();
+    }
+
+    QString initialAudioName() const {
+        return mInterface->initialAudioName();
+    }
+
+    bool mutableContents() const {
+        return mInterface->mutableContents();
+    }
+
+public slots:
+    void setRinging(const Tp::Service::ChannelTypeCallAdaptor::SetRingingContextPtr &context);
+    void setQueued(const Tp::Service::ChannelTypeCallAdaptor::SetQueuedContextPtr &context);
+    void accept(const Tp::Service::ChannelTypeCallAdaptor::AcceptContextPtr &context);
+    void hangup(uint reason, const QString &detailedHangupReason, const QString &message, const Tp::Service::ChannelTypeCallAdaptor::HangupContextPtr &context);
+    void addContent(const QString &contentName, const Tp::MediaStreamType &contentType, const Tp::MediaStreamDirection &initialDirection, const Tp::Service::ChannelTypeCallAdaptor::AddContentContextPtr &context);
+
+signals:
+    void contentAdded(const QDBusObjectPath &content);
+    void contentRemoved(const QDBusObjectPath &content, const Tp::CallStateReason &reason);
+    void callStateChanged(uint callState, uint callFlags, const Tp::CallStateReason &stateReason, const QVariantMap &callStateDetails);
+    void callMembersChanged(const Tp::CallMemberMap &flagsChanged, const Tp::HandleIdentifierMap &identifiers, const Tp::UIntList &removed, const Tp::CallStateReason &reason);
+
+public:
+    BaseChannelCallType *mInterface;
+};
+
+class TP_QT_NO_EXPORT BaseChannelHoldInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+public:
+    Adaptee(BaseChannelHoldInterface *interface);
+    ~Adaptee();
+
+public slots:
+    void getHoldState(const Tp::Service::ChannelInterfaceHoldAdaptor::GetHoldStateContextPtr &context);
+    void requestHold(bool hold, const Tp::Service::ChannelInterfaceHoldAdaptor::RequestHoldContextPtr &context);
+signals:
+    void holdStateChanged(uint holdState, uint reason);
+
+public:
+    BaseChannelHoldInterface *mInterface;
+};
+
+class TP_QT_NO_EXPORT BaseChannelConferenceInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(Tp::ObjectPathList channels READ channels)
+    Q_PROPERTY(Tp::ObjectPathList initialChannels READ initialChannels)
+    Q_PROPERTY(Tp::UIntList initialInviteeHandles READ initialInviteeHandles)
+    Q_PROPERTY(QStringList initialInviteeIDs READ initialInviteeIDs)
+    Q_PROPERTY(QString invitationMessage READ invitationMessage)
+    Q_PROPERTY(ChannelOriginatorMap originalChannels READ originalChannels)
+public:
+    Adaptee(BaseChannelConferenceInterface *interface);
+    ~Adaptee();
+    Tp::ObjectPathList channels() const {
+        return mInterface->channels();
+    }
+    Tp::ObjectPathList initialChannels() const {
+        return mInterface->initialChannels();
+    }
+    Tp::UIntList initialInviteeHandles() const {
+        return mInterface->initialInviteeHandles();
+    }
+    QStringList initialInviteeIDs() const {
+        return mInterface->initialInviteeIDs();
+    }
+    QString invitationMessage() const {
+        return mInterface->invitationMessage();
+    }
+    ChannelOriginatorMap originalChannels() const {
+        return mInterface->originalChannels();
+    }
+
+signals:
+    void channelMerged(const QDBusObjectPath &channel, uint channelHandle, const QVariantMap &properties);
+    void channelRemoved(const QDBusObjectPath &channel, const QVariantMap& details);
+
+public:
+    BaseChannelConferenceInterface *mInterface;
+};
+
+class TP_QT_NO_EXPORT BaseChannelMergeableConferenceInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+public:
+    Adaptee(BaseChannelMergeableConferenceInterface *interface);
+    ~Adaptee();
+
+public slots:
+    void merge(const QDBusObjectPath &channel, const Tp::Service::ChannelInterfaceMergeableConferenceAdaptor::MergeContextPtr &context);
+
+public:
+    BaseChannelMergeableConferenceInterface *mInterface;
+};
+
+class TP_QT_NO_EXPORT BaseChannelSplittableInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+public:
+    Adaptee(BaseChannelSplittableInterface *interface);
+    ~Adaptee();
+
+public slots:
+    void split(const Tp::Service::ChannelInterfaceSplittableAdaptor::SplitContextPtr &context);
+
+public:
+    BaseChannelSplittableInterface *mInterface;
 };
 
 }

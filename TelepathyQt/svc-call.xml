@@ -1,0 +1,12 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Call interfaces</tp:title>
+
+<xi:include href="../spec/Call_Content.xml"/>
+<xi:include href="../spec/Call_Content_Interface_DTMF.xml"/>
+
+<xi:include href="../spec/Call_Interface_Mute.xml"/>
+
+</tp:spec>

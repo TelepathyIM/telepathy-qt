@@ -28,6 +28,7 @@
 <xi:include href="../spec/Channel_Interface_Group.xml"/>
 <xi:include href="../spec/Channel_Interface_Hold.xml"/>
 <xi:include href="../spec/Channel_Interface_Media_Signalling.xml"/>
+<xi:include href="../spec/Channel_Interface_Mergeable_Conference.xml"/>
 <xi:include href="../spec/Channel_Interface_Messages.xml"/>
 <xi:include href="../spec/Channel_Interface_Password.xml"/>
 <xi:include href="../spec/Channel_Interface_Room.xml"/>
@@ -36,6 +37,7 @@
 <xi:include href="../spec/Channel_Interface_Securable.xml"/>
 <xi:include href="../spec/Channel_Interface_Service_Point.xml"/>
 <xi:include href="../spec/Channel_Interface_SMS.xml"/>
+<xi:include href="../spec/Channel_Interface_Splittable.xml"/>
 <xi:include href="../spec/Channel_Interface_Subject.xml"/>
 
 </tp:spec>

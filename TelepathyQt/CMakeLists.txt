@@ -857,6 +857,7 @@ if(ENABLE_SERVICE_SUPPORT)
     # lets build tp-qt service side support as a separate library until we can guarantee API/ABI
     # stability
     set(telepathy_qt_service_SRCS
+        base-call.cpp
         base-connection-manager.cpp
         base-connection.cpp
         base-channel.cpp
@@ -871,6 +872,8 @@ if(ENABLE_SERVICE_SUPPORT)
         abstract-adaptor.h
         AbstractDBusServiceInterface
         AbstractProtocolInterface
+        BaseCall
+        base-call.h
         BaseConnectionManager
         base-connection-manager.h
         BaseConnection
@@ -894,12 +897,15 @@ if(ENABLE_SERVICE_SUPPORT)
     # Generated headers which will be installed and exported
     set(telepathy_qt_service_gen_HEADERS
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-channel.h
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-call.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection-manager.h)
 
     # Headers file moc will be run on
     set(telepathy_qt_service_MOC_SRCS
         abstract-adaptor.h
+        base-call.h
+        base-call-internal.h
         base-connection-manager.h
         base-connection-manager-internal.h
         base-channel.h
@@ -915,6 +921,7 @@ if(ENABLE_SERVICE_SUPPORT)
 
     set(SPECS
         svc-channel
+        svc-call
         svc-connection
         svc-connection-manager)
     foreach(spec ${SPECS})
@@ -930,6 +937,7 @@ if(ENABLE_SERVICE_SUPPORT)
     endforeach(spec ${SPECS})
 
     tpqt_service_generator(svc-channel servicechannel Channel Tp::Service DEPENDS svc-channel-spec-xincludator)
+    tpqt_service_generator(svc-call servicecall Channel Tp::Service DEPENDS svc-call-spec-xincludator)
     tpqt_service_generator(svc-connection serviceconn Connection Tp::Service DEPENDS svc-connection-spec-xincludator)
     tpqt_service_generator(svc-connection-manager servicecm ConnectionManager Tp::Service DEPENDS svc-connection-manager-spec-xincludator)
 

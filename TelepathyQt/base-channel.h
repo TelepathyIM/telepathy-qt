@@ -515,5 +515,262 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelCallType : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelCallType)
+
+public:
+    static BaseChannelCallTypePtr create(BaseChannel* channel, bool hardwareStreaming,
+                                         uint initialTransport,
+                                         bool initialAudio,
+                                         bool initialVideo,
+                                         QString initialAudioName,
+                                         QString initialVideoName,
+                                         bool mutableContents = false) {
+        return BaseChannelCallTypePtr(new BaseChannelCallType(channel,
+                                                              hardwareStreaming,
+                                                              initialTransport,
+                                                              initialAudio,
+                                                              initialVideo,
+                                                              initialAudioName,
+                                                              initialVideoName,
+                                                              mutableContents));
+    }
+    template<typename BaseChannelCallTypeSubclass>
+    static SharedPtr<BaseChannelCallTypeSubclass> create(BaseChannel* channel, bool hardwareStreaming,
+                                                         uint initialTransport,
+                                                         bool initialAudio,
+                                                         bool initialVideo,
+                                                         QString initialAudioName,
+                                                         QString initialVideoName,
+                                                         bool mutableContents = false) {
+        return SharedPtr<BaseChannelCallTypeSubclass>(
+                   new BaseChannelCallTypeSubclass(channel,
+                                                   hardwareStreaming,
+                                                   initialTransport,
+                                                   initialAudio,
+                                                   initialVideo,
+                                                   initialAudioName,
+                                                   initialVideoName,
+                                                   mutableContents));
+    }
+
+    typedef Callback2<QDBusObjectPath, const QVariantMap&, DBusError*> CreateChannelCallback;
+    CreateChannelCallback createChannel;
+
+    typedef Callback2<bool, const QVariantMap&, DBusError*> EnsureChannelCallback;
+    EnsureChannelCallback ensureChannel;
+
+    virtual ~BaseChannelCallType();
+
+    QVariantMap immutableProperties() const;
+
+    Tp::ObjectPathList contents();
+    QVariantMap callStateDetails();
+    uint callState();
+    uint callFlags();
+    Tp::CallStateReason callStateReason();
+    bool hardwareStreaming();
+    Tp::CallMemberMap callMembers();
+    Tp::HandleIdentifierMap memberIdentifiers();
+    uint initialTransport();
+    bool initialAudio();
+    bool initialVideo();
+    QString initialAudioName();
+    QString initialVideoName();
+    bool mutableContents();
+
+    typedef Callback1<void, DBusError*> AcceptCallback;
+    void setAcceptCallback(const AcceptCallback &cb);
+
+    typedef Callback4<void, uint, const QString &, const QString &, DBusError*> HangupCallback;
+    void setHangupCallback(const HangupCallback &cb);
+
+    typedef Callback1<void, DBusError*> SetRingingCallback;
+    void setSetRingingCallback(const SetRingingCallback &cb);
+
+    typedef Callback1<void, DBusError*> SetQueuedCallback;
+    void setSetQueuedCallback(const SetQueuedCallback &cb);
+
+    typedef Callback4<QDBusObjectPath, const QString&, const Tp::MediaStreamType&, const Tp::MediaStreamDirection&, DBusError*> AddContentCallback;
+    void setAddContentCallback(const AddContentCallback &cb);
+
+    void setCallState(const Tp::CallState &state, uint flags, const Tp::CallStateReason &stateReason, const QVariantMap &callStateDetails);
+    void setMembersFlags(const Tp::CallMemberMap &flagsChanged, const Tp::HandleIdentifierMap &identifiers, const Tp::UIntList &removed, const Tp::CallStateReason &reason);
+    BaseCallContentPtr addContent(const QString &name, const Tp::MediaStreamType &type, const Tp::MediaStreamDirection &direction);
+    void addContent(BaseCallContentPtr content);
+
+    Tp::RequestableChannelClassList requestableChannelClasses;
+
+protected:
+    BaseChannelCallType(BaseChannel* channel,
+                        bool hardwareStreaming,
+                        uint initialTransport,
+                        bool initialAudio,
+                        bool initialVideo,
+                        QString initialAudioName,
+                        QString initialVideoName,
+                        bool mutableContents = false);
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseChannelHoldInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelHoldInterface)
+
+public:
+    static BaseChannelHoldInterfacePtr create() {
+        return BaseChannelHoldInterfacePtr(new BaseChannelHoldInterface());
+    }
+    template<typename BaseChannelHoldInterfaceSubclass>
+    static SharedPtr<BaseChannelHoldInterfaceSubclass> create() {
+        return SharedPtr<BaseChannelHoldInterfaceSubclass>(
+                   new BaseChannelHoldInterfaceSubclass());
+    }
+    virtual ~BaseChannelHoldInterface();
+
+    QVariantMap immutableProperties() const;
+
+    Tp::LocalHoldState getHoldState() const;
+    Tp::LocalHoldStateReason getHoldReason() const;
+    void setHoldState(const Tp::LocalHoldState &state, const Tp::LocalHoldStateReason &reason);
+
+    typedef Callback3<void, const Tp::LocalHoldState&, const Tp::LocalHoldStateReason &, DBusError*> SetHoldStateCallback;
+    void setSetHoldStateCallback(const SetHoldStateCallback &cb);
+Q_SIGNALS:
+    void holdStateChanged(const Tp::LocalHoldState &state, const Tp::LocalHoldStateReason &reason);
+private:
+    BaseChannelHoldInterface();
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseChannelMergeableConferenceInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelMergeableConferenceInterface)
+
+public:
+    static BaseChannelMergeableConferenceInterfacePtr create() {
+        return BaseChannelMergeableConferenceInterfacePtr(new BaseChannelMergeableConferenceInterface());
+    }
+    template<typename BaseChannelMergeableConferenceInterfaceSubclass>
+    static SharedPtr<BaseChannelMergeableConferenceInterfaceSubclass> create() {
+        return SharedPtr<BaseChannelMergeableConferenceInterfaceSubclass>(
+                   new BaseChannelMergeableConferenceInterfaceSubclass());
+    }
+    virtual ~BaseChannelMergeableConferenceInterface();
+
+    QVariantMap immutableProperties() const;
+
+    void merge(const QDBusObjectPath &channel);
+
+    typedef Callback2<void, const QDBusObjectPath&, DBusError*> MergeCallback;
+    void setMergeCallback(const MergeCallback &cb);
+private:
+    BaseChannelMergeableConferenceInterface();
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseChannelSplittableInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelSplittableInterface)
+
+public:
+    static BaseChannelSplittableInterfacePtr create() {
+        return BaseChannelSplittableInterfacePtr(new BaseChannelSplittableInterface());
+    }
+    template<typename BaseChannelSplittableInterfaceSubclass>
+    static SharedPtr<BaseChannelSplittableInterfaceSubclass> create() {
+        return SharedPtr<BaseChannelSplittableInterfaceSubclass>(
+                   new BaseChannelSplittableInterfaceSubclass());
+    }
+    virtual ~BaseChannelSplittableInterface();
+
+    QVariantMap immutableProperties() const;
+
+    void split();
+
+    typedef Callback1<void, DBusError*> SplitCallback;
+    void setSplitCallback(const SplitCallback &cb);
+private:
+    BaseChannelSplittableInterface();
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseChannelConferenceInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelConferenceInterface)
+
+public:
+    static BaseChannelConferenceInterfacePtr create(Tp::ObjectPathList initialChannels = Tp::ObjectPathList(),
+            Tp::UIntList initialInviteeHandles = Tp::UIntList(),
+            QStringList initialInviteeIDs = QStringList(),
+            QString invitationMessage = QString(),
+            ChannelOriginatorMap originalChannels = ChannelOriginatorMap()) {
+        return BaseChannelConferenceInterfacePtr(new BaseChannelConferenceInterface(initialChannels, initialInviteeHandles, initialInviteeIDs, invitationMessage, originalChannels));
+    }
+    template<typename BaseChannelConferenceInterfaceSubclass>
+    static SharedPtr<BaseChannelConferenceInterfaceSubclass> create(Tp::ObjectPathList initialChannels = Tp::ObjectPathList(),
+            Tp::UIntList initialInviteeHandles = Tp::UIntList(),
+            QStringList initialInviteeIDs = QStringList(),
+            QString invitationMessage = QString(),
+            ChannelOriginatorMap originalChannels = ChannelOriginatorMap()) {
+        return SharedPtr<BaseChannelConferenceInterfaceSubclass>(
+                   new BaseChannelConferenceInterfaceSubclass(initialChannels, initialInviteeHandles, initialInviteeIDs, invitationMessage, originalChannels));
+    }
+    virtual ~BaseChannelConferenceInterface();
+
+    QVariantMap immutableProperties() const;
+    Tp::ObjectPathList channels() const;
+    Tp::ObjectPathList initialChannels() const;
+    Tp::UIntList initialInviteeHandles() const;
+    QStringList initialInviteeIDs() const;
+    QString invitationMessage() const;
+    ChannelOriginatorMap originalChannels() const;
+
+    void mergeChannel(const QDBusObjectPath &channel, uint channelHandle, const QVariantMap &properties);
+    void removeChannel(const QDBusObjectPath &channel, const QVariantMap &details);
+
+private:
+    BaseChannelConferenceInterface(Tp::ObjectPathList initialChannels, Tp::UIntList initialInviteeHandles, QStringList initialInviteeIDs, QString invitationMessage, ChannelOriginatorMap originalChannels);
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 }
 #endif

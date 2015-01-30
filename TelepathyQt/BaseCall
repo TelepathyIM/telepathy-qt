@@ -1,0 +1,13 @@
+#ifndef _TelepathyQt_BaseCall_HEADER_GUARD_
+#define _TelepathyQt_BaseCall_HEADER_GUARD_
+
+#ifndef IN_TP_QT_HEADER
+#define IN_TP_QT_HEADER
+#endif
+
+#include <TelepathyQt/base-call.h>
+
+#undef IN_TP_QT_HEADER
+
+#endif
+// vim:set ft=cpp:

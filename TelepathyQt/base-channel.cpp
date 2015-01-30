@@ -2,6 +2,7 @@
  * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2013 Matthias Gehre <gehre.matthias@gmail.com>
+ * @copyright Copyright 2013 Canonical Ltd.
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -20,10 +21,12 @@
  */
 
 #include <TelepathyQt/BaseChannel>
+#include <TelepathyQt/BaseCall>
 #include "TelepathyQt/base-channel-internal.h"
 
 #include "TelepathyQt/_gen/base-channel.moc.hpp"
 #include "TelepathyQt/_gen/base-channel-internal.moc.hpp"
+#include "TelepathyQt/future-internal.h"
 
 #include "TelepathyQt/debug-internal.h"
 
@@ -1839,6 +1842,757 @@ void BaseChannelGroupInterface::removeMembers(const Tp::UIntList& handles)
     }
     if (!removed.isEmpty())
         QMetaObject::invokeMethod(mPriv->adaptee,"membersChanged",Q_ARG(QString, QString()), Q_ARG(Tp::UIntList, Tp::UIntList()), Q_ARG(Tp::UIntList, removed), Q_ARG(Tp::UIntList, Tp::UIntList()), Q_ARG(Tp::UIntList, Tp::UIntList()), Q_ARG(uint, 0), Q_ARG(uint,ChannelGroupChangeReasonNone)); //Can simply use emit in Qt5 //Can simply use emit in Qt5
+}
+
+// Chan.T.Call
+BaseChannelCallType::Adaptee::Adaptee(BaseChannelCallType *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelCallType::Adaptee::~Adaptee()
+{
+}
+
+
+struct TP_QT_NO_EXPORT BaseChannelCallType::Private {
+    Private(BaseChannelCallType *parent, BaseChannel* channel, bool hardwareStreaming,
+            uint initialTransport,
+            bool initialAudio,
+            bool initialVideo,
+            QString initialAudioName,
+            QString initialVideoName,
+            bool mutableContents)
+        : hardwareStreaming(hardwareStreaming),
+          initialTransport(initialTransport),
+          initialAudio(initialAudio),
+          initialVideo(initialVideo),
+          initialAudioName(initialAudioName),
+          initialVideoName(initialVideoName),
+          mutableContents(mutableContents),
+          channel(channel),
+          adaptee(new BaseChannelCallType::Adaptee(parent)) {
+    }
+
+    Tp::ObjectPathList contents;
+    QVariantMap callStateDetails;
+    uint callState;
+    uint callFlags;
+    Tp::CallStateReason callStateReason;
+    bool hardwareStreaming;
+    Tp::CallMemberMap callMembers;
+    Tp::HandleIdentifierMap memberIdentifiers;
+    uint initialTransport;
+    bool initialAudio;
+    bool initialVideo;
+    QString initialAudioName;
+    QString initialVideoName;
+    bool mutableContents;
+
+    QList<Tp::BaseCallContentPtr> mCallContents;
+    AcceptCallback acceptCB;
+    HangupCallback hangupCB;
+    SetQueuedCallback setQueuedCB;
+    SetRingingCallback setRingingCB;
+    AddContentCallback addContentCB;
+
+    BaseChannel *channel;
+    BaseChannelCallType::Adaptee *adaptee;
+};
+
+void BaseChannelCallType::Adaptee::setRinging(const Tp::Service::ChannelTypeCallAdaptor::SetRingingContextPtr &context)
+{
+    if (!mInterface->mPriv->setRingingCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    DBusError error;
+    mInterface->mPriv->setRingingCB(&error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelCallType::Adaptee::setQueued(const Tp::Service::ChannelTypeCallAdaptor::SetQueuedContextPtr &context)
+{
+    if (!mInterface->mPriv->setQueuedCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    DBusError error;
+    mInterface->mPriv->setQueuedCB(&error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelCallType::Adaptee::accept(const Tp::Service::ChannelTypeCallAdaptor::AcceptContextPtr &context)
+{
+    if (!mInterface->mPriv->acceptCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    DBusError error;
+    mInterface->mPriv->acceptCB(&error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelCallType::Adaptee::hangup(uint reason, const QString &detailedHangupReason, const QString &message, const Tp::Service::ChannelTypeCallAdaptor::HangupContextPtr &context)
+{
+    if (!mInterface->mPriv->hangupCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    DBusError error;
+    mInterface->mPriv->hangupCB(reason, detailedHangupReason, message, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelCallType::Adaptee::addContent(const QString &contentName, const Tp::MediaStreamType &contentType, const Tp::MediaStreamDirection &initialDirection, const Tp::Service::ChannelTypeCallAdaptor::AddContentContextPtr &context)
+{
+    if (!mInterface->mPriv->addContentCB.isValid()) {
+        Tp::BaseCallContentPtr ptr = mInterface->addContent(contentName, contentType, initialDirection);
+        QDBusObjectPath objPath;
+        objPath.setPath(ptr->objectPath());
+        context->setFinished(objPath);
+        return;
+    }
+
+    DBusError error;
+    QDBusObjectPath objPath = mInterface->mPriv->addContentCB(contentName, contentType, initialDirection, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(objPath);
+}
+
+/**
+ * \class BaseChannelCallType
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Type.Call
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelCallType::BaseChannelCallType(BaseChannel* channel, bool hardwareStreaming,
+                                         uint initialTransport,
+                                         bool initialAudio,
+                                         bool initialVideo,
+                                         QString initialAudioName,
+                                         QString initialVideoName,
+                                         bool mutableContents)
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_TYPE_CALL),
+      mPriv(new Private(this, channel,
+                        hardwareStreaming,
+                        initialTransport,
+                        initialAudio,
+                        initialVideo,
+                        initialAudioName,
+                        initialVideoName,
+                        mutableContents))
+{
+}
+
+Tp::ObjectPathList BaseChannelCallType::contents() {
+    return mPriv->contents;
+}
+
+QVariantMap BaseChannelCallType::callStateDetails() {
+    return mPriv->callStateDetails;
+}
+
+uint BaseChannelCallType::callState() {
+    return mPriv->callState;
+}
+
+uint BaseChannelCallType::callFlags() {
+    return mPriv->callFlags;
+}
+
+Tp::CallStateReason BaseChannelCallType::callStateReason() {
+    return mPriv->callStateReason;
+}
+
+bool BaseChannelCallType::hardwareStreaming() {
+    return mPriv->hardwareStreaming;
+}
+
+Tp::CallMemberMap BaseChannelCallType::callMembers() {
+    return mPriv->callMembers;
+}
+
+Tp::HandleIdentifierMap BaseChannelCallType::memberIdentifiers() {
+    return mPriv->memberIdentifiers;
+}
+
+uint BaseChannelCallType::initialTransport() {
+    return mPriv->initialTransport;
+}
+
+bool BaseChannelCallType::initialAudio() {
+    return mPriv->initialAudio;
+}
+
+bool BaseChannelCallType::initialVideo() {
+    return mPriv->initialVideo;
+}
+
+QString BaseChannelCallType::initialVideoName() {
+    return mPriv->initialVideoName;
+}
+
+QString BaseChannelCallType::initialAudioName() {
+    return mPriv->initialAudioName;
+}
+
+bool BaseChannelCallType::mutableContents() {
+    return mPriv->mutableContents;
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelCallType::~BaseChannelCallType()
+{
+    delete mPriv;
+}
+
+QVariantMap BaseChannelCallType::immutableProperties() const
+{
+    QVariantMap map;
+
+    map.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".HardwareStreaming"),
+               QVariant::fromValue(mPriv->adaptee->hardwareStreaming()));
+    map.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialTransport"),
+               QVariant::fromValue(mPriv->adaptee->initialTransport()));
+    map.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
+               QVariant::fromValue(mPriv->adaptee->initialAudio()));
+    map.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
+               QVariant::fromValue(mPriv->adaptee->initialVideo()));
+    map.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudioName"),
+               QVariant::fromValue(mPriv->adaptee->initialAudioName()));
+    map.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideoName"),
+               QVariant::fromValue(mPriv->adaptee->initialVideoName()));
+    map.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".MutableContents"),
+               QVariant::fromValue(mPriv->adaptee->mutableContents()));
+    return map;
+}
+
+void BaseChannelCallType::createAdaptor()
+{
+    (void) new Service::ChannelTypeCallAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseChannelCallType::setCallState(const Tp::CallState &state, uint flags, const Tp::CallStateReason &stateReason, const QVariantMap &callStateDetails)
+{
+    mPriv->callState = state;
+    mPriv->callFlags = flags;
+    mPriv->callStateReason = stateReason;
+    mPriv->callStateDetails = callStateDetails;
+    emit mPriv->adaptee->callStateChanged(state, flags, stateReason, callStateDetails);
+}
+
+void BaseChannelCallType::setAcceptCallback(const AcceptCallback &cb)
+{
+    mPriv->acceptCB = cb;
+}
+
+void BaseChannelCallType::setHangupCallback(const HangupCallback &cb)
+{
+    mPriv->hangupCB = cb;
+}
+
+void BaseChannelCallType::setSetRingingCallback(const SetRingingCallback &cb)
+{
+    mPriv->setRingingCB = cb;
+}
+
+void BaseChannelCallType::setSetQueuedCallback(const SetQueuedCallback &cb)
+{
+    mPriv->setQueuedCB = cb;
+}
+
+void BaseChannelCallType::setAddContentCallback(const AddContentCallback &cb)
+{
+    mPriv->addContentCB = cb;
+}
+
+void BaseChannelCallType::setMembersFlags(const Tp::CallMemberMap &flagsChanged, const Tp::HandleIdentifierMap &identifiers, const Tp::UIntList &removed, const Tp::CallStateReason &reason)
+{
+    mPriv->callMembers = flagsChanged;
+    mPriv->memberIdentifiers = identifiers;
+    emit mPriv->adaptee->callMembersChanged(flagsChanged, identifiers, removed, reason);
+}
+
+BaseCallContentPtr BaseChannelCallType::addContent(const QString &name, const Tp::MediaStreamType &type, const Tp::MediaStreamDirection &direction)
+{
+    BaseCallContentPtr ptr = BaseCallContent::create(mPriv->channel->dbusConnection(), mPriv->channel, name, type, direction);
+    DBusError error;
+    ptr->registerObject(&error);
+    QDBusObjectPath objpath;
+    objpath.setPath(ptr->objectPath());
+    mPriv->contents.append(objpath);
+    emit mPriv->adaptee->contentAdded(objpath);
+
+    return ptr;
+}
+
+void BaseChannelCallType::addContent(BaseCallContentPtr content)
+{
+    DBusError error;
+    content->registerObject(&error);
+    QDBusObjectPath objpath;
+    objpath.setPath(content->objectPath());
+    mPriv->contents.append(objpath);
+    emit mPriv->adaptee->contentAdded(objpath);
+}
+
+// Chan.I.Hold
+BaseChannelHoldInterface::Adaptee::Adaptee(BaseChannelHoldInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelHoldInterface::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseChannelHoldInterface::Private {
+    Private(BaseChannelHoldInterface *parent, Tp::LocalHoldState state)
+        : state(state),
+          reason(Tp::LocalHoldStateReasonNone),
+          adaptee(new BaseChannelHoldInterface::Adaptee(parent)) {
+    }
+
+    SetHoldStateCallback setHoldStateCB;
+    Tp::LocalHoldState state;
+    Tp::LocalHoldStateReason reason;
+    BaseChannelHoldInterface::Adaptee *adaptee;
+};
+
+void BaseChannelHoldInterface::Adaptee::getHoldState(const Tp::Service::ChannelInterfaceHoldAdaptor::GetHoldStateContextPtr &context)
+{
+    context->setFinished(mInterface->getHoldState(), mInterface->getHoldReason());
+}
+
+void BaseChannelHoldInterface::Adaptee::requestHold(bool hold, const Tp::Service::ChannelInterfaceHoldAdaptor::RequestHoldContextPtr &context)
+{
+    if (!mInterface->mPriv->setHoldStateCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+
+    Tp::LocalHoldState state = hold ? Tp::LocalHoldStateHeld : Tp::LocalHoldStateUnheld;
+
+    DBusError error;
+    mInterface->mPriv->setHoldStateCB(state, Tp::LocalHoldStateReasonRequested, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+/**
+ * \class BaseChannelHoldInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.Hold
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelHoldInterface::BaseChannelHoldInterface()
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD),
+      mPriv(new Private(this, Tp::LocalHoldStateUnheld))
+{
+}
+
+Tp::LocalHoldState BaseChannelHoldInterface::getHoldState() const
+{
+    return mPriv->state;
+}
+
+Tp::LocalHoldStateReason BaseChannelHoldInterface::getHoldReason() const
+{
+    return mPriv->reason;
+}
+
+void BaseChannelHoldInterface::setSetHoldStateCallback(const SetHoldStateCallback &cb)
+{
+    mPriv->setHoldStateCB = cb;
+}
+
+void BaseChannelHoldInterface::setHoldState(const Tp::LocalHoldState &state, const Tp::LocalHoldStateReason &reason)
+{
+    if (mPriv->state != state) {
+        mPriv->state = state;
+        mPriv->reason = reason;
+        emit mPriv->adaptee->holdStateChanged(state, reason);
+    }
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelHoldInterface::~BaseChannelHoldInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelHoldInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+void BaseChannelHoldInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceHoldAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+
+// Chan.I.MergeableConference
+BaseChannelMergeableConferenceInterface::Adaptee::Adaptee(BaseChannelMergeableConferenceInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelMergeableConferenceInterface::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseChannelMergeableConferenceInterface::Private {
+    Private(BaseChannelMergeableConferenceInterface *parent)
+        :adaptee(new BaseChannelMergeableConferenceInterface::Adaptee(parent)) {
+    }
+
+    MergeCallback mergeCB;
+    BaseChannelMergeableConferenceInterface::Adaptee *adaptee;
+};
+
+void BaseChannelMergeableConferenceInterface::Adaptee::merge(const QDBusObjectPath &channelPath, const Tp::Service::ChannelInterfaceMergeableConferenceAdaptor::MergeContextPtr &context)
+{
+    if (!mInterface->mPriv->mergeCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+
+    DBusError error;
+    mInterface->mPriv->mergeCB(channelPath, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+/**
+ * \class BaseChannelMergeableConferenceInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.MergeableConference
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelMergeableConferenceInterface::BaseChannelMergeableConferenceInterface()
+    : AbstractChannelInterface(TP_QT_FUTURE_IFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE),
+      mPriv(new Private(this))
+{
+}
+
+void BaseChannelMergeableConferenceInterface::setMergeCallback(const MergeCallback &cb)
+{
+    mPriv->mergeCB = cb;
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelMergeableConferenceInterface::~BaseChannelMergeableConferenceInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelMergeableConferenceInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+void BaseChannelMergeableConferenceInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceMergeableConferenceAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+
+// Chan.I.Splittable
+BaseChannelSplittableInterface::Adaptee::Adaptee(BaseChannelSplittableInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelSplittableInterface::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseChannelSplittableInterface::Private {
+    Private(BaseChannelSplittableInterface *parent)
+        :adaptee(new BaseChannelSplittableInterface::Adaptee(parent)) {
+    }
+
+    SplitCallback splitCB;
+    BaseChannelSplittableInterface::Adaptee *adaptee;
+};
+
+void BaseChannelSplittableInterface::Adaptee::split(const Tp::Service::ChannelInterfaceSplittableAdaptor::SplitContextPtr &context)
+{
+    if (!mInterface->mPriv->splitCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+
+    DBusError error;
+    mInterface->mPriv->splitCB(&error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+/**
+ * \class BaseChannelSplittableInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.Splittable
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelSplittableInterface::BaseChannelSplittableInterface()
+    : AbstractChannelInterface(TP_QT_FUTURE_IFACE_CHANNEL_INTERFACE_SPLITTABLE),
+      mPriv(new Private(this))
+{
+}
+
+void BaseChannelSplittableInterface::setSplitCallback(const SplitCallback &cb)
+{
+    mPriv->splitCB = cb;
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelSplittableInterface::~BaseChannelSplittableInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelSplittableInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+void BaseChannelSplittableInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceSplittableAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+
+// Chan.I.Conference
+BaseChannelConferenceInterface::Adaptee::Adaptee(BaseChannelConferenceInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelConferenceInterface::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseChannelConferenceInterface::Private {
+    Private(BaseChannelConferenceInterface *parent,
+            Tp::ObjectPathList initialChannels,
+            Tp::UIntList initialInviteeHandles,
+            QStringList initialInviteeIDs,
+            QString invitationMessage,
+            ChannelOriginatorMap originalChannels) :
+        channels(initialChannels),
+        initialChannels(initialChannels),
+        initialInviteeHandles(initialInviteeHandles),
+        initialInviteeIDs(initialInviteeIDs),
+        invitationMessage(invitationMessage),
+        originalChannels(originalChannels),
+        adaptee(new BaseChannelConferenceInterface::Adaptee(parent)) {
+    }
+    Tp::ObjectPathList channels;
+    Tp::ObjectPathList initialChannels;
+    Tp::UIntList initialInviteeHandles;
+    QStringList initialInviteeIDs;
+    QString invitationMessage;
+    ChannelOriginatorMap originalChannels;
+
+    BaseChannelConferenceInterface::Adaptee *adaptee;
+};
+
+/**
+ * \class BaseChannelConferenceInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.Conference
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelConferenceInterface::BaseChannelConferenceInterface(Tp::ObjectPathList initialChannels,
+    Tp::UIntList initialInviteeHandles,
+    QStringList initialInviteeIDs,
+    QString invitationMessage,
+    ChannelOriginatorMap originalChannels)
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE),
+      mPriv(new Private(this, initialChannels, initialInviteeHandles, initialInviteeIDs, invitationMessage, originalChannels))
+{
+}
+
+Tp::ObjectPathList BaseChannelConferenceInterface::channels() const
+{
+    return mPriv->channels;
+}
+
+Tp::ObjectPathList BaseChannelConferenceInterface::initialChannels() const
+{
+    return mPriv->initialChannels;
+}
+
+Tp::UIntList BaseChannelConferenceInterface::initialInviteeHandles() const
+{
+    return mPriv->initialInviteeHandles;
+}
+
+QStringList BaseChannelConferenceInterface::initialInviteeIDs() const
+{
+    return mPriv->initialInviteeIDs;
+}
+
+QString BaseChannelConferenceInterface::invitationMessage() const
+{
+    return mPriv->invitationMessage;
+}
+
+void BaseChannelConferenceInterface::mergeChannel(const QDBusObjectPath &channel, uint channelHandle, const QVariantMap &properties)
+{
+    mPriv->channels.append(channel);
+    if (channelHandle != 0) {
+        mPriv->originalChannels[channelHandle] = channel;
+    }
+    emit mPriv->adaptee->channelMerged(channel, channelHandle, properties);
+}
+
+
+void BaseChannelConferenceInterface::removeChannel(const QDBusObjectPath &channel, const QVariantMap& details)
+{
+    mPriv->channels.removeAll(channel);
+    if (mPriv->originalChannels.values().contains(channel)) {
+        mPriv->originalChannels.remove(mPriv->originalChannels.key(channel));
+    }
+    emit mPriv->adaptee->channelRemoved(channel, details);
+}
+
+ChannelOriginatorMap BaseChannelConferenceInterface::originalChannels() const
+{
+    return mPriv->originalChannels;
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelConferenceInterface::~BaseChannelConferenceInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelConferenceInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+void BaseChannelConferenceInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceConferenceAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
 }
 
 }

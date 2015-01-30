@@ -33,8 +33,12 @@ namespace Tp
 {
 
 class AbstractProtocolInterface;
+class AbstractCallContentInterface;
 class AbstractConnectionInterface;
 class AbstractChannelInterface;
+class BaseCallContent;
+class BaseCallMuteInterface;
+class BaseCallContentDTMFInterface;
 class BaseConnection;
 class BaseConnectionRequestsInterface;
 class BaseConnectionContactsInterface;
@@ -51,6 +55,7 @@ class BaseProtocolAvatarsInterface;
 class BaseProtocolPresenceInterface;
 class BaseChannel;
 class BaseChannelTextType;
+class BaseChannelCallType;
 class BaseChannelMessagesInterface;
 class BaseChannelServerAuthenticationType;
 class BaseChannelSASLAuthenticationInterface;
@@ -58,13 +63,21 @@ class BaseChannelCaptchaAuthenticationInterface;
 class BaseChannelSecurableInterface;
 class BaseChannelChatStateInterface;
 class BaseChannelGroupInterface;
+class BaseChannelHoldInterface;
+class BaseChannelMergeableConferenceInterface;
+class BaseChannelSplittableInterface;
+class BaseChannelConferenceInterface;
 class DBusService;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 typedef SharedPtr<AbstractProtocolInterface> AbstractProtocolInterfacePtr;
+typedef SharedPtr<AbstractCallContentInterface> AbstractCallContentInterfacePtr;
 typedef SharedPtr<AbstractConnectionInterface> AbstractConnectionInterfacePtr;
 typedef SharedPtr<AbstractChannelInterface> AbstractChannelInterfacePtr;
+typedef SharedPtr<BaseCallContent> BaseCallContentPtr;
+typedef SharedPtr<BaseCallContentDTMFInterface> BaseCallContentDTMFInterfacePtr;
+typedef SharedPtr<BaseCallMuteInterface> BaseCallMuteInterfacePtr;
 typedef SharedPtr<BaseConnection> BaseConnectionPtr;
 typedef SharedPtr<BaseConnectionRequestsInterface> BaseConnectionRequestsInterfacePtr;
 typedef SharedPtr<BaseConnectionContactsInterface> BaseConnectionContactsInterfacePtr;
@@ -80,6 +93,7 @@ typedef SharedPtr<BaseProtocolAddressingInterface> BaseProtocolAddressingInterfa
 typedef SharedPtr<BaseProtocolAvatarsInterface> BaseProtocolAvatarsInterfacePtr;
 typedef SharedPtr<BaseProtocolPresenceInterface> BaseProtocolPresenceInterfacePtr;
 typedef SharedPtr<BaseChannel> BaseChannelPtr;
+typedef SharedPtr<BaseChannelCallType> BaseChannelCallTypePtr;
 typedef SharedPtr<BaseChannelTextType> BaseChannelTextTypePtr;
 typedef SharedPtr<BaseChannelMessagesInterface> BaseChannelMessagesInterfacePtr;
 typedef SharedPtr<BaseChannelServerAuthenticationType> BaseChannelServerAuthenticationTypePtr;
@@ -88,6 +102,10 @@ typedef SharedPtr<BaseChannelCaptchaAuthenticationInterface> BaseChannelCaptchaA
 typedef SharedPtr<BaseChannelSecurableInterface> BaseChannelSecurableInterfacePtr;
 typedef SharedPtr<BaseChannelChatStateInterface> BaseChannelChatStateInterfacePtr;
 typedef SharedPtr<BaseChannelGroupInterface> BaseChannelGroupInterfacePtr;
+typedef SharedPtr<BaseChannelHoldInterface> BaseChannelHoldInterfacePtr;
+typedef SharedPtr<BaseChannelMergeableConferenceInterface> BaseChannelMergeableConferenceInterfacePtr;
+typedef SharedPtr<BaseChannelSplittableInterface> BaseChannelSplittableInterfacePtr;
+typedef SharedPtr<BaseChannelConferenceInterface> BaseChannelConferenceInterfacePtr;
 typedef SharedPtr<DBusService> DBusServicePtr;
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
