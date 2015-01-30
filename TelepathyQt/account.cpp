@@ -536,6 +536,22 @@ QVariantMap conferenceStreamedMediaCallRequest(const QList<Tp::ChannelPtr> &chan
     return request;
 }
 
+QVariantMap conferenceCallRequest(const QList<Tp::ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers)
+{
+    QVariantMap request = conferenceRequest(TP_QT_IFACE_CHANNEL_TYPE_CALL,
+            Tp::HandleTypeNone, channels, initialInviteeContactsIdentifiers);
+    return request;
+}
+
+QVariantMap conferenceCallRequest(const QList<Tp::ChannelPtr> &channels,
+        const QList<Tp::ContactPtr> &initialInviteeContacts)
+{
+    QVariantMap request = conferenceRequest(TP_QT_IFACE_CHANNEL_TYPE_CALL,
+            Tp::HandleTypeNone, channels, initialInviteeContacts);
+    return request;
+}
+
 QVariantMap contactSearchRequest(const ConnectionCapabilities &capabilities,
         const QString &server, uint limit)
 {
@@ -2989,6 +3005,75 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
 }
 
 /**
+ * Start a request to create a conference call with the given
+ * channels \a channels.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          identifiers to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the request has been made.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::createConferenceCall(
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = conferenceCallRequest(channels,
+            initialInviteeContactsIdentifiers);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true, hints);
+}
+
+/**
+ * Start a request to create a conference call with the given
+ * channels \a channels.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContacts A list of additional contacts
+ *                               to be invited to this
+ *                               conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the request has been made.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::createConferenceCall(
+        const QList<ChannelPtr> &channels,
+        const QList<ContactPtr> &initialInviteeContacts,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = conferenceCallRequest(channels, initialInviteeContacts);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true, hints);
+}
+
+/**
  * Start a request to create a conference text chat with the given
  * channels \a channels.
  *
@@ -3128,6 +3213,63 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
+}
+
+/**
+ * Start a request to create a conference call with the given
+ * channels \a channels.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          identifiers to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleConferenceCall(
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = conferenceCallRequest(channels,
+            initialInviteeContactsIdentifiers);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a conference call with the given
+ * channels \a channels.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContacts A list of additional contacts
+ *                               to be invited to this
+ *                               conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleConferenceCall(
+        const QList<ChannelPtr> &channels,
+        const QList<ContactPtr> &initialInviteeContacts,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = conferenceCallRequest(channels, initialInviteeContacts);
+
+    return createAndHandleChannel(request, userActionTime);
 }
 
 /**

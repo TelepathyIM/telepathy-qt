@@ -350,6 +350,19 @@ public:
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
 
+    PendingChannelRequest *createConferenceCall(
+            const QList<ChannelPtr> &channels,
+            const QStringList &initialInviteeContactsIdentifiers = QStringList(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+    PendingChannelRequest *createConferenceCall(
+            const QList<ChannelPtr> &channels,
+            const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+
     PendingChannelRequest *createConferenceTextChat(
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
@@ -377,6 +390,15 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
+
+    PendingChannel *createAndHandleConferenceCall(
+            const QList<ChannelPtr> &channels,
+            const QStringList &initialInviteeContactsIdentifiers = QStringList(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+    PendingChannel *createAndHandleConferenceCall(
+            const QList<ChannelPtr> &channels,
+            const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
 
     PendingChannelRequest *createContactSearch(
             const QString &server,
