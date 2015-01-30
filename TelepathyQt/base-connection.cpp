@@ -154,6 +154,7 @@ void BaseConnection::Adaptee::requestChannel(const QString &type, uint handleTyp
                              yours,
                              selfHandle(),
                              suppressHandler,
+                             QVariantMap(),
                              &error);
     if (error.isValid() || !channel) {
         context->setFinishedWithError(error.name(), error.message());
@@ -289,6 +290,7 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QString &channelType,
         uint targetHandle,
         uint initiatorHandle,
         bool suppressHandler,
+        const QVariantMap &request,
         DBusError *error)
 {
     if (!mPriv->createChannelCB.isValid()) {
@@ -300,7 +302,7 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QString &channelType,
         return BaseChannelPtr();
     }
 
-    BaseChannelPtr channel = mPriv->createChannelCB(channelType, targetHandleType, targetHandle, error);
+    BaseChannelPtr channel = mPriv->createChannelCB(channelType, targetHandleType, targetHandle, request, error);
     if (error->isValid())
         return BaseChannelPtr();
 
@@ -404,6 +406,7 @@ Tp::ChannelDetailsList BaseConnection::channelsDetails()
 BaseChannelPtr BaseConnection::ensureChannel(const QString &channelType, uint targetHandleType,
         uint targetHandle, bool &yours, uint initiatorHandle,
         bool suppressHandler,
+        const QVariantMap &request,
         DBusError* error)
 {
     foreach(BaseChannelPtr channel, mPriv->channels) {
@@ -415,7 +418,7 @@ BaseChannelPtr BaseConnection::ensureChannel(const QString &channelType, uint ta
         }
     }
     yours = true;
-    return createChannel(channelType, targetHandleType, targetHandle, initiatorHandle, suppressHandler, error);
+    return createChannel(channelType, targetHandleType, targetHandle, initiatorHandle, suppressHandler, request, error);
 }
 
 void BaseConnection::addChannel(BaseChannelPtr channel)
@@ -782,6 +785,7 @@ void BaseConnectionRequestsInterface::ensureChannel(const QVariantMap &request, 
                              targetHandle, yours,
                              mPriv->connection->selfHandle(),
                              suppressHandler,
+                             request,
                              error);
     if (error->isValid())
         return;
@@ -810,6 +814,7 @@ void BaseConnectionRequestsInterface::createChannel(const QVariantMap &request,
                              targetHandle,
                              mPriv->connection->selfHandle(),
                              suppressHandler,
+                             request,
                              error);
     if (error->isValid())
         return;
