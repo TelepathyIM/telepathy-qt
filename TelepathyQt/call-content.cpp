@@ -340,6 +340,7 @@ void CallContent::gotMainProperties(PendingOperation *op)
     mPriv->name = qdbus_cast<QString>(props[QLatin1String("Name")]);
     mPriv->type = qdbus_cast<uint>(props[QLatin1String("Type")]);
     mPriv->disposition = qdbus_cast<uint>(props[QLatin1String("Disposition")]);
+    setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
 
     ObjectPathList streamsPaths = qdbus_cast<ObjectPathList>(props[QLatin1String("Streams")]);
     if (streamsPaths.size() != 0) {
