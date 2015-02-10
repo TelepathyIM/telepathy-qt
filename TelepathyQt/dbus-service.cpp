@@ -283,6 +283,33 @@ bool AbstractDBusServiceInterface::isRegistered() const
 }
 
 /**
+ * Emit PropertiesChanged signal on object org.freedesktop.DBus.Properties interface
+ * with the property \a propertyName.
+ *
+ * \param propertyName The name of the changed property.
+ * \param propertyValue The actual value of the changed property.
+ * \return \c false if the signal can not be emmited or \a true otherwise.
+ */
+bool AbstractDBusServiceInterface::notifyPropertyChanged(const QString &propertyName, const QVariant &propertyValue)
+{
+    if (!isRegistered()) {
+        return false;
+    }
+
+    QDBusMessage signal = QDBusMessage::createSignal(dbusObject()->objectPath(),
+                                                     TP_QT_IFACE_PROPERTIES,
+                                                     QLatin1String("PropertiesChanged"));
+    QVariantMap changedProperties;
+    changedProperties.insert(propertyName, propertyValue);
+
+    signal << interfaceName();
+    signal << changedProperties;
+    signal << QStringList();
+
+    return dbusObject()->dbusConnection().send(signal);
+}
+
+/**
  * Registers this interface by plugging its adaptor
  * on the given \a dbusObject.
  *

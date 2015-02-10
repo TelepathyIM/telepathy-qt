@@ -90,6 +90,9 @@ protected:
     virtual bool registerInterface(DBusObject *dbusObject);
     virtual void createAdaptor() = 0;
 
+public:
+    bool notifyPropertyChanged(const QString &propertyName, const QVariant &propertyValue);
+
 private:
     class Private;
     friend class Private;
