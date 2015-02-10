@@ -999,16 +999,19 @@ void BaseChannelCaptchaAuthenticationInterface::setCancelCaptchaCallback(const C
 void BaseChannelCaptchaAuthenticationInterface::setCaptchaStatus(uint status)
 {
     mPriv->captchaStatus = status;
+    notifyPropertyChanged(QLatin1String("CaptchaStatus"), QVariant::fromValue(status));
 }
 
 void BaseChannelCaptchaAuthenticationInterface::setCaptchaError(const QString& busName)
 {
     mPriv->captchaError = busName;
+    notifyPropertyChanged(QLatin1String("CaptchaError"), QVariant::fromValue(busName));
 }
 
 void BaseChannelCaptchaAuthenticationInterface::setCaptchaErrorDetails(const QVariantMap& error)
 {
     mPriv->captchaErrorDetails = error;
+    notifyPropertyChanged(QLatin1String("CaptchaErrorDetails"), QVariant::fromValue(error));
 }
 
 //Chan.I.SASLAuthentication
