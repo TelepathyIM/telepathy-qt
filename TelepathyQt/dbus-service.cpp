@@ -46,7 +46,6 @@ struct TP_QT_NO_EXPORT DBusService::Private
 
     DBusService *parent;
     QString busName;
-    QString objectPath;
     DBusObject *dbusObject;
     bool registered;
 };
@@ -113,7 +112,7 @@ QString DBusService::busName() const
  */
 QString DBusService::objectPath() const
 {
-    return mPriv->objectPath;
+    return mPriv->dbusObject->objectPath();
 }
 
 /**
@@ -186,7 +185,7 @@ bool DBusService::registerObject(const QString &busName, const QString &objectPa
     debug() << "Registered object" << objectPath << "at bus name" << busName;
 
     mPriv->busName = busName;
-    mPriv->objectPath = objectPath;
+    mPriv->dbusObject->setObjectPath(objectPath);
     mPriv->registered = true;
     return true;
 }

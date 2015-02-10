@@ -37,6 +37,7 @@ struct TP_QT_NO_EXPORT DBusObject::Private
     }
 
     QDBusConnection dbusConnection;
+    QString objectPath;
 };
 
 /**
@@ -66,6 +67,16 @@ DBusObject::DBusObject(const QDBusConnection &dbusConnection, QObject *parent)
 DBusObject::~DBusObject()
 {
     delete mPriv;
+}
+
+void DBusObject::setObjectPath(const QString &path)
+{
+    mPriv->objectPath = path;
+}
+
+QString DBusObject::objectPath() const
+{
+    return mPriv->objectPath;
 }
 
 /**

@@ -45,12 +45,18 @@ public:
     DBusObject(const QDBusConnection &dbusConnection, QObject *parent = 0);
     virtual ~DBusObject();
 
+    QString objectPath() const;
     QDBusConnection dbusConnection() const;
+
+protected:
+    void setObjectPath(const QString &path);
 
 private:
     class Private;
     friend class Private;
     Private *mPriv;
+
+    friend class DBusService;
 };
 
 }
