@@ -604,7 +604,7 @@ void BaseConnection::setSelfHandle(uint selfHandle)
     bool changed = (selfHandle != mPriv->selfHandle);
     mPriv->selfHandle = selfHandle;
     if (changed)
-        emit mPriv->adaptee->selfHandleChanged(mPriv->selfHandle);
+        QMetaObject::invokeMethod(mPriv->adaptee, "selfHandleChanged", Q_ARG(uint, selfHandle));
 }
 
 uint BaseConnection::selfHandle() const

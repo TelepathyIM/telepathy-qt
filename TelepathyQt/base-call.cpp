@@ -304,7 +304,7 @@ void BaseCallMuteInterface::setMuteState(const Tp::LocalMuteState &state)
 {
     if (mPriv->state != state) {
         mPriv->state = state;
-        emit mPriv->adaptee->muteStateChanged(state);
+        QMetaObject::invokeMethod(mPriv->adaptee, "muteStateChanged", Q_ARG(Tp::LocalMuteState, state));
     }
 }
 

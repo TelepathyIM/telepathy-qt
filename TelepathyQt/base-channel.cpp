@@ -2111,7 +2111,7 @@ void BaseChannelCallType::setCallState(const Tp::CallState &state, uint flags, c
     mPriv->callFlags = flags;
     mPriv->callStateReason = stateReason;
     mPriv->callStateDetails = callStateDetails;
-    emit mPriv->adaptee->callStateChanged(state, flags, stateReason, callStateDetails);
+    QMetaObject::invokeMethod(mPriv->adaptee, "callStateChanged", Q_ARG(Tp::CallState, state), Q_ARG(uint, flags), Q_ARG(Tp::CallStateReason, stateReason), Q_ARG(QVariantMap, callStateDetails));
 }
 
 void BaseChannelCallType::setAcceptCallback(const AcceptCallback &cb)
@@ -2143,7 +2143,7 @@ void BaseChannelCallType::setMembersFlags(const Tp::CallMemberMap &flagsChanged,
 {
     mPriv->callMembers = flagsChanged;
     mPriv->memberIdentifiers = identifiers;
-    emit mPriv->adaptee->callMembersChanged(flagsChanged, identifiers, removed, reason);
+    QMetaObject::invokeMethod(mPriv->adaptee, "callMembersChanged", Q_ARG(Tp::CallMemberMap, flagsChanged), Q_ARG(Tp::HandleIdentifierMap, identifiers), Q_ARG(Tp::UIntList, removed), Q_ARG(Tp::CallStateReason, reason));
 }
 
 BaseCallContentPtr BaseChannelCallType::addContent(const QString &name, const Tp::MediaStreamType &type, const Tp::MediaStreamDirection &direction)
@@ -2154,7 +2154,7 @@ BaseCallContentPtr BaseChannelCallType::addContent(const QString &name, const Tp
     QDBusObjectPath objpath;
     objpath.setPath(ptr->objectPath());
     mPriv->contents.append(objpath);
-    emit mPriv->adaptee->contentAdded(objpath);
+    QMetaObject::invokeMethod(mPriv->adaptee, "contentAdded", Q_ARG(QDBusObjectPath, objpath));
 
     return ptr;
 }
@@ -2166,7 +2166,7 @@ void BaseChannelCallType::addContent(BaseCallContentPtr content)
     QDBusObjectPath objpath;
     objpath.setPath(content->objectPath());
     mPriv->contents.append(objpath);
-    emit mPriv->adaptee->contentAdded(objpath);
+    QMetaObject::invokeMethod(mPriv->adaptee, "contentAdded", Q_ARG(QDBusObjectPath, objpath));
 }
 
 // Chan.I.Hold
@@ -2254,7 +2254,7 @@ void BaseChannelHoldInterface::setHoldState(const Tp::LocalHoldState &state, con
     if (mPriv->state != state) {
         mPriv->state = state;
         mPriv->reason = reason;
-        emit mPriv->adaptee->holdStateChanged(state, reason);
+        QMetaObject::invokeMethod(mPriv->adaptee, "holdStateChanged", Q_ARG(Tp::LocalHoldState, state), Q_ARG(Tp::LocalHoldStateReason, reason));
     }
 }
 
@@ -2552,7 +2552,7 @@ void BaseChannelConferenceInterface::mergeChannel(const QDBusObjectPath &channel
     if (channelHandle != 0) {
         mPriv->originalChannels[channelHandle] = channel;
     }
-    emit mPriv->adaptee->channelMerged(channel, channelHandle, properties);
+    QMetaObject::invokeMethod(mPriv->adaptee, "channelMerged", Q_ARG(QDBusObjectPath, channel), Q_ARG(uint, channelHandle), Q_ARG(QVariantMap, properties));
 }
 
 
@@ -2562,7 +2562,7 @@ void BaseChannelConferenceInterface::removeChannel(const QDBusObjectPath &channe
     if (mPriv->originalChannels.values().contains(channel)) {
         mPriv->originalChannels.remove(mPriv->originalChannels.key(channel));
     }
-    emit mPriv->adaptee->channelRemoved(channel, details);
+    QMetaObject::invokeMethod(mPriv->adaptee, "channelRemoved", Q_ARG(QDBusObjectPath, channel), Q_ARG(QVariantMap, details));
 }
 
 ChannelOriginatorMap BaseChannelConferenceInterface::originalChannels() const
