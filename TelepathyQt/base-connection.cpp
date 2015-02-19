@@ -331,7 +331,7 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QString &channelType,
     channel->setInitiatorHandle(initiatorHandle);
     channel->setInitiatorID(initiatorID);
     channel->setTargetID(targetID);
-    channel->setRequested(initiatorHandle == mPriv->selfHandle);
+    channel->setRequested(suppressHandler);
 
     channel->registerObject(error);
     if (error->isValid())
