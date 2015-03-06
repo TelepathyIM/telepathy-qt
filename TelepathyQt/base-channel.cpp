@@ -2111,7 +2111,7 @@ void BaseChannelCallType::setCallState(const Tp::CallState &state, uint flags, c
     mPriv->callFlags = flags;
     mPriv->callStateReason = stateReason;
     mPriv->callStateDetails = callStateDetails;
-    QMetaObject::invokeMethod(mPriv->adaptee, "callStateChanged", Q_ARG(Tp::CallState, state), Q_ARG(uint, flags), Q_ARG(Tp::CallStateReason, stateReason), Q_ARG(QVariantMap, callStateDetails));
+    QMetaObject::invokeMethod(mPriv->adaptee, "callStateChanged", Q_ARG(uint, state), Q_ARG(uint, flags), Q_ARG(Tp::CallStateReason, stateReason), Q_ARG(QVariantMap, callStateDetails));
 }
 
 void BaseChannelCallType::setAcceptCallback(const AcceptCallback &cb)
