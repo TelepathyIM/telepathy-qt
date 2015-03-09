@@ -2254,7 +2254,7 @@ void BaseChannelHoldInterface::setHoldState(const Tp::LocalHoldState &state, con
     if (mPriv->state != state) {
         mPriv->state = state;
         mPriv->reason = reason;
-        QMetaObject::invokeMethod(mPriv->adaptee, "holdStateChanged", Q_ARG(Tp::LocalHoldState, state), Q_ARG(Tp::LocalHoldStateReason, reason));
+        QMetaObject::invokeMethod(mPriv->adaptee, "holdStateChanged", Q_ARG(uint, state), Q_ARG(uint, reason));
     }
 }
 
