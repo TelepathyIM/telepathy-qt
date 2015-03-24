@@ -801,9 +801,7 @@ void BaseConnectionRequestsInterface::createChannel(const QVariantMap &request,
         QDBusObjectPath &objectPath,
         QVariantMap &details, DBusError *error)
 {
-    if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))
-            || !request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"))
-            || !request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"))) {
+    if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))) {
         error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Missing parameters"));
         return;
     }
