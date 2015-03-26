@@ -760,10 +760,7 @@ void BaseConnectionRequestsInterface::channelClosed(const QDBusObjectPath &remov
 void BaseConnectionRequestsInterface::ensureChannel(const QVariantMap &request, bool &yours,
         QDBusObjectPath &objectPath, QVariantMap &details, DBusError *error)
 {
-    if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))
-            || !request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"))
-            || (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"))
-                && !request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")))) {
+    if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))) {
         error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Missing parameters"));
         return;
     }
