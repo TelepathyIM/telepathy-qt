@@ -51,6 +51,8 @@ struct TP_QT_NO_EXPORT BaseChannel::Private {
           channelType(channelType),
           targetHandle(targetHandle),
           targetHandleType(targetHandleType),
+          requested(true),
+          initiatorHandle(0),
           adaptee(new BaseChannel::Adaptee(dbusConnection, parent)) {
         static uint s_channelIncrementalId = 0;
 
