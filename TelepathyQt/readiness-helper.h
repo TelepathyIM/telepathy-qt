@@ -33,6 +33,7 @@
 #include <QSet>
 #include <QSharedDataPointer>
 #include <QStringList>
+#include <QObject>
 
 class QDBusError;
 
