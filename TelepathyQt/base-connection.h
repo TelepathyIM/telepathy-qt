@@ -130,6 +130,8 @@ protected:
     virtual bool registerObject(const QString &busName, const QString &objectPath,
                                 DBusError *error);
 
+    virtual bool matchChannel(const Tp::BaseChannelPtr &channel, const QVariantMap &request, Tp::DBusError *error);
+
 private:
     class Adaptee;
     friend class Adaptee;

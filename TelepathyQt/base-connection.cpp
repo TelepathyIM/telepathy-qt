@@ -402,14 +402,14 @@ Tp::ChannelDetailsList BaseConnection::channelsDetails()
 
 Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error)
 {
-    const QString channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
-    uint targetHandleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
-    uint targetHandle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
+    foreach(const BaseChannelPtr &channel, mPriv->channels) {
+        bool match = matchChannel(channel, request, error);
 
-    foreach(BaseChannelPtr channel, mPriv->channels) {
-        if (channel->channelType() == channelType
-                && channel->targetHandleType() == targetHandleType
-                && channel->targetHandle() == targetHandle) {
+        if (error->isValid()) {
+            return BaseChannelPtr();
+        }
+
+        if (match) {
             yours = false;
             return channel;
         }
@@ -595,6 +595,19 @@ bool BaseConnection::registerObject(const QString &busName,
                                     const QString &objectPath, DBusError *error)
 {
     return DBusService::registerObject(busName, objectPath, error);
+}
+
+bool BaseConnection::matchChannel(const BaseChannelPtr &channel, const QVariantMap &request, DBusError *error)
+{
+    Q_UNUSED(error);
+
+    const QString channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+    uint targetHandleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+    uint targetHandle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
+
+    return channel->channelType() == channelType
+            && channel->targetHandleType() == targetHandleType
+            && channel->targetHandle() == targetHandle;
 }
 
 void BaseConnection::setSelfHandle(uint selfHandle)
