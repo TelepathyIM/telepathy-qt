@@ -147,15 +147,14 @@ void BaseConnection::Adaptee::requestChannel(const QString &type, uint handleTyp
 {
     debug() << "BaseConnection::Adaptee::requestChannel (deprecated)";
     DBusError error;
+
+    QVariantMap request;
+    request[TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")] = type;
+    request[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")] = handleType;
+    request[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")] = handle;
+
     bool yours;
-    BaseChannelPtr channel = mConnection->ensureChannel(type,
-                             handleType,
-                             handle,
-                             yours,
-                             selfHandle(),
-                             suppressHandler,
-                             QVariantMap(),
-                             &error);
+    BaseChannelPtr channel = mConnection->ensureChannel(request, yours, suppressHandler, &error);
     if (error.isValid() || !channel) {
         context->setFinishedWithError(error.name(), error.message());
         return;
@@ -285,13 +284,7 @@ void BaseConnection::setCreateChannelCallback(const CreateChannelCallback &cb)
     mPriv->createChannelCB = cb;
 }
 
-Tp::BaseChannelPtr BaseConnection::createChannel(const QString &channelType,
-        uint targetHandleType,
-        uint targetHandle,
-        uint initiatorHandle,
-        bool suppressHandler,
-        const QVariantMap &request,
-        DBusError *error)
+Tp::BaseChannelPtr BaseConnection::createChannel(const QVariantMap &request, bool suppressHandler, DBusError *error)
 {
     if (!mPriv->createChannelCB.isValid()) {
         error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
@@ -302,36 +295,40 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QString &channelType,
         return BaseChannelPtr();
     }
 
-    BaseChannelPtr channel = mPriv->createChannelCB(channelType, targetHandleType, targetHandle, request, error);
+    BaseChannelPtr channel = mPriv->createChannelCB(request, error);
     if (error->isValid())
         return BaseChannelPtr();
 
     QString targetID;
-    if (targetHandle != 0) {
-        QStringList list = mPriv->inspectHandlesCB(targetHandleType,  UIntList() << targetHandle, error);
+    if (channel->targetHandle() != 0) {
+        QStringList list = mPriv->inspectHandlesCB(channel->targetHandleType(),  UIntList() << channel->targetHandle(), error);
         if (error->isValid()) {
-            debug() << "BaseConnection::createChannel: could not resolve handle " << targetHandle;
+            debug() << "BaseConnection::createChannel: could not resolve handle " << channel->targetHandle();
             return BaseChannelPtr();
         } else {
             debug() << "BaseConnection::createChannel: found targetID " << *list.begin();
             targetID = *list.begin();
         }
     }
+
+    if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorHandle"))) {
+        channel->setInitiatorHandle(request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorHandle")).toUInt());
+    }
+
     QString initiatorID;
-    if (initiatorHandle != 0) {
-        QStringList list = mPriv->inspectHandlesCB(HandleTypeContact, UIntList() << initiatorHandle, error);
+    if (channel->initiatorHandle() != 0) {
+        QStringList list = mPriv->inspectHandlesCB(HandleTypeContact, UIntList() << channel->initiatorHandle(), error);
         if (error->isValid()) {
-            debug() << "BaseConnection::createChannel: could not resolve handle " << initiatorHandle;
+            debug() << "BaseConnection::createChannel: could not resolve handle " << channel->initiatorHandle();
             return BaseChannelPtr();
         } else {
             debug() << "BaseConnection::createChannel: found initiatorID " << *list.begin();
             initiatorID = *list.begin();
         }
     }
-    channel->setInitiatorHandle(initiatorHandle);
     channel->setInitiatorID(initiatorID);
     channel->setTargetID(targetID);
-    channel->setRequested(suppressHandler);
+    channel->setRequested(request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"), suppressHandler).toBool());
 
     channel->registerObject(error);
     if (error->isValid())
@@ -403,12 +400,12 @@ Tp::ChannelDetailsList BaseConnection::channelsDetails()
     return list;
 }
 
-BaseChannelPtr BaseConnection::ensureChannel(const QString &channelType, uint targetHandleType,
-        uint targetHandle, bool &yours, uint initiatorHandle,
-        bool suppressHandler,
-        const QVariantMap &request,
-        DBusError* error)
+Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error)
 {
+    const QString channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+    uint targetHandleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+    uint targetHandle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
+
     foreach(BaseChannelPtr channel, mPriv->channels) {
         if (channel->channelType() == channelType
                 && channel->targetHandleType() == targetHandleType
@@ -417,8 +414,9 @@ BaseChannelPtr BaseConnection::ensureChannel(const QString &channelType, uint ta
             return channel;
         }
     }
+
     yours = true;
-    return createChannel(channelType, targetHandleType, targetHandle, initiatorHandle, suppressHandler, request, error);
+    return createChannel(request, suppressHandler, error);
 }
 
 void BaseConnection::addChannel(BaseChannelPtr channel)
@@ -765,28 +763,8 @@ void BaseConnectionRequestsInterface::ensureChannel(const QVariantMap &request, 
         return;
     }
 
-    QString channelType = request[TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")].toString();
-    uint targetHandleType = request[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")].toUInt();
-    uint targetHandle;
-    if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")))
-        targetHandle = request[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")].toUInt();
-    else {
-        QString targetID = request[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")].toString();
-        Tp::UIntList list = mPriv->connection->requestHandles(targetHandleType, QStringList() << targetID, error);
-        if (error->isValid()) {
-            warning() << "BBaseConnectionRequestsInterface::ensureChannel: could not resolve ID " << targetID;
-            return;
-        }
-        targetHandle = *list.begin();
-    }
+    BaseChannelPtr channel = mPriv->connection->ensureChannel(request, yours, /* suppressHandler */ true, error);
 
-    bool suppressHandler = true;
-    BaseChannelPtr channel = mPriv->connection->ensureChannel(channelType, targetHandleType,
-                             targetHandle, yours,
-                             mPriv->connection->selfHandle(),
-                             suppressHandler,
-                             request,
-                             error);
     if (error->isValid())
         return;
 
@@ -803,24 +781,14 @@ void BaseConnectionRequestsInterface::createChannel(const QVariantMap &request,
         return;
     }
 
-    QString channelType = request[TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")].toString();
-    uint targetHandleType = request[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")].toUInt();
-    uint targetHandle = request[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")].toUInt();
+    BaseChannelPtr channel = mPriv->connection->createChannel(request, /* yours */ false, error);
 
-    bool suppressHandler = true;
-    BaseChannelPtr channel = mPriv->connection->createChannel(channelType, targetHandleType,
-                             targetHandle,
-                             mPriv->connection->selfHandle(),
-                             suppressHandler,
-                             request,
-                             error);
     if (error->isValid())
         return;
 
     objectPath = QDBusObjectPath(channel->objectPath());
     details = channel->details().properties;
 }
-
 
 // Conn.I.Contacts
 BaseConnectionContactsInterface::Adaptee::Adaptee(BaseConnectionContactsInterface *interface)

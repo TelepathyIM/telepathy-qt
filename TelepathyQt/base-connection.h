@@ -82,9 +82,9 @@ public:
 
     void setStatus(uint newStatus, uint reason);
 
-    typedef Callback5<BaseChannelPtr, const QString&, uint, uint, const QVariantMap&, DBusError*> CreateChannelCallback;
+    typedef Callback2<BaseChannelPtr, const QVariantMap &, DBusError*> CreateChannelCallback;
     void setCreateChannelCallback(const CreateChannelCallback &cb);
-    Tp::BaseChannelPtr createChannel(const QString &channelType, uint targetHandleType, uint targetHandle, uint initiatorHandle, bool suppressHandler, const QVariantMap &request, DBusError *error);
+    BaseChannelPtr createChannel(const QVariantMap &request, bool suppressHandler, DBusError *error);
 
     typedef Callback3<UIntList, uint, const QStringList&, DBusError*> RequestHandlesCallback;
     void setRequestHandlesCallback(const RequestHandlesCallback &cb);
@@ -105,8 +105,8 @@ public:
     Tp::ChannelInfoList channelsInfo();
     Tp::ChannelDetailsList channelsDetails();
 
-    BaseChannelPtr ensureChannel(const QString &channelType, uint targetHandleType,
-                                 uint targetHandle, bool &yours, uint initiatorHandle, bool suppressHandler, const QVariantMap &request, DBusError *error);
+    BaseChannelPtr ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error);
+
     void addChannel(BaseChannelPtr channel);
 
     QList<AbstractConnectionInterfacePtr> interfaces() const;
