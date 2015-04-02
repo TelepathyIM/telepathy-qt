@@ -400,6 +400,24 @@ Tp::ChannelDetailsList BaseConnection::channelsDetails()
     return list;
 }
 
+/**
+ * \fn Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error)
+ *
+ * Return a new or exists channel, satisfying the given \a request.
+ *
+ * This method iterate over exist channels to find the one satisfying the \a request. If there is no
+ * suitable channel, then new channel with given request details will be created.
+ * This method uses the matchChannel() method to check whether there exists a channel which confirms with the \a request.
+ *
+ * If \a error is passed, any error that may occur will be stored there.
+ *
+ * \param request A dictionary containing the desirable properties.
+ * \param yours A returning argument. \c true if returned channel is a new one and \c false otherwise.
+ * \param suppressHandler An option to suppress handler in case of a new channel creation.
+ * \param error A pointer to an empty DBusError where any possible error will be stored.
+ * \return A pointer to a channel, satisfying the given \a request.
+ * \sa matchChannel()
+ */
 Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error)
 {
     foreach(const BaseChannelPtr &channel, mPriv->channels) {
@@ -597,6 +615,24 @@ bool BaseConnection::registerObject(const QString &busName,
     return DBusService::registerObject(busName, objectPath, error);
 }
 
+/**
+ * \fn bool BaseConnection::matchChannel(const BaseChannelPtr &channel, const QVariantMap &request, DBusError *error)
+ *
+ * Check \a channel on conformity with \a request.
+ *
+ * This virtual method is used to check if a \a channel satisfying the given request.
+ *
+ * The default implementation compares type of the \a channel, it's target handle type and target
+ * handle value.
+ * If \a error is passed, any error that may occur will be stored there.
+ *
+ * \param channel A pointer to a channel to be checked.
+ * \param request A dictionary containing the desirable properties.
+ * \param error A pointer to an empty DBusError where any
+ * possible error will be stored.
+ * \return \c true if channel match the request and \c false otherwise.
+ * \sa ensureChannel()
+ */
 bool BaseConnection::matchChannel(const BaseChannelPtr &channel, const QVariantMap &request, DBusError *error)
 {
     Q_UNUSED(error);
