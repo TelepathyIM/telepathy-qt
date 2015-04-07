@@ -420,7 +420,18 @@ Tp::ChannelDetailsList BaseConnection::channelsDetails()
  */
 Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error)
 {
+    if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))) {
+        error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Missing parameters"));
+        return Tp::BaseChannelPtr();
+    }
+
+    const QString channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+
     foreach(const BaseChannelPtr &channel, mPriv->channels) {
+        if (channel->channelType() != channelType) {
+            continue;
+        }
+
         bool match = matchChannel(channel, request, error);
 
         if (error->isValid()) {
@@ -621,9 +632,9 @@ bool BaseConnection::registerObject(const QString &busName,
  * Check \a channel on conformity with \a request.
  *
  * This virtual method is used to check if a \a channel satisfying the given request.
+ * It is warranted, that the type of the channel meets the requested type.
  *
- * The default implementation compares type of the \a channel, it's target handle type and target
- * handle value.
+ * The default implementation compares TargetHandleType and TargetHandle/TargetID.
  * If \a error is passed, any error that may occur will be stored there.
  *
  * \param channel A pointer to a channel to be checked.
@@ -637,13 +648,25 @@ bool BaseConnection::matchChannel(const BaseChannelPtr &channel, const QVariantM
 {
     Q_UNUSED(error);
 
-    const QString channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
-    uint targetHandleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
-    uint targetHandle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
+    if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"))) {
+        uint targetHandleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+        if (channel->targetHandleType() != targetHandleType) {
+            return false;
+        }
+        if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"))) {
+            uint targetHandle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
+            return channel->targetHandle() == targetHandle;
+        } else  if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"))) {
+            const QString targetID = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
+            return channel->targetID() == targetID;
+        } else {
+            // Request is not valid
+            return false;
+        }
+    }
 
-    return channel->channelType() == channelType
-            && channel->targetHandleType() == targetHandleType
-            && channel->targetHandle() == targetHandle;
+    // Unknown request
+    return false;
 }
 
 void BaseConnection::setSelfHandle(uint selfHandle)
@@ -807,11 +830,6 @@ void BaseConnectionRequestsInterface::channelClosed(const QDBusObjectPath &remov
 void BaseConnectionRequestsInterface::ensureChannel(const QVariantMap &request, bool &yours,
         QDBusObjectPath &objectPath, QVariantMap &details, DBusError *error)
 {
-    if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))) {
-        error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Missing parameters"));
-        return;
-    }
-
     BaseChannelPtr channel = mPriv->connection->ensureChannel(request, yours, /* suppressHandler */ true, error);
 
     if (error->isValid())
