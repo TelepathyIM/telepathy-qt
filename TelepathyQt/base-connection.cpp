@@ -1027,12 +1027,12 @@ BaseConnectionSimplePresenceInterface::Adaptee::~Adaptee()
 
 struct TP_QT_NO_EXPORT BaseConnectionSimplePresenceInterface::Private {
     Private(BaseConnectionSimplePresenceInterface *parent)
-        : maxmimumStatusMessageLength(0),
+        : maximumStatusMessageLength(0),
           adaptee(new BaseConnectionSimplePresenceInterface::Adaptee(parent)) {
     }
     SetPresenceCallback setPresenceCB;
     SimpleStatusSpecMap statuses;
-    uint maxmimumStatusMessageLength;
+    uint maximumStatusMessageLength;
     /* The current presences */
     SimpleContactPresences presences;
     BaseConnectionSimplePresenceInterface::Adaptee *adaptee;
@@ -1099,6 +1099,17 @@ void BaseConnectionSimplePresenceInterface::setSetPresenceCallback(const SetPres
     mPriv->setPresenceCB = cb;
 }
 
+SimpleContactPresences BaseConnectionSimplePresenceInterface::getPresences(const UIntList &contacts)
+{
+    Tp::SimpleContactPresences presences;
+    foreach(uint handle, contacts) {
+        static const Tp::SimplePresence unknownPresence = { .type = ConnectionPresenceTypeUnknown, .status = QLatin1String("unknown") };
+        presences[handle] = mPriv->presences.value(handle, unknownPresence);
+    }
+
+    return presences;
+}
+
 Tp::SimpleStatusSpecMap BaseConnectionSimplePresenceInterface::statuses() const
 {
     return mPriv->statuses;
@@ -1109,14 +1120,14 @@ void BaseConnectionSimplePresenceInterface::setStatuses(const SimpleStatusSpecMa
     mPriv->statuses = statuses;
 }
 
-int BaseConnectionSimplePresenceInterface::maximumStatusMessageLength() const
+uint BaseConnectionSimplePresenceInterface::maximumStatusMessageLength() const
 {
-    return mPriv->maxmimumStatusMessageLength;
+    return mPriv->maximumStatusMessageLength;
 }
 
-void BaseConnectionSimplePresenceInterface::setMaxmimumStatusMessageLength(uint maxmimumStatusMessageLength)
+void BaseConnectionSimplePresenceInterface::setMaximumStatusMessageLength(uint maximumStatusMessageLength)
 {
-    mPriv->maxmimumStatusMessageLength = maxmimumStatusMessageLength;
+    mPriv->maximumStatusMessageLength = maximumStatusMessageLength;
 }
 
 Tp::SimpleStatusSpecMap BaseConnectionSimplePresenceInterface::Adaptee::statuses() const
@@ -1126,7 +1137,7 @@ Tp::SimpleStatusSpecMap BaseConnectionSimplePresenceInterface::Adaptee::statuses
 
 int BaseConnectionSimplePresenceInterface::Adaptee::maximumStatusMessageLength() const
 {
-    return mInterface->mPriv->maxmimumStatusMessageLength;
+    return mInterface->mPriv->maximumStatusMessageLength;
 }
 
 void BaseConnectionSimplePresenceInterface::Adaptee::setPresence(const QString &status, const QString &statusMessage_,
@@ -1145,10 +1156,10 @@ void BaseConnectionSimplePresenceInterface::Adaptee::setPresence(const QString &
     }
 
     QString statusMessage = statusMessage_;
-    if ((uint)statusMessage.length() > mInterface->mPriv->maxmimumStatusMessageLength) {
+    if ((uint)statusMessage.length() > mInterface->mPriv->maximumStatusMessageLength) {
         debug() << "BaseConnectionSimplePresenceInterface::Adaptee::setPresence: "
-                << "truncating status to " << mInterface->mPriv->maxmimumStatusMessageLength;
-        statusMessage = statusMessage.left(mInterface->mPriv->maxmimumStatusMessageLength);
+                << "truncating status to " << mInterface->mPriv->maximumStatusMessageLength;
+        statusMessage = statusMessage.left(mInterface->mPriv->maximumStatusMessageLength);
     }
 
     DBusError error;
@@ -1176,18 +1187,7 @@ void BaseConnectionSimplePresenceInterface::Adaptee::setPresence(const QString &
 void BaseConnectionSimplePresenceInterface::Adaptee::getPresences(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceSimplePresenceAdaptor::GetPresencesContextPtr &context)
 {
-    Tp::SimpleContactPresences presences;
-    foreach(uint handle, contacts) {
-        SimpleContactPresences::iterator i = mInterface->mPriv->presences.find(handle);
-        if (i == mInterface->mPriv->presences.end()) {
-            Tp::SimplePresence presence;
-            presence.type = ConnectionPresenceTypeUnknown;
-            presence.status = QLatin1String("unknown");
-            presences[handle] = presence;
-        } else
-            presences[handle] = *i;
-    }
-    context->setFinished(presences);
+    context->setFinished(mInterface->getPresences(contacts));
 }
 
 // Conn.I.ContactList

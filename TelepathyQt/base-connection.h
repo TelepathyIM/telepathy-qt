@@ -234,13 +234,15 @@ class TP_QT_EXPORT BaseConnectionSimplePresenceInterface : public AbstractConnec
     Q_DISABLE_COPY(BaseConnectionSimplePresenceInterface)
 
 public:
-    static BaseConnectionSimplePresenceInterfacePtr create() {
+    static BaseConnectionSimplePresenceInterfacePtr create()
+    {
         return BaseConnectionSimplePresenceInterfacePtr(new BaseConnectionSimplePresenceInterface());
     }
-    template<typename BaseConnectionSimplePresenceInterfaceSublclass>
-    static SharedPtr<BaseConnectionSimplePresenceInterfaceSublclass> create() {
-        return SharedPtr<BaseConnectionSimplePresenceInterfaceSublclass>(
-                   new BaseConnectionSimplePresenceInterfaceSublclass());
+    template<typename BaseConnectionSimplePresenceInterfaceSubclass>
+    static SharedPtr<BaseConnectionSimplePresenceInterfaceSubclass> create()
+    {
+        return SharedPtr<BaseConnectionSimplePresenceInterfaceSubclass>(
+                new BaseConnectionSimplePresenceInterfaceSubclass());
     }
 
     virtual ~BaseConnectionSimplePresenceInterface();
@@ -250,13 +252,15 @@ public:
     Tp::SimpleStatusSpecMap statuses() const;
     void setStatuses(const Tp::SimpleStatusSpecMap &statuses);
 
-    int maximumStatusMessageLength() const;
-    void setMaxmimumStatusMessageLength(uint maxmimumStatusMessageLength);
+    uint maximumStatusMessageLength() const;
+    void setMaximumStatusMessageLength(uint maximumStatusMessageLength);
 
-    typedef Callback3<uint, const QString&, const QString&, DBusError*> SetPresenceCallback;
+    typedef Callback3<uint, const QString &, const QString &, DBusError*> SetPresenceCallback;
     void setSetPresenceCallback(const SetPresenceCallback &cb);
 
     void setPresences(const Tp::SimpleContactPresences &presences);
+
+    Tp::SimpleContactPresences getPresences(const Tp::UIntList &contacts);
 
 protected:
     BaseConnectionSimplePresenceInterface();
