@@ -45,10 +45,10 @@ class TP_QT_EXPORT BaseChannel : public DBusService
     Q_DISABLE_COPY(BaseChannel)
 
 public:
-    static BaseChannelPtr create(BaseConnection* connection, const QString &channelType,
-                                 uint targetHandle, uint targetHandleType) {
+    static BaseChannelPtr create(BaseConnection *connection, const QString &channelType,
+                                 Tp::HandleType targetHandleType = Tp::HandleTypeNone, uint targetHandle = 0) {
         return BaseChannelPtr(new BaseChannel(QDBusConnection::sessionBus(), connection,
-                                              channelType, targetHandle, targetHandleType));
+                                              channelType, targetHandleType, targetHandle));
     }
 
     virtual ~BaseChannel();
@@ -80,8 +80,8 @@ public:
 Q_SIGNALS:
     void closed();
 protected:
-    BaseChannel(const QDBusConnection &dbusConnection, BaseConnection* connection,
-                const QString &channelType, uint targetHandle, uint targetHandleType);
+    BaseChannel(const QDBusConnection &dbusConnection, BaseConnection *connection,
+                const QString &channelType, uint targetHandleType, uint targetHandle);
     virtual bool registerObject(const QString &busName, const QString &objectPath,
                                 DBusError *error);
 private:

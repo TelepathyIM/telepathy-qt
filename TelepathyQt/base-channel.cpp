@@ -44,13 +44,13 @@ namespace Tp
 {
 
 struct TP_QT_NO_EXPORT BaseChannel::Private {
-    Private(BaseChannel *parent, const QDBusConnection &dbusConnection, BaseConnection* connection,
-            const QString &channelType, uint targetHandle, uint targetHandleType)
+    Private(BaseChannel *parent, const QDBusConnection &dbusConnection, BaseConnection *connection,
+            const QString &channelType, uint targetHandleType, uint targetHandle)
         : parent(parent),
           connection(connection),
           channelType(channelType),
-          targetHandle(targetHandle),
           targetHandleType(targetHandleType),
+          targetHandle(targetHandle),
           requested(true),
           initiatorHandle(0),
           adaptee(new BaseChannel::Adaptee(dbusConnection, parent)) {
@@ -71,9 +71,9 @@ struct TP_QT_NO_EXPORT BaseChannel::Private {
     QString channelType;
     QHash<QString, AbstractChannelInterfacePtr> interfaces;
     QString uniqueName;
+    uint targetHandleType;
     uint targetHandle;
     QString targetID;
-    uint targetHandleType;
     bool requested;
     uint initiatorHandle;
     QString initiatorID;
@@ -121,12 +121,12 @@ void BaseChannel::Adaptee::close(const Tp::Service::ChannelAdaptor::CloseContext
  */
 
 BaseChannel::BaseChannel(const QDBusConnection &dbusConnection,
-                         BaseConnection* connection,
-                         const QString &channelType, uint targetHandle,
-                         uint targetHandleType)
+                         BaseConnection *connection,
+                         const QString &channelType, uint targetHandleType,
+                         uint targetHandle)
     : DBusService(dbusConnection),
       mPriv(new Private(this, dbusConnection, connection,
-                        channelType, targetHandle, targetHandleType))
+                        channelType, targetHandleType, targetHandle))
 {
 }
 
