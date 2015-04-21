@@ -68,30 +68,27 @@ public:
     QString cmName() const;
     QString protocolName() const;
     QVariantMap parameters() const;
-    uint status() const;
     QVariantMap immutableProperties() const;
 
+    uint selfHandle() const;
+    void setSelfHandle(uint selfHandle);
+
+    uint status() const;
     void setStatus(uint newStatus, uint reason);
 
     typedef Callback2<BaseChannelPtr, const QVariantMap &, DBusError*> CreateChannelCallback;
     void setCreateChannelCallback(const CreateChannelCallback &cb);
     BaseChannelPtr createChannel(const QVariantMap &request, bool suppressHandler, DBusError *error);
 
-    typedef Callback3<UIntList, uint, const QStringList&, DBusError*> RequestHandlesCallback;
-    void setRequestHandlesCallback(const RequestHandlesCallback &cb);
-    UIntList requestHandles(uint handleType, const QStringList &identifiers, DBusError* error);
-
-    //typedef Callback3<uint, const QString&, const QString&, DBusError*> SetPresenceCallback;
-    //void setSetPresenceCallback(const SetPresenceCallback &cb);
-
-    void setSelfHandle(uint selfHandle);
-    uint selfHandle() const;
-
     typedef Callback1<void, DBusError*> ConnectCallback;
     void setConnectCallback(const ConnectCallback &cb);
 
-    typedef Callback3<QStringList, uint, const Tp::UIntList&, DBusError*> InspectHandlesCallback;
+    typedef Callback3<QStringList, uint, const Tp::UIntList &, DBusError*> InspectHandlesCallback;
     void setInspectHandlesCallback(const InspectHandlesCallback &cb);
+
+    typedef Callback3<UIntList, uint, const QStringList&, DBusError*> RequestHandlesCallback;
+    void setRequestHandlesCallback(const RequestHandlesCallback &cb);
+    UIntList requestHandles(uint handleType, const QStringList &identifiers, DBusError *error);
 
     Tp::ChannelInfoList channelsInfo();
     Tp::ChannelDetailsList channelsDetails();
@@ -103,9 +100,9 @@ public:
     QList<AbstractConnectionInterfacePtr> interfaces() const;
     AbstractConnectionInterfacePtr interface(const QString  &interfaceName) const;
     bool plugInterface(const AbstractConnectionInterfacePtr &interface);
+    bool registerObject(DBusError *error = NULL);
 
     virtual QString uniqueName() const;
-    bool registerObject(DBusError *error = NULL);
 
 Q_SIGNALS:
     void disconnected();

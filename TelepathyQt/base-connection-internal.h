@@ -33,51 +33,47 @@ namespace Tp
 class TP_QT_NO_EXPORT BaseConnection::Adaptee : public QObject
 {
     Q_OBJECT
-
     Q_PROPERTY(QStringList interfaces READ interfaces)
     Q_PROPERTY(uint selfHandle READ selfHandle)
     Q_PROPERTY(uint status READ status)
     Q_PROPERTY(bool hasImmortalHandles READ hasImmortalHandles)
+
 public:
     Adaptee(const QDBusConnection &dbusConnection, BaseConnection *cm);
     ~Adaptee();
 
     QStringList interfaces() const;
-    uint status() const {
-        return mConnection->status();
-    }
     uint selfHandle() const;
-    bool hasImmortalHandles() const {
-        return true;
-    }
+    uint status() const;
+    bool hasImmortalHandles() const;
 
 private Q_SLOTS:
-    void getSelfHandle(const Tp::Service::ConnectionAdaptor::GetSelfHandleContextPtr &context);
-    void getStatus(const Tp::Service::ConnectionAdaptor::GetStatusContextPtr &context);
-    void connect(const Tp::Service::ConnectionAdaptor::ConnectContextPtr &context);
-    void getInterfaces(const Tp::Service::ConnectionAdaptor::GetInterfacesContextPtr &context) {
-        context->setFinished(interfaces());
-    }
-
-    void getProtocol(const Tp::Service::ConnectionAdaptor::GetProtocolContextPtr &context) {
-        context->setFinished(mConnection->protocolName());
-    }
-
-    void holdHandles(uint handleType, const Tp::UIntList &handles, const Tp::Service::ConnectionAdaptor::HoldHandlesContextPtr &context) {
-        context->setFinished();
-    }
-
-    void inspectHandles(uint handleType, const Tp::UIntList &handles, const Tp::Service::ConnectionAdaptor::InspectHandlesContextPtr &context);
-
-    void listChannels(const Tp::Service::ConnectionAdaptor::ListChannelsContextPtr &context) {
-        context->setFinished(mConnection->channelsInfo());
-    }
-
-    void disconnect(const Tp::Service::ConnectionAdaptor::DisconnectContextPtr &context);
+    void connect(
+            const Tp::Service::ConnectionAdaptor::ConnectContextPtr &context);
+    void disconnect(
+            const Tp::Service::ConnectionAdaptor::DisconnectContextPtr &context);
+    void getInterfaces(
+            const Tp::Service::ConnectionAdaptor::GetInterfacesContextPtr &context);
+    void getProtocol(
+            const Tp::Service::ConnectionAdaptor::GetProtocolContextPtr &context);
+    void getSelfHandle(
+            const Tp::Service::ConnectionAdaptor::GetSelfHandleContextPtr &context);
+    void getStatus(
+            const Tp::Service::ConnectionAdaptor::GetStatusContextPtr &context);
+    void holdHandles(uint handleType, const Tp::UIntList &handles,
+            const Tp::Service::ConnectionAdaptor::HoldHandlesContextPtr &context);
+    void inspectHandles(uint handleType, const Tp::UIntList &handles,
+            const Tp::Service::ConnectionAdaptor::InspectHandlesContextPtr &context);
+    void listChannels(
+            const Tp::Service::ConnectionAdaptor::ListChannelsContextPtr &context);
 
     //void releaseHandles(uint handleType, const Tp::UIntList &handles, const Tp::Service::ConnectionAdaptor::ReleaseHandlesContextPtr &context);
-    void requestChannel(const QString &type, uint handleType, uint handle, bool suppressHandler, const Tp::Service::ConnectionAdaptor::RequestChannelContextPtr &context);
-    void requestHandles(uint handleType, const QStringList &identifiers, const Tp::Service::ConnectionAdaptor::RequestHandlesContextPtr &context);
+    void requestChannel(const QString &type, uint handleType, uint handle, bool suppressHandler,
+                        const Tp::Service::ConnectionAdaptor::RequestChannelContextPtr &context);
+
+    void requestHandles(uint handleType, const QStringList &identifiers,
+            const Tp::Service::ConnectionAdaptor::RequestHandlesContextPtr &context);
+
     //void addClientInterest(const QStringList &tokens, const Tp::Service::ConnectionAdaptor::AddClientInterestContextPtr &context);
     //void removeClientInterest(const QStringList &tokens, const Tp::Service::ConnectionAdaptor::RemoveClientInterestContextPtr &context);
 

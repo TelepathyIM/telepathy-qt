@@ -46,8 +46,8 @@ struct TP_QT_NO_EXPORT BaseConnection::Private {
           cmName(cmName),
           protocolName(protocolName),
           parameters(parameters),
-          status(Tp::ConnectionStatusDisconnected),
           selfHandle(0),
+          status(Tp::ConnectionStatusDisconnected),
           adaptee(new BaseConnection::Adaptee(dbusConnection, parent)) {
     }
 
@@ -55,14 +55,14 @@ struct TP_QT_NO_EXPORT BaseConnection::Private {
     QString cmName;
     QString protocolName;
     QVariantMap parameters;
-    uint status;
     QHash<QString, AbstractConnectionInterfacePtr> interfaces;
     QSet<BaseChannelPtr> channels;
+    uint selfHandle;
+    uint status;
     CreateChannelCallback createChannelCB;
-    RequestHandlesCallback requestHandlesCB;
     ConnectCallback connectCB;
     InspectHandlesCallback inspectHandlesCB;
-    uint selfHandle;
+    RequestHandlesCallback requestHandlesCB;
     BaseConnection::Adaptee *adaptee;
 };
 
@@ -78,18 +78,13 @@ BaseConnection::Adaptee::~Adaptee()
 {
 }
 
-void BaseConnection::Adaptee::disconnect(const Tp::Service::ConnectionAdaptor::DisconnectContextPtr &context)
+QStringList BaseConnection::Adaptee::interfaces() const
 {
-    debug() << "BaseConnection::Adaptee::disconnect";
-    /* This will remove the connection from the connection manager
-     * and destroy this object. */
-    emit mConnection->disconnected();
-    context->setFinished();
-}
-
-void BaseConnection::Adaptee::getSelfHandle(const Tp::Service::ConnectionAdaptor::GetSelfHandleContextPtr &context)
-{
-    context->setFinished(mConnection->mPriv->selfHandle);
+    QStringList ret;
+    foreach(const AbstractConnectionInterfacePtr & iface, mConnection->interfaces()) {
+        ret << iface->interfaceName();
+    }
+    return ret;
 }
 
 uint BaseConnection::Adaptee::selfHandle() const
@@ -97,9 +92,14 @@ uint BaseConnection::Adaptee::selfHandle() const
     return mConnection->mPriv->selfHandle;
 }
 
-void BaseConnection::Adaptee::getStatus(const Tp::Service::ConnectionAdaptor::GetStatusContextPtr &context)
+uint BaseConnection::Adaptee::status() const
 {
-    context->setFinished(mConnection->status());
+    return mConnection->status();
+}
+
+bool BaseConnection::Adaptee::hasImmortalHandles() const
+{
+    return true;
 }
 
 void BaseConnection::Adaptee::connect(const Tp::Service::ConnectionAdaptor::ConnectContextPtr &context)
@@ -114,6 +114,42 @@ void BaseConnection::Adaptee::connect(const Tp::Service::ConnectionAdaptor::Conn
         context->setFinishedWithError(error.name(), error.message());
         return;
     }
+    context->setFinished();
+}
+
+void BaseConnection::Adaptee::disconnect(const Tp::Service::ConnectionAdaptor::DisconnectContextPtr &context)
+{
+    debug() << "BaseConnection::Adaptee::disconnect";
+    /* This will remove the connection from the connection manager
+     * and destroy this object. */
+    emit mConnection->disconnected();
+    context->setFinished();
+}
+
+void BaseConnection::Adaptee::getInterfaces(const Service::ConnectionAdaptor::GetInterfacesContextPtr &context)
+{
+    context->setFinished(interfaces());
+}
+
+void BaseConnection::Adaptee::getProtocol(const Service::ConnectionAdaptor::GetProtocolContextPtr &context)
+{
+    context->setFinished(mConnection->protocolName());
+}
+
+void BaseConnection::Adaptee::getSelfHandle(const Tp::Service::ConnectionAdaptor::GetSelfHandleContextPtr &context)
+{
+    context->setFinished(mConnection->mPriv->selfHandle);
+}
+
+void BaseConnection::Adaptee::getStatus(const Tp::Service::ConnectionAdaptor::GetStatusContextPtr &context)
+{
+    context->setFinished(mConnection->status());
+}
+
+void BaseConnection::Adaptee::holdHandles(uint handleType, const UIntList &handles, const Service::ConnectionAdaptor::HoldHandlesContextPtr &context)
+{
+    Q_UNUSED(handleType)
+    Q_UNUSED(handles)
     context->setFinished();
 }
 
@@ -133,13 +169,10 @@ void BaseConnection::Adaptee::inspectHandles(uint handleType,
     }
     context->setFinished(ret);
 }
-QStringList BaseConnection::Adaptee::interfaces() const
+
+void BaseConnection::Adaptee::listChannels(const Service::ConnectionAdaptor::ListChannelsContextPtr &context)
 {
-    QStringList ret;
-    foreach(const AbstractConnectionInterfacePtr & iface, mConnection->interfaces()) {
-        ret << iface->interfaceName();
-    }
-    return ret;
+    context->setFinished(mConnection->channelsInfo());
 }
 
 void BaseConnection::Adaptee::requestChannel(const QString &type, uint handleType, uint handle, bool suppressHandler,
@@ -254,14 +287,17 @@ QVariantMap BaseConnection::immutableProperties() const
     return QVariantMap();
 }
 
-/**
- * Return a unique name for this connection.
- *
- * \return A unique name for this connection.
- */
-QString BaseConnection::uniqueName() const
+uint BaseConnection::selfHandle() const
 {
-    return QString(QLatin1String("connection_%1")).arg((quintptr) this, 0, 16);
+    return mPriv->selfHandle;
+}
+
+void BaseConnection::setSelfHandle(uint selfHandle)
+{
+    bool changed = (selfHandle != mPriv->selfHandle);
+    mPriv->selfHandle = selfHandle;
+    if (changed)
+        QMetaObject::invokeMethod(mPriv->adaptee, "selfHandleChanged", Q_ARG(uint, selfHandle));
 }
 
 uint BaseConnection::status() const
@@ -360,6 +396,16 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QVariantMap &request, boo
                      SLOT(removeChannel()));
 
     return channel;
+}
+
+void BaseConnection::setConnectCallback(const ConnectCallback &cb)
+{
+    mPriv->connectCB = cb;
+}
+
+void BaseConnection::setInspectHandlesCallback(const InspectHandlesCallback &cb)
+{
+    mPriv->inspectHandlesCB = cb;
 }
 
 void BaseConnection::setRequestHandlesCallback(const RequestHandlesCallback &cb)
@@ -618,6 +664,16 @@ bool BaseConnection::registerObject(DBusError *error)
 }
 
 /**
+ * Return a unique name for this connection.
+ *
+ * \return A unique name for this connection.
+ */
+QString BaseConnection::uniqueName() const
+{
+    return QString(QLatin1String("connection_%1")).arg((quintptr) this, 0, 16);
+}
+
+/**
  * Reimplemented from DBusService.
  */
 bool BaseConnection::registerObject(const QString &busName,
@@ -667,29 +723,6 @@ bool BaseConnection::matchChannel(const BaseChannelPtr &channel, const QVariantM
 
     // Unknown request
     return false;
-}
-
-void BaseConnection::setSelfHandle(uint selfHandle)
-{
-    bool changed = (selfHandle != mPriv->selfHandle);
-    mPriv->selfHandle = selfHandle;
-    if (changed)
-        QMetaObject::invokeMethod(mPriv->adaptee, "selfHandleChanged", Q_ARG(uint, selfHandle));
-}
-
-uint BaseConnection::selfHandle() const
-{
-    return mPriv->selfHandle;
-}
-
-void BaseConnection::setConnectCallback(const ConnectCallback &cb)
-{
-    mPriv->connectCB = cb;
-}
-
-void BaseConnection::setInspectHandlesCallback(const InspectHandlesCallback &cb)
-{
-    mPriv->inspectHandlesCB = cb;
 }
 
 /**
