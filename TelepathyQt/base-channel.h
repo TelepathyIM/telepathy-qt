@@ -625,6 +625,86 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelRoomConfigInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelRoomConfigInterface)
+
+public:
+    static BaseChannelRoomConfigInterfacePtr create()
+    {
+        return BaseChannelRoomConfigInterfacePtr(new BaseChannelRoomConfigInterface());
+    }
+    template<typename BaseChannelRoomConfigInterfaceSubclass>
+    static SharedPtr<BaseChannelRoomConfigInterfaceSubclass> create()
+    {
+        return SharedPtr<BaseChannelRoomConfigInterfaceSubclass>(
+                new BaseChannelRoomConfigInterfaceSubclass());
+    }
+
+    virtual ~BaseChannelRoomConfigInterface();
+
+    QVariantMap immutableProperties() const;
+
+    bool anonymous() const;
+    void setAnonymous(bool anonymous);
+
+    bool inviteOnly() const;
+    void setInviteOnly(bool inviteOnly);
+
+    uint limit() const;
+    void setLimit(uint limit);
+
+    bool moderated() const;
+    void setModerated(bool moderated);
+
+    QString title() const;
+    void setTitle(const QString &title);
+
+    QString description() const;
+    void setDescription(const QString &description);
+
+    bool persistent() const;
+    void setPersistent(bool persistent);
+
+    bool isPrivate() const;
+    void setPrivate(bool newPrivate);
+
+    bool passwordProtected() const;
+    void setPasswordProtected(bool passwordProtected);
+
+    QString password() const;
+    void setPassword(const QString &password);
+
+    QString passwordHint() const;
+    void setPasswordHint(const QString &passwordHint);
+
+    bool canUpdateConfiguration() const;
+    void setCanUpdateConfiguration(bool canUpdateConfiguration);
+
+    QStringList mutableProperties() const;
+    void setMutableProperties(const QStringList &mutableProperties);
+
+    bool configurationRetrieved() const;
+    void setConfigurationRetrieved(bool configurationRetrieved);
+
+    typedef Callback2<void, const QVariantMap &, DBusError*> UpdateConfigurationCallback;
+    void setUpdateConfigurationCallback(const UpdateConfigurationCallback &cb);
+    void updateConfiguration(const QVariantMap &properties, DBusError *error);
+
+protected:
+    BaseChannelRoomConfigInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 class TP_QT_EXPORT BaseChannelCallType : public AbstractChannelInterface
 {
     Q_OBJECT

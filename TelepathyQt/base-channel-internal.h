@@ -373,6 +373,51 @@ private:
     BaseChannelRoomInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelRoomConfigInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool anonymous READ anonymous)
+    Q_PROPERTY(bool inviteOnly READ inviteOnly)
+    Q_PROPERTY(uint limit READ limit)
+    Q_PROPERTY(bool moderated READ moderated)
+    Q_PROPERTY(QString title READ title)
+    Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(bool persistent READ persistent)
+    Q_PROPERTY(bool private READ isPrivate)
+    Q_PROPERTY(bool passwordProtected READ passwordProtected)
+    Q_PROPERTY(QString password READ password)
+    Q_PROPERTY(QString passwordHint READ passwordHint)
+    Q_PROPERTY(bool canUpdateConfiguration READ canUpdateConfiguration)
+    Q_PROPERTY(QStringList mutableProperties READ mutableProperties)
+    Q_PROPERTY(bool configurationRetrieved READ configurationRetrieved)
+
+public:
+    Adaptee(BaseChannelRoomConfigInterface *interface);
+    ~Adaptee();
+
+    bool anonymous() const;
+    bool inviteOnly() const;
+    uint limit() const;
+    bool moderated() const;
+    QString title() const;
+    QString description() const;
+    bool persistent() const;
+    bool isPrivate() const;
+    bool passwordProtected() const;
+    QString password() const;
+    QString passwordHint() const;
+    bool canUpdateConfiguration() const;
+    QStringList mutableProperties() const;
+    bool configurationRetrieved() const;
+
+private Q_SLOTS:
+    void updateConfiguration(const QVariantMap &properties,
+            const Tp::Service::ChannelInterfaceRoomConfigAdaptor::UpdateConfigurationContextPtr &context);
+
+private:
+    BaseChannelRoomConfigInterface *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseChannelCallType::Adaptee : public QObject
 {
     Q_OBJECT
