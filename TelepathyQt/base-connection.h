@@ -87,9 +87,9 @@ public:
     void setInspectHandlesCallback(const InspectHandlesCallback &cb);
     QStringList inspectHandles(uint handleType, const Tp::UIntList &handles, DBusError *error);
 
-    typedef Callback3<UIntList, uint, const QStringList&, DBusError*> RequestHandlesCallback;
+    typedef Callback3<Tp::UIntList, uint, const QStringList &, DBusError*> RequestHandlesCallback;
     void setRequestHandlesCallback(const RequestHandlesCallback &cb);
-    UIntList requestHandles(uint handleType, const QStringList &identifiers, DBusError *error);
+    Tp::UIntList requestHandles(uint handleType, const QStringList &identifiers, DBusError *error);
 
     Tp::ChannelInfoList channelsInfo();
     Tp::ChannelDetailsList channelsDetails();

@@ -39,19 +39,20 @@ namespace Tp
 {
 
 struct TP_QT_NO_EXPORT BaseConnection::Private {
-    Private(BaseConnection *parent, const QDBusConnection &dbusConnection,
+    Private(BaseConnection *connection, const QDBusConnection &dbusConnection,
             const QString &cmName, const QString &protocolName,
             const QVariantMap &parameters)
-        : parent(parent),
+        : connection(connection),
           cmName(cmName),
           protocolName(protocolName),
           parameters(parameters),
           selfHandle(0),
           status(Tp::ConnectionStatusDisconnected),
-          adaptee(new BaseConnection::Adaptee(dbusConnection, parent)) {
+          adaptee(new BaseConnection::Adaptee(dbusConnection, connection))
+    {
     }
 
-    BaseConnection *parent;
+    BaseConnection *connection;
     QString cmName;
     QString protocolName;
     QVariantMap parameters;
@@ -81,7 +82,7 @@ BaseConnection::Adaptee::~Adaptee()
 QStringList BaseConnection::Adaptee::interfaces() const
 {
     QStringList ret;
-    foreach(const AbstractConnectionInterfacePtr & iface, mConnection->interfaces()) {
+    foreach(const AbstractConnectionInterfacePtr &iface, mConnection->interfaces()) {
         ret << iface->interfaceName();
     }
     return ret;
@@ -430,11 +431,11 @@ void BaseConnection::setRequestHandlesCallback(const RequestHandlesCallback &cb)
     mPriv->requestHandlesCB = cb;
 }
 
-UIntList BaseConnection::requestHandles(uint handleType, const QStringList &identifiers, DBusError* error)
+Tp::UIntList BaseConnection::requestHandles(uint handleType, const QStringList &identifiers, DBusError *error)
 {
     if (!mPriv->requestHandlesCB.isValid()) {
         error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-        return UIntList();
+        return Tp::UIntList();
     }
     return mPriv->requestHandlesCB(handleType, identifiers, error);
 }

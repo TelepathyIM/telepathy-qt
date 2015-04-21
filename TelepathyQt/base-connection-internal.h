@@ -39,7 +39,7 @@ class TP_QT_NO_EXPORT BaseConnection::Adaptee : public QObject
     Q_PROPERTY(bool hasImmortalHandles READ hasImmortalHandles)
 
 public:
-    Adaptee(const QDBusConnection &dbusConnection, BaseConnection *cm);
+    Adaptee(const QDBusConnection &dbusConnection, BaseConnection *connection);
     ~Adaptee();
 
     QStringList interfaces() const;
