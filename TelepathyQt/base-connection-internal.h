@@ -67,10 +67,10 @@ private Q_SLOTS:
     void listChannels(
             const Tp::Service::ConnectionAdaptor::ListChannelsContextPtr &context);
 
-    //void releaseHandles(uint handleType, const Tp::UIntList &handles, const Tp::Service::ConnectionAdaptor::ReleaseHandlesContextPtr &context);
     void requestChannel(const QString &type, uint handleType, uint handle, bool suppressHandler,
                         const Tp::Service::ConnectionAdaptor::RequestChannelContextPtr &context);
-
+    void releaseHandles(uint handleType, const Tp::UIntList &handles,
+            const Tp::Service::ConnectionAdaptor::ReleaseHandlesContextPtr &context);
     void requestHandles(uint handleType, const QStringList &identifiers,
             const Tp::Service::ConnectionAdaptor::RequestHandlesContextPtr &context);
 

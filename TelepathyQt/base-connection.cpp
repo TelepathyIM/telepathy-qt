@@ -148,6 +148,7 @@ void BaseConnection::Adaptee::getStatus(const Tp::Service::ConnectionAdaptor::Ge
 
 void BaseConnection::Adaptee::holdHandles(uint handleType, const UIntList &handles, const Service::ConnectionAdaptor::HoldHandlesContextPtr &context)
 {
+    // This method no does anything since 0.21.6
     Q_UNUSED(handleType)
     Q_UNUSED(handles)
     context->setFinished();
@@ -189,6 +190,14 @@ void BaseConnection::Adaptee::requestChannel(const QString &type, uint handleTyp
         return;
     }
     context->setFinished(QDBusObjectPath(channel->objectPath()));
+}
+
+void BaseConnection::Adaptee::releaseHandles(uint handleType, const UIntList &handles, const Service::ConnectionAdaptor::ReleaseHandlesContextPtr &context)
+{
+    // This method no does anything since 0.21.6
+    Q_UNUSED(handleType)
+    Q_UNUSED(handles)
+    context->setFinished();
 }
 
 void BaseConnection::Adaptee::requestHandles(uint handleType, const QStringList &identifiers,
