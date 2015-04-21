@@ -77,15 +77,15 @@ private Q_SLOTS:
     //void addClientInterest(const QStringList &tokens, const Tp::Service::ConnectionAdaptor::AddClientInterestContextPtr &context);
     //void removeClientInterest(const QStringList &tokens, const Tp::Service::ConnectionAdaptor::RemoveClientInterestContextPtr &context);
 
-public:
-    BaseConnection *mConnection;
-    Service::ConnectionAdaptor *mAdaptor;
-
 Q_SIGNALS:
     void selfHandleChanged(uint selfHandle);
     void newChannel(const QDBusObjectPath &objectPath, const QString &channelType, uint handleType, uint handle, bool suppressHandler);
     void connectionError(const QString &error, const QVariantMap &details);
     void statusChanged(uint status, uint reason);
+
+private:
+    BaseConnection *mConnection;
+    Service::ConnectionAdaptor *mAdaptor;
 };
 
 class TP_QT_NO_EXPORT BaseConnectionRequestsInterface::Adaptee : public QObject
