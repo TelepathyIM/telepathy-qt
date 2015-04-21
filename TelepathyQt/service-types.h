@@ -63,6 +63,7 @@ class BaseChannelCaptchaAuthenticationInterface;
 class BaseChannelSecurableInterface;
 class BaseChannelChatStateInterface;
 class BaseChannelGroupInterface;
+class BaseChannelRoomInterface;
 class BaseChannelHoldInterface;
 class BaseChannelMergeableConferenceInterface;
 class BaseChannelSplittableInterface;
@@ -103,6 +104,7 @@ typedef SharedPtr<BaseChannelCaptchaAuthenticationInterface> BaseChannelCaptchaA
 typedef SharedPtr<BaseChannelSecurableInterface> BaseChannelSecurableInterfacePtr;
 typedef SharedPtr<BaseChannelChatStateInterface> BaseChannelChatStateInterfacePtr;
 typedef SharedPtr<BaseChannelGroupInterface> BaseChannelGroupInterfacePtr;
+typedef SharedPtr<BaseChannelRoomInterface> BaseChannelRoomInterfacePtr;
 typedef SharedPtr<BaseChannelHoldInterface> BaseChannelHoldInterfacePtr;
 typedef SharedPtr<BaseChannelMergeableConferenceInterface> BaseChannelMergeableConferenceInterfacePtr;
 typedef SharedPtr<BaseChannelSplittableInterface> BaseChannelSplittableInterfacePtr;

@@ -516,6 +516,66 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelRoomInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelRoomInterface)
+
+public:
+    static BaseChannelRoomInterfacePtr create(const QString &roomName,
+                                              const QString &server,
+                                              const QString &creator,
+                                              uint creatorHandle,
+                                              const QDateTime &creationTimestamp)
+    {
+        return BaseChannelRoomInterfacePtr(new BaseChannelRoomInterface(roomName,
+                                                                        server,
+                                                                        creator,
+                                                                        creatorHandle,
+                                                                        creationTimestamp));
+    }
+    template<typename BaseChannelRoomInterfaceSubclass>
+    static SharedPtr<BaseChannelRoomInterfaceSubclass> create(const QString &roomName,
+                                                              const QString &server,
+                                                              const QString &creator,
+                                                              uint creatorHandle,
+                                                              const QDateTime &creationTimestamp)
+    {
+        return SharedPtr<BaseChannelRoomInterfaceSubclass>(
+                new BaseChannelRoomInterfaceSubclass(roomName,
+                                                     server,
+                                                     creator,
+                                                     creatorHandle,
+                                                     creationTimestamp));
+    }
+
+    virtual ~BaseChannelRoomInterface();
+
+    QVariantMap immutableProperties() const;
+
+    QString roomName() const;
+    QString server() const;
+    QString creator() const;
+    uint creatorHandle() const;
+    QDateTime creationTimestamp() const;
+
+protected:
+    BaseChannelRoomInterface(const QString &roomName,
+                             const QString &server,
+                             const QString &creator,
+                             uint creatorHandle,
+                             const QDateTime &creationTimestamp);
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 class TP_QT_EXPORT BaseChannelCallType : public AbstractChannelInterface
 {
     Q_OBJECT
