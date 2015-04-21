@@ -85,6 +85,7 @@ public:
 
     typedef Callback3<QStringList, uint, const Tp::UIntList &, DBusError*> InspectHandlesCallback;
     void setInspectHandlesCallback(const InspectHandlesCallback &cb);
+    QStringList inspectHandles(uint handleType, const Tp::UIntList &handles, DBusError *error);
 
     typedef Callback3<UIntList, uint, const QStringList&, DBusError*> RequestHandlesCallback;
     void setRequestHandlesCallback(const RequestHandlesCallback &cb);

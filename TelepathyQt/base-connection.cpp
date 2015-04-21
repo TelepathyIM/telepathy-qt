@@ -157,17 +157,13 @@ void BaseConnection::Adaptee::inspectHandles(uint handleType,
                                              const Tp::UIntList &handles,
                                              const Tp::Service::ConnectionAdaptor::InspectHandlesContextPtr &context)
 {
-    if (!mConnection->mPriv->inspectHandlesCB.isValid()) {
-        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-        return;
-    }
     DBusError error;
-    QStringList ret = mConnection->mPriv->inspectHandlesCB(handleType, handles, &error);
+    QStringList identifiers = mConnection->inspectHandles(handleType, handles, &error);
     if (error.isValid()) {
         context->setFinishedWithError(error.name(), error.message());
         return;
     }
-    context->setFinished(ret);
+    context->setFinished(identifiers);
 }
 
 void BaseConnection::Adaptee::listChannels(const Service::ConnectionAdaptor::ListChannelsContextPtr &context)
@@ -406,6 +402,15 @@ void BaseConnection::setConnectCallback(const ConnectCallback &cb)
 void BaseConnection::setInspectHandlesCallback(const InspectHandlesCallback &cb)
 {
     mPriv->inspectHandlesCB = cb;
+}
+
+QStringList BaseConnection::inspectHandles(uint handleType, const Tp::UIntList &handles, DBusError *error)
+{
+    if (!mPriv->inspectHandlesCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return QStringList();
+    }
+    return mPriv->inspectHandlesCB(handleType, handles, error);
 }
 
 void BaseConnection::setRequestHandlesCallback(const RequestHandlesCallback &cb)
