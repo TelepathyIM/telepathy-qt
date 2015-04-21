@@ -99,6 +99,9 @@ uint BaseConnection::Adaptee::status() const
 
 bool BaseConnection::Adaptee::hasImmortalHandles() const
 {
+    /* True if handles last for the whole lifetime of the Connection.
+     * This SHOULD be the case in all connection managers, but connection managers
+     * MUST interoperate with older clients (which reference-count handles). */
     return true;
 }
 
@@ -288,7 +291,7 @@ QVariantMap BaseConnection::parameters() const
  */
 QVariantMap BaseConnection::immutableProperties() const
 {
-    // FIXME
+    // There is no immutable properties.
     return QVariantMap();
 }
 
