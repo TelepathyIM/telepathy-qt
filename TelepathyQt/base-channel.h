@@ -87,8 +87,8 @@ protected:
 private:
     class Adaptee;
     friend class Adaptee;
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 
@@ -104,9 +104,10 @@ public:
 private:
     friend class BaseChannel;
 
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
+
 };
 
 class TP_QT_EXPORT BaseChannelTextType : public AbstractChannelInterface
