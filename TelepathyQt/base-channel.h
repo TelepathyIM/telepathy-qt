@@ -216,6 +216,55 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelRoomListType : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelRoomListType)
+
+public:
+    static BaseChannelRoomListTypePtr create(const QString &server = QString())
+    {
+        return BaseChannelRoomListTypePtr(new BaseChannelRoomListType(server));
+    }
+    template<typename BaseChannelRoomListTypeSubclass>
+    static SharedPtr<BaseChannelRoomListTypeSubclass> create(const QString &server = QString())
+    {
+        return SharedPtr<BaseChannelRoomListTypeSubclass>(
+                new BaseChannelRoomListTypeSubclass(server));
+    }
+
+    virtual ~BaseChannelRoomListType();
+
+    QVariantMap immutableProperties() const;
+
+    QString server() const;
+
+    bool getListingRooms();
+    void setListingRooms(bool listing);
+
+    typedef Callback1<void, DBusError*> ListRoomsCallback;
+    void setListRoomsCallback(const ListRoomsCallback &cb);
+    void listRooms(DBusError *error);
+
+    typedef Callback1<void, DBusError*> StopListingCallback;
+    void setStopListingCallback(const StopListingCallback &cb);
+    void stopListing(DBusError *error);
+
+    void gotRooms(const Tp::RoomInfoList &rooms);
+
+protected:
+    BaseChannelRoomListType(const QString &server);
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 class TP_QT_EXPORT BaseChannelServerAuthenticationType : public AbstractChannelInterface
 {
     Q_OBJECT
