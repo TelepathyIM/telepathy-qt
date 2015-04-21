@@ -35,6 +35,7 @@ class TP_QT_NO_EXPORT BaseConnection::Adaptee : public QObject
     Q_OBJECT
     Q_PROPERTY(QStringList interfaces READ interfaces)
     Q_PROPERTY(uint selfHandle READ selfHandle)
+    Q_PROPERTY(QString selfID READ selfID)
     Q_PROPERTY(uint status READ status)
     Q_PROPERTY(bool hasImmortalHandles READ hasImmortalHandles)
 
@@ -44,6 +45,7 @@ public:
 
     QStringList interfaces() const;
     uint selfHandle() const;
+    QString selfID() const;
     uint status() const;
     bool hasImmortalHandles() const;
 
@@ -80,6 +82,8 @@ private Q_SLOTS:
 Q_SIGNALS:
     void selfHandleChanged(uint selfHandle);
     void newChannel(const QDBusObjectPath &objectPath, const QString &channelType, uint handleType, uint handle, bool suppressHandler);
+
+    void selfContactChanged(uint selfHandle, const QString &selfID);
     void connectionError(const QString &error, const QVariantMap &details);
     void statusChanged(uint status, uint reason);
 

@@ -73,6 +73,11 @@ public:
     uint selfHandle() const;
     void setSelfHandle(uint selfHandle);
 
+    QString selfID() const;
+    void setSelfID(const QString &selfID);
+
+    void setSelfContact(uint selfHandle, const QString &selfID);
+
     uint status() const;
     void setStatus(uint newStatus, uint reason);
 

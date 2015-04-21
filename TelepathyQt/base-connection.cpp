@@ -59,6 +59,7 @@ struct TP_QT_NO_EXPORT BaseConnection::Private {
     QHash<QString, AbstractConnectionInterfacePtr> interfaces;
     QSet<BaseChannelPtr> channels;
     uint selfHandle;
+    QString selfID;
     uint status;
     CreateChannelCallback createChannelCB;
     ConnectCallback connectCB;
@@ -90,7 +91,12 @@ QStringList BaseConnection::Adaptee::interfaces() const
 
 uint BaseConnection::Adaptee::selfHandle() const
 {
-    return mConnection->mPriv->selfHandle;
+    return mConnection->selfHandle();
+}
+
+QString BaseConnection::Adaptee::selfID() const
+{
+    return mConnection->selfID();
 }
 
 uint BaseConnection::Adaptee::status() const
@@ -140,9 +146,9 @@ void BaseConnection::Adaptee::getProtocol(const Service::ConnectionAdaptor::GetP
     context->setFinished(mConnection->protocolName());
 }
 
-void BaseConnection::Adaptee::getSelfHandle(const Tp::Service::ConnectionAdaptor::GetSelfHandleContextPtr &context)
+void BaseConnection::Adaptee::getSelfHandle(const Service::ConnectionAdaptor::GetSelfHandleContextPtr &context)
 {
-    context->setFinished(mConnection->mPriv->selfHandle);
+    context->setFinished(mConnection->selfHandle());
 }
 
 void BaseConnection::Adaptee::getStatus(const Tp::Service::ConnectionAdaptor::GetStatusContextPtr &context)
@@ -303,10 +309,43 @@ uint BaseConnection::selfHandle() const
 
 void BaseConnection::setSelfHandle(uint selfHandle)
 {
-    bool changed = (selfHandle != mPriv->selfHandle);
+    if (selfHandle == mPriv->selfHandle) {
+        return;
+    }
+
     mPriv->selfHandle = selfHandle;
-    if (changed)
-        QMetaObject::invokeMethod(mPriv->adaptee, "selfHandleChanged", Q_ARG(uint, selfHandle));
+    QMetaObject::invokeMethod(mPriv->adaptee, "selfHandleChanged", Q_ARG(uint, mPriv->selfHandle)); //Can simply use emit in Qt5
+    QMetaObject::invokeMethod(mPriv->adaptee, "selfContactChanged", Q_ARG(uint, mPriv->selfHandle), Q_ARG(QString, mPriv->selfID)); //Can simply use emit in Qt5
+}
+
+QString BaseConnection::selfID() const
+{
+    return mPriv->selfID;
+}
+
+void BaseConnection::setSelfID(const QString &selfID)
+{
+    if (selfID == mPriv->selfID) {
+        return;
+    }
+
+    mPriv->selfID = selfID;
+    QMetaObject::invokeMethod(mPriv->adaptee, "selfContactChanged", Q_ARG(uint, mPriv->selfHandle), Q_ARG(QString, mPriv->selfID)); //Can simply use emit in Qt5
+}
+
+void BaseConnection::setSelfContact(uint selfHandle, const QString &selfID)
+{
+    if ((selfHandle == mPriv->selfHandle) && (selfID == mPriv->selfID)) {
+        return;
+    }
+
+    if (selfHandle != mPriv->selfHandle) {
+        QMetaObject::invokeMethod(mPriv->adaptee, "selfHandleChanged", Q_ARG(uint, mPriv->selfHandle)); //Can simply use emit in Qt5
+        mPriv->selfHandle = selfHandle;
+    }
+
+    mPriv->selfID = selfID;
+    QMetaObject::invokeMethod(mPriv->adaptee, "selfContactChanged", Q_ARG(uint, mPriv->selfHandle), Q_ARG(QString, mPriv->selfID)); //Can simply use emit in Qt5
 }
 
 uint BaseConnection::status() const
