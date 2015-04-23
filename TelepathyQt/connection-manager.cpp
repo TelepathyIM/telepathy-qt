@@ -769,6 +769,9 @@ ConnectionManagerPtr ConnectionManager::create(const QDBusConnection &bus,
  *
  * \param bus QDBusConnection to use.
  * \param name Name of the connection manager.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
  */
 ConnectionManager::ConnectionManager(const QDBusConnection &bus,
         const QString &name,

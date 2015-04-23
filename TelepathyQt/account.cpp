@@ -3859,7 +3859,7 @@ PendingChannel *Account::createAndHandleDBusTube(
  * which can be used to track the success or failure of the request.
  *
  * \param contact The contact to open a DBus tube with.
- * \param service The DBus tube service name.
+ * \param serviceName The DBus tube service name.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
  *                       involving user action.

@@ -527,7 +527,7 @@ void Profile::Private::invalidate()
  * \brief The Profile class provides an easy way to read Telepathy profile
  * files according to http://telepathy.freedesktop.org/wiki/service-profile-v1.
  *
- * Note that profiles with xml element <type> different than "IM" are considered
+ * Note that profiles with xml element \<type\> different than "IM" are considered
  * invalid.
  */
 

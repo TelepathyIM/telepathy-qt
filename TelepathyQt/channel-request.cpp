@@ -286,6 +286,7 @@ const Feature ChannelRequest::FeatureCore = Feature(QLatin1String(ChannelRequest
 /**
  * Create a new channel request object using the given \a bus and the given factories.
  *
+ * \param bus QDBusConnection to use.
  * \param objectPath The channel request object path.
  * \param immutableProperties The channel request immutable properties.
  * \param accountFactory The account factory to use.

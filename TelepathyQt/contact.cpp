@@ -1371,7 +1371,7 @@ void Contact::setRemovedFromGroup(const QString &group)
  *
  * Emitted when the value of location() changes.
  *
- * \param caps The new location of this contact.
+ * \param location The new location of this contact.
  * \sa location()
  */
 
@@ -1380,7 +1380,7 @@ void Contact::setRemovedFromGroup(const QString &group)
  *
  * Emitted when the value of infoFields() changes.
  *
- * \param InfoFields The new info of this contact.
+ * \param infoFields The new info of this contact.
  * \sa infoFields()
  */
 
@@ -1399,6 +1399,7 @@ void Contact::setRemovedFromGroup(const QString &group)
  * Emitted when the value of publishState() changes.
  *
  * \param state The new publish state of this contact.
+ * \param message The new user-defined status message of this contact.
  * \sa publishState()
  */
 
@@ -1407,7 +1408,7 @@ void Contact::setRemovedFromGroup(const QString &group)
  *
  * Emitted when the value of isBlocked() changes.
  *
- * \param status The new block status of this contact.
+ * \param blocked The new block status of this contact.
  * \sa isBlocked()
  */
 

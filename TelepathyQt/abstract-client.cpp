@@ -906,11 +906,6 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  * \param account The account with which the channels are associated.
  * \param connection The connection with which the channels are associated.
  * \param channels The channels to be handled.
- * \param dispatchOperation The dispatch operation for these channels.
- *                          The object will be invalid (DBusProxy::isValid()
- *                          will be false) if there is no dispatch
- *                          operation in place (because the channels were
- *                          requested, not incoming).
  * \param requestsSatisfied The requests satisfied by these channels.
  * \param userActionTime The time at which user action occurred, or 0 if this
  *                       channel is to be handled for some reason not involving

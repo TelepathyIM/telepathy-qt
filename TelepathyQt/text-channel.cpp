@@ -999,7 +999,7 @@ PendingSendMessage *TextChannel::send(const QString &text,
  *
  * This method requires TextChannel::FeatureCore to be ready.
  *
- * \param part The message parts.
+ * \param parts The message parts.
  * \param flags Flags affecting how the message is sent.
  *              Note that the channel may ignore some or all flags, depending on
  *              deliveryReportingSupport(); the flags that were handled by the CM are provided in

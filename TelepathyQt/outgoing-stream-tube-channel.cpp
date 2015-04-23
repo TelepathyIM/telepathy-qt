@@ -465,7 +465,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
  *
  * This method requires OutgoingStreamTubeChannel::FeatureCore to be ready.
  *
- * \param address A valid path to an existing Unix socket or abstract Unix socket.
+ * \param socketAddress A valid path to an existing Unix socket or abstract Unix socket.
  * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
  * \param requireCredentials Whether the server requires a SCM_CREDS or SCM_CREDENTIALS message
  *                           upon connection.
