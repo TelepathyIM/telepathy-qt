@@ -603,7 +603,7 @@ void %(ifacename)s::%(settername)s(const %(type)s &newValue)
         self.b("""
 %(rettype)s %(ifacename)s::%(name)s(%(params)s)
 {
-    if (!adaptee()->metaObject()->indexOfMethod("%(adaptee_name)s(%(normalized_adaptee_params)s)") == -1) {
+    if (adaptee()->metaObject()->indexOfMethod("%(adaptee_name)s(%(normalized_adaptee_params)s)") < 0) {
         dbusConnection().send(dbusMessage.createErrorReply(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented")));
 """ % {'rettype': rettype,
        'ifacename': ifacename,
