@@ -58,7 +58,10 @@ struct TP_QT_NO_EXPORT BaseChannel::Private {
 
         QString baseName;
         static const QString s_channelTypePrefix = TP_QT_IFACE_CHANNEL + QLatin1String(".Type.");
-        if (channelType.startsWith(s_channelTypePrefix)) {
+
+        if ((channelType == TP_QT_IFACE_CHANNEL_TYPE_TEXT) && (targetHandleType == Tp::HandleTypeRoom)) {
+            baseName = QLatin1String("Muc");
+        } else if (channelType.startsWith(s_channelTypePrefix)) {
             baseName = channelType.mid(s_channelTypePrefix.length());
         }
 
