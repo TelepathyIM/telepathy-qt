@@ -101,7 +101,7 @@ public:
 
     BaseChannelPtr ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error);
 
-    void addChannel(BaseChannelPtr channel);
+    void addChannel(BaseChannelPtr channel, bool suppressHandler = false);
 
     QList<AbstractConnectionInterfacePtr> interfaces() const;
     AbstractConnectionInterfacePtr interface(const QString  &interfaceName) const;

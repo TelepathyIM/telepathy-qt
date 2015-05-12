@@ -418,30 +418,7 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QVariantMap &request, boo
     if (error->isValid())
         return BaseChannelPtr();
 
-    mPriv->channels.insert(channel);
-
-    BaseConnectionRequestsInterfacePtr reqIface =
-        BaseConnectionRequestsInterfacePtr::dynamicCast(interface(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS));
-
-    if (!reqIface.isNull())
-        //emit after return
-        QMetaObject::invokeMethod(reqIface.data(), "newChannels",
-                                  Qt::QueuedConnection,
-                                  Q_ARG(Tp::ChannelDetailsList, ChannelDetailsList() << channel->details()));
-
-
-    //emit after return
-    QMetaObject::invokeMethod(mPriv->adaptee, "newChannel",
-                              Qt::QueuedConnection,
-                              Q_ARG(QDBusObjectPath, QDBusObjectPath(channel->objectPath())),
-                              Q_ARG(QString, channel->channelType()),
-                              Q_ARG(uint, channel->targetHandleType()),
-                              Q_ARG(uint, channel->targetHandle()),
-                              Q_ARG(bool, suppressHandler));
-
-    QObject::connect(channel.data(),
-                     SIGNAL(closed()),
-                     SLOT(removeChannel()));
+    addChannel(channel, suppressHandler);
 
     return channel;
 }
@@ -551,7 +528,7 @@ Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, boo
     return createChannel(request, suppressHandler, error);
 }
 
-void BaseConnection::addChannel(BaseChannelPtr channel)
+void BaseConnection::addChannel(BaseChannelPtr channel, bool suppressHandler)
 {
     if (mPriv->channels.contains(channel)) {
         qDebug() << "BaseConnection::addChannel: Channel already added.";
@@ -577,7 +554,7 @@ void BaseConnection::addChannel(BaseChannelPtr channel)
                               Q_ARG(QString, channel->channelType()),
                               Q_ARG(uint, channel->targetHandleType()),
                               Q_ARG(uint, channel->targetHandle()),
-                              Q_ARG(bool, false));
+                              Q_ARG(bool, suppressHandler));
 
     QObject::connect(channel.data(),
                      SIGNAL(closed()),
