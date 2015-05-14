@@ -1,7 +1,26 @@
-telepathy-qt 0.9.6 ()
+telepathy-qt 0.9.6 (2015-05-15)
 =================================
 
-The "..." release.
+The "New blood" release.
+
+Enhancements:
+ * Added TP_QT_VERSION and TP_QT_VERSION_CHECK macros
+   - Can be used like #if (TP_QT_VERSION == TP_QT_VERSION_CHECK(0, 9, 6))
+   - Absence of the TP_QT_VERSION macros indicates previous versions
+     (might be useful for service bindings compatibility)
+ * Added client side support for conference calls
+ * Implemented numerous interfaces for service bindings
+
+API changes:
+ * Refactored service-side bindings API
+   - BaseConnection createChannel() and ensureChannel() methods
+     now accept request map instead of several extracted values.
+   - BaseChannel::create() arguments reordered in natural way.
+
+Fixes:
+ * Fixed CallContent interfaces exposing (required for DTMF)
+ * fd.0 #86312: Fixed condition in adaptor methods generation
+
 
 telepathy-qt 0.9.5 (2014-09-09)
 =================================
