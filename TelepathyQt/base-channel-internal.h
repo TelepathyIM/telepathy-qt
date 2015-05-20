@@ -157,6 +157,57 @@ public:
     BaseChannelMessagesInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelFileTransferType::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(uint state READ state)
+    Q_PROPERTY(QString contentType READ contentType)
+    Q_PROPERTY(QString filename READ filename)
+    Q_PROPERTY(qulonglong size READ size)
+    Q_PROPERTY(uint contentHashType READ contentHashType)
+    Q_PROPERTY(QString contentHash READ contentHash)
+    Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(qlonglong date READ date)
+    Q_PROPERTY(Tp::SupportedSocketMap availableSocketTypes READ availableSocketTypes)
+    Q_PROPERTY(qulonglong transferredBytes READ transferredBytes)
+    Q_PROPERTY(qulonglong initialOffset READ initialOffset)
+    Q_PROPERTY(QString uri READ uri)
+    Q_PROPERTY(QString fileCollection READ fileCollection)
+
+public:
+    Adaptee(BaseChannelFileTransferType *interface);
+    ~Adaptee();
+
+    uint state() const;
+    QString contentType() const;
+    QString filename() const;
+    qulonglong size() const;
+    uint contentHashType() const;
+    QString contentHash() const;
+    QString description() const;
+    qlonglong date() const;
+    Tp::SupportedSocketMap availableSocketTypes() const;
+    qulonglong transferredBytes() const;
+    qulonglong initialOffset() const;
+    QString uri() const;
+    QString fileCollection() const;
+
+private Q_SLOTS:
+    void acceptFile(uint addressType, uint accessControl, const QDBusVariant &accessControlParam, qulonglong offset,
+            const Tp::Service::ChannelTypeFileTransferAdaptor::AcceptFileContextPtr &context);
+    void provideFile(uint addressType, uint accessControl, const QDBusVariant &accessControlParam,
+            const Tp::Service::ChannelTypeFileTransferAdaptor::ProvideFileContextPtr &context);
+
+Q_SIGNALS:
+    void fileTransferStateChanged(uint state, uint reason);
+    void transferredBytesChanged(qulonglong count);
+    void initialOffsetDefined(qulonglong initialOffset);
+    void uriDefined(const QString &uri);
+
+private:
+    BaseChannelFileTransferType *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseChannelRoomListType::Adaptee : public QObject
 {
     Q_OBJECT
