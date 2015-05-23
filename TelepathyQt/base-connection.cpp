@@ -1119,7 +1119,7 @@ SimpleContactPresences BaseConnectionSimplePresenceInterface::getPresences(const
 {
     Tp::SimpleContactPresences presences;
     foreach(uint handle, contacts) {
-        static const Tp::SimplePresence unknownPresence = { .type = ConnectionPresenceTypeUnknown, .status = QLatin1String("unknown") };
+        static const Tp::SimplePresence unknownPresence = { /* type */ ConnectionPresenceTypeUnknown, /* status */ QLatin1String("unknown") };
         presences[handle] = mPriv->presences.value(handle, unknownPresence);
     }
 
