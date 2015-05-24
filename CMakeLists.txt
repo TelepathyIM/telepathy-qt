@@ -12,8 +12,8 @@ cmake_minimum_required(VERSION 2.8.12)
 #   set nano_version to 1
 set(TP_QT_MAJOR_VERSION 0)
 set(TP_QT_MINOR_VERSION 9)
-set(TP_QT_MICRO_VERSION 6)
-set(TP_QT_NANO_VERSION  1)
+set(TP_QT_MICRO_VERSION 7)
+set(TP_QT_NANO_VERSION  0)
 
 set(PACKAGE_NAME telepathy-qt)
 
