@@ -90,8 +90,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <property name="State" type="u" tp:type="File_Transfer_State"
       access="read" tp:name-for-bindings="State">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The state of the file transfer as described by the
-        File_Transfer_State enum.</p>
+        The state of the file transfer as described by the
+        File_Transfer_State enum.
+        Change notification is via the
+        <tp:member-ref>FileTransferStateChanged</tp:member-ref> signal.
       </tp:docstring>
     </property>
 
