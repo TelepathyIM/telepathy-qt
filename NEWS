@@ -1,3 +1,11 @@
+telepathy-qt 0.9.6.1 (2015-05-25)
+=================================
+
+The "Emergency aid" release.
+
+Fixes:
+ * Fixed illegal C++ statement in one of service interfaces.
+
 telepathy-qt 0.9.6 (2015-05-15)
 =================================
 
