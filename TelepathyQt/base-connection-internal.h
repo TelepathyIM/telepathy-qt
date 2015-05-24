@@ -320,4 +320,25 @@ private:
     BaseConnectionAvatarsInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseConnectionContactCapabilitiesInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+
+public:
+    Adaptee(BaseConnectionContactCapabilitiesInterface *interface);
+    ~Adaptee();
+
+private Q_SLOTS:
+    void updateCapabilities(const Tp::HandlerCapabilitiesList &handlerCapabilities,
+            const Tp::Service::ConnectionInterfaceContactCapabilitiesAdaptor::UpdateCapabilitiesContextPtr &context);
+    void getContactCapabilities(const Tp::UIntList &handles,
+            const Tp::Service::ConnectionInterfaceContactCapabilitiesAdaptor::GetContactCapabilitiesContextPtr &context);
+
+Q_SIGNALS:
+    void contactCapabilitiesChanged(const Tp::ContactCapabilitiesMap &caps);
+
+private:
+    BaseConnectionContactCapabilitiesInterface *mInterface;
+};
+
 }
