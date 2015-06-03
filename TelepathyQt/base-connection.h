@@ -221,6 +221,8 @@ public:
     void setGetContactAttributesCallback(const GetContactAttributesCallback &cb);
     Tp::ContactAttributesMap getContactAttributes(const Tp::UIntList &handles, const QStringList &interfaces, DBusError *error);
 
+    void getContactByID(const QString &identifier, const QStringList &interfaces, uint &handle, QVariantMap &attributes, DBusError *error);
+
 protected:
     BaseConnectionContactsInterface(BaseConnection *connection);
 

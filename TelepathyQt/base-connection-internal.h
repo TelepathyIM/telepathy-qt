@@ -131,6 +131,8 @@ public:
 private Q_SLOTS:
     void getContactAttributes(const Tp::UIntList &handles, const QStringList &interfaces, bool hold,
                               const Tp::Service::ConnectionInterfaceContactsAdaptor::GetContactAttributesContextPtr &context);
+    void getContactByID(const QString &identifier, const QStringList &interfaces,
+                        const Tp::Service::ConnectionInterfaceContactsAdaptor::GetContactByIDContextPtr &context);
 public:
     BaseConnectionContactsInterface *mInterface;
 };
