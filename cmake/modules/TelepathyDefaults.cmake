@@ -108,7 +108,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     endif(${NOT_RELEASE} EQUAL 1)
 
     if(CMAKE_SYSTEM_NAME MATCHES Linux)
-        add_definitions(-D_BSD_SOURCE)
+        add_definitions(-D_BSD_SOURCE -D_DEFAULT_SOURCE)
     endif(CMAKE_SYSTEM_NAME MATCHES Linux)
 
     # Compiler coverage
