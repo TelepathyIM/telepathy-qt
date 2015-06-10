@@ -171,7 +171,7 @@ class TP_QT_NO_EXPORT BaseChannelFileTransferType::Adaptee : public QObject
     Q_PROPERTY(Tp::SupportedSocketMap availableSocketTypes READ availableSocketTypes)
     Q_PROPERTY(qulonglong transferredBytes READ transferredBytes)
     Q_PROPERTY(qulonglong initialOffset READ initialOffset)
-    Q_PROPERTY(QString uri READ uri)
+    Q_PROPERTY(QString uri READ uri WRITE setUri)
     Q_PROPERTY(QString fileCollection READ fileCollection)
 
 public:
@@ -191,6 +191,9 @@ public:
     qulonglong initialOffset() const;
     QString uri() const;
     QString fileCollection() const;
+
+public Q_SLOTS:
+    void setUri(const QString &uri);
 
 private Q_SLOTS:
     void acceptFile(uint addressType, uint accessControl, const QDBusVariant &accessControlParam, qulonglong offset,
