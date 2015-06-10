@@ -458,7 +458,7 @@ Tp::UIntList BaseConnection::requestHandles(uint handleType, const QStringList &
 
 Tp::ChannelInfoList BaseConnection::channelsInfo()
 {
-    qDebug() << "BaseConnection::channelsInfo:";
+    debug() << "BaseConnection::channelsInfo:";
     Tp::ChannelInfoList list;
     foreach(const BaseChannelPtr & c, mPriv->channels) {
         Tp::ChannelInfo info;
@@ -466,7 +466,7 @@ Tp::ChannelInfoList BaseConnection::channelsInfo()
         info.channelType = c->channelType();
         info.handle = c->targetHandle();
         info.handleType = c->targetHandleType();
-        qDebug() << "BaseConnection::channelsInfo " << info.channel.path();
+        debug() << "BaseConnection::channelsInfo " << info.channel.path();
         list << info;
     }
     return list;
@@ -531,7 +531,7 @@ Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, boo
 void BaseConnection::addChannel(BaseChannelPtr channel, bool suppressHandler)
 {
     if (mPriv->channels.contains(channel)) {
-        qDebug() << "BaseConnection::addChannel: Channel already added.";
+        warning() << "BaseConnection::addChannel: Channel already added.";
         return;
     }
 
@@ -1271,7 +1271,7 @@ bool BaseConnectionContactListInterface::Adaptee::downloadAtConnection() const
 void BaseConnectionContactListInterface::Adaptee::getContactListAttributes(const QStringList &interfaces, bool hold,
         const Tp::Service::ConnectionInterfaceContactListAdaptor::GetContactListAttributesContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactListInterface::Adaptee::getContactListAttributes";
+    debug() << "BaseConnectionContactListInterface::Adaptee::getContactListAttributes";
     DBusError error;
     Tp::ContactAttributesMap attributes = mInterface->getContactListAttributes(interfaces, hold, &error);
     if (error.isValid()) {
@@ -1284,7 +1284,7 @@ void BaseConnectionContactListInterface::Adaptee::getContactListAttributes(const
 void BaseConnectionContactListInterface::Adaptee::requestSubscription(const Tp::UIntList &contacts, const QString &message,
         const Tp::Service::ConnectionInterfaceContactListAdaptor::RequestSubscriptionContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactListInterface::Adaptee::requestSubscription";
+    debug() << "BaseConnectionContactListInterface::Adaptee::requestSubscription";
     DBusError error;
     mInterface->requestSubscription(contacts, message, &error);
     if (error.isValid()) {
@@ -1297,7 +1297,7 @@ void BaseConnectionContactListInterface::Adaptee::requestSubscription(const Tp::
 void BaseConnectionContactListInterface::Adaptee::authorizePublication(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceContactListAdaptor::AuthorizePublicationContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactListInterface::Adaptee::authorizePublication";
+    debug() << "BaseConnectionContactListInterface::Adaptee::authorizePublication";
     DBusError error;
     mInterface->authorizePublication(contacts, &error);
     if (error.isValid()) {
@@ -1310,7 +1310,7 @@ void BaseConnectionContactListInterface::Adaptee::authorizePublication(const Tp:
 void BaseConnectionContactListInterface::Adaptee::removeContacts(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceContactListAdaptor::RemoveContactsContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactListInterface::Adaptee::removeContacts";
+    debug() << "BaseConnectionContactListInterface::Adaptee::removeContacts";
     DBusError error;
     mInterface->removeContacts(contacts, &error);
     if (error.isValid()) {
@@ -1323,7 +1323,7 @@ void BaseConnectionContactListInterface::Adaptee::removeContacts(const Tp::UIntL
 void BaseConnectionContactListInterface::Adaptee::unsubscribe(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceContactListAdaptor::UnsubscribeContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactListInterface::Adaptee::unsubscribe";
+    debug() << "BaseConnectionContactListInterface::Adaptee::unsubscribe";
     DBusError error;
     mInterface->unsubscribe(contacts, &error);
     if (error.isValid()) {
@@ -1336,7 +1336,7 @@ void BaseConnectionContactListInterface::Adaptee::unsubscribe(const Tp::UIntList
 void BaseConnectionContactListInterface::Adaptee::unpublish(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceContactListAdaptor::UnpublishContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactListInterface::Adaptee::unpublish";
+    debug() << "BaseConnectionContactListInterface::Adaptee::unpublish";
     DBusError error;
     mInterface->unpublish(contacts, &error);
     if (error.isValid()) {
@@ -1349,7 +1349,7 @@ void BaseConnectionContactListInterface::Adaptee::unpublish(const Tp::UIntList &
 void BaseConnectionContactListInterface::Adaptee::download(
         const Tp::Service::ConnectionInterfaceContactListAdaptor::DownloadContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactListInterface::Adaptee::download";
+    debug() << "BaseConnectionContactListInterface::Adaptee::download";
     DBusError error;
     mInterface->download(&error);
     if (error.isValid()) {
@@ -1601,7 +1601,7 @@ Tp::FieldSpecs BaseConnectionContactInfoInterface::Adaptee::supportedFields() co
 void BaseConnectionContactInfoInterface::Adaptee::getContactInfo(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceContactInfoAdaptor::GetContactInfoContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactInfoInterface::Adaptee::getContactInfo";
+    debug() << "BaseConnectionContactInfoInterface::Adaptee::getContactInfo";
     DBusError error;
     Tp::ContactInfoMap contactInfo = mInterface->getContactInfo(contacts, &error);
     if (error.isValid()) {
@@ -1614,7 +1614,7 @@ void BaseConnectionContactInfoInterface::Adaptee::getContactInfo(const Tp::UIntL
 void BaseConnectionContactInfoInterface::Adaptee::refreshContactInfo(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceContactInfoAdaptor::RefreshContactInfoContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactInfoInterface::Adaptee::refreshContactInfo";
+    debug() << "BaseConnectionContactInfoInterface::Adaptee::refreshContactInfo";
     DBusError error;
     mInterface->refreshContactInfo(contacts, &error);
     if (error.isValid()) {
@@ -1627,7 +1627,7 @@ void BaseConnectionContactInfoInterface::Adaptee::refreshContactInfo(const Tp::U
 void BaseConnectionContactInfoInterface::Adaptee::requestContactInfo(uint contact,
         const Tp::Service::ConnectionInterfaceContactInfoAdaptor::RequestContactInfoContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactInfoInterface::Adaptee::requestContactInfo";
+    debug() << "BaseConnectionContactInfoInterface::Adaptee::requestContactInfo";
     DBusError error;
     Tp::ContactInfoFieldList contactInfo = mInterface->requestContactInfo(contact, &error);
     if (error.isValid()) {
@@ -1640,7 +1640,7 @@ void BaseConnectionContactInfoInterface::Adaptee::requestContactInfo(uint contac
 void BaseConnectionContactInfoInterface::Adaptee::setContactInfo(const Tp::ContactInfoFieldList &contactInfo,
         const Tp::Service::ConnectionInterfaceContactInfoAdaptor::SetContactInfoContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactInfoInterface::Adaptee::setContactInfo";
+    debug() << "BaseConnectionContactInfoInterface::Adaptee::setContactInfo";
     DBusError error;
     mInterface->setContactInfo(contactInfo, &error);
     if (error.isValid()) {
@@ -1923,7 +1923,7 @@ BaseConnectionAliasingInterface::Adaptee::~Adaptee()
 void BaseConnectionAliasingInterface::Adaptee::getAliasFlags(
         const Tp::Service::ConnectionInterfaceAliasingAdaptor::GetAliasFlagsContextPtr &context)
 {
-    qDebug() << "BaseConnectionAliasingInterface::Adaptee::getAliasFlags";
+    debug() << "BaseConnectionAliasingInterface::Adaptee::getAliasFlags";
     DBusError error;
     Tp::ConnectionAliasFlags aliasFlags = mInterface->getAliasFlags(&error);
     if (error.isValid()) {
@@ -1936,7 +1936,7 @@ void BaseConnectionAliasingInterface::Adaptee::getAliasFlags(
 void BaseConnectionAliasingInterface::Adaptee::requestAliases(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceAliasingAdaptor::RequestAliasesContextPtr &context)
 {
-    qDebug() << "BaseConnectionAliasingInterface::Adaptee::requestAliases";
+    debug() << "BaseConnectionAliasingInterface::Adaptee::requestAliases";
     DBusError error;
     QStringList aliases = mInterface->requestAliases(contacts, &error);
     if (error.isValid()) {
@@ -1949,7 +1949,7 @@ void BaseConnectionAliasingInterface::Adaptee::requestAliases(const Tp::UIntList
 void BaseConnectionAliasingInterface::Adaptee::getAliases(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceAliasingAdaptor::GetAliasesContextPtr &context)
 {
-    qDebug() << "BaseConnectionAliasingInterface::Adaptee::getAliases";
+    debug() << "BaseConnectionAliasingInterface::Adaptee::getAliases";
     DBusError error;
     Tp::AliasMap aliases = mInterface->getAliases(contacts, &error);
     if (error.isValid()) {
@@ -1962,7 +1962,7 @@ void BaseConnectionAliasingInterface::Adaptee::getAliases(const Tp::UIntList &co
 void BaseConnectionAliasingInterface::Adaptee::setAliases(const Tp::AliasMap &aliases,
         const Tp::Service::ConnectionInterfaceAliasingAdaptor::SetAliasesContextPtr &context)
 {
-    qDebug() << "BaseConnectionAliasingInterface::Adaptee::setAliases";
+    debug() << "BaseConnectionAliasingInterface::Adaptee::setAliases";
     DBusError error;
     mInterface->setAliases(aliases, &error);
     if (error.isValid()) {
@@ -2148,7 +2148,7 @@ uint BaseConnectionAvatarsInterface::Adaptee::maximumAvatarBytes() const
 void BaseConnectionAvatarsInterface::Adaptee::getKnownAvatarTokens(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceAvatarsAdaptor::GetKnownAvatarTokensContextPtr &context)
 {
-    qDebug() << "BaseConnectionAvatarsInterface::Adaptee::getKnownAvatarTokens";
+    debug() << "BaseConnectionAvatarsInterface::Adaptee::getKnownAvatarTokens";
     DBusError error;
     Tp::AvatarTokenMap tokens = mInterface->getKnownAvatarTokens(contacts, &error);
     if (error.isValid()) {
@@ -2161,7 +2161,7 @@ void BaseConnectionAvatarsInterface::Adaptee::getKnownAvatarTokens(const Tp::UIn
 void BaseConnectionAvatarsInterface::Adaptee::requestAvatars(const Tp::UIntList &contacts,
         const Tp::Service::ConnectionInterfaceAvatarsAdaptor::RequestAvatarsContextPtr &context)
 {
-    qDebug() << "BaseConnectionAvatarsInterface::Adaptee::requestAvatars";
+    debug() << "BaseConnectionAvatarsInterface::Adaptee::requestAvatars";
     DBusError error;
     mInterface->requestAvatars(contacts, &error);
     if (error.isValid()) {
@@ -2174,7 +2174,7 @@ void BaseConnectionAvatarsInterface::Adaptee::requestAvatars(const Tp::UIntList 
 void BaseConnectionAvatarsInterface::Adaptee::setAvatar(const QByteArray &avatar, const QString &mimeType,
         const Tp::Service::ConnectionInterfaceAvatarsAdaptor::SetAvatarContextPtr &context)
 {
-    qDebug() << "BaseConnectionAvatarsInterface::Adaptee::setAvatar";
+    debug() << "BaseConnectionAvatarsInterface::Adaptee::setAvatar";
     DBusError error;
     QString token = mInterface->setAvatar(avatar, mimeType, &error);
     if (error.isValid()) {
@@ -2187,7 +2187,7 @@ void BaseConnectionAvatarsInterface::Adaptee::setAvatar(const QByteArray &avatar
 void BaseConnectionAvatarsInterface::Adaptee::clearAvatar(
         const Tp::Service::ConnectionInterfaceAvatarsAdaptor::ClearAvatarContextPtr &context)
 {
-    qDebug() << "BaseConnectionAvatarsInterface::Adaptee::clearAvatar";
+    debug() << "BaseConnectionAvatarsInterface::Adaptee::clearAvatar";
     DBusError error;
     mInterface->clearAvatar(&error);
     if (error.isValid()) {

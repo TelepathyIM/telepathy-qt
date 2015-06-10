@@ -375,7 +375,7 @@ BaseChannelTextType::Adaptee::~Adaptee()
 void BaseChannelTextType::Adaptee::acknowledgePendingMessages(const Tp::UIntList &IDs,
         const Tp::Service::ChannelTypeTextAdaptor::AcknowledgePendingMessagesContextPtr &context)
 {
-    qDebug() << "BaseConnectionContactsInterface::acknowledgePendingMessages " << IDs;
+    debug() << "BaseConnectionContactsInterface::acknowledgePendingMessages " << IDs;
     DBusError error;
     mInterface->acknowledgePendingMessages(IDs, &error);
     if (error.isValid()) {
@@ -801,7 +801,7 @@ void BaseChannelRoomListType::Adaptee::getListingRooms(
 void BaseChannelRoomListType::Adaptee::listRooms(
         const Tp::Service::ChannelTypeRoomListAdaptor::ListRoomsContextPtr &context)
 {
-    qDebug() << "BaseChannelRoomListType::Adaptee::listRooms";
+    debug() << "BaseChannelRoomListType::Adaptee::listRooms";
     DBusError error;
     mInterface->listRooms(&error);
     if (error.isValid()) {
@@ -814,7 +814,7 @@ void BaseChannelRoomListType::Adaptee::listRooms(
 void BaseChannelRoomListType::Adaptee::stopListing(
         const Tp::Service::ChannelTypeRoomListAdaptor::StopListingContextPtr &context)
 {
-    qDebug() << "BaseChannelRoomListType::Adaptee::stopListing";
+    debug() << "BaseChannelRoomListType::Adaptee::stopListing";
     DBusError error;
     mInterface->stopListing(&error);
     if (error.isValid()) {
@@ -1047,7 +1047,7 @@ QVariantMap BaseChannelCaptchaAuthenticationInterface::Adaptee::captchaErrorDeta
 
 void BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchas(const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::GetCaptchasContextPtr &context)
 {
-    qDebug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchas";
+    debug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchas";
     DBusError error;
     Tp::CaptchaInfoList captchaInfo;
     uint numberRequired;
@@ -1062,7 +1062,7 @@ void BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchas(const Tp::S
 
 void BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchaData(uint ID, const QString& mimeType, const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::GetCaptchaDataContextPtr &context)
 {
-    qDebug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchaData " << ID << mimeType;
+    debug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchaData " << ID << mimeType;
     DBusError error;
     QByteArray captchaData = mInterface->mPriv->getCaptchaDataCB(ID, mimeType, &error);
     if (error.isValid()) {
@@ -1074,7 +1074,7 @@ void BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchaData(uint ID,
 
 void BaseChannelCaptchaAuthenticationInterface::Adaptee::answerCaptchas(const Tp::CaptchaAnswers& answers, const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::AnswerCaptchasContextPtr &context)
 {
-    qDebug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::answerCaptchas";
+    debug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::answerCaptchas";
     DBusError error;
     mInterface->mPriv->answerCaptchasCB(answers, &error);
     if (error.isValid()) {
@@ -1086,7 +1086,7 @@ void BaseChannelCaptchaAuthenticationInterface::Adaptee::answerCaptchas(const Tp
 
 void BaseChannelCaptchaAuthenticationInterface::Adaptee::cancelCaptcha(uint reason, const QString& debugMessage, const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::CancelCaptchaContextPtr &context)
 {
-    qDebug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::cancelCaptcha "
+    debug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::cancelCaptcha "
              << reason << " " << debugMessage;
     DBusError error;
     mInterface->mPriv->cancelCaptchaCB(reason, debugMessage, &error);
@@ -1287,7 +1287,7 @@ bool BaseChannelSASLAuthenticationInterface::Adaptee::maySaveResponse() const
 void BaseChannelSASLAuthenticationInterface::Adaptee::startMechanism(const QString &mechanism,
         const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::StartMechanismContextPtr &context)
 {
-    qDebug() << "BaseChannelSASLAuthenticationInterface::Adaptee::startMechanism";
+    debug() << "BaseChannelSASLAuthenticationInterface::Adaptee::startMechanism";
     DBusError error;
     mInterface->startMechanism(mechanism, &error);
     if (error.isValid()) {
@@ -1300,7 +1300,7 @@ void BaseChannelSASLAuthenticationInterface::Adaptee::startMechanism(const QStri
 void BaseChannelSASLAuthenticationInterface::Adaptee::startMechanismWithData(const QString &mechanism, const QByteArray &initialData,
         const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::StartMechanismWithDataContextPtr &context)
 {
-    qDebug() << "BaseChannelSASLAuthenticationInterface::Adaptee::startMechanismWithData";
+    debug() << "BaseChannelSASLAuthenticationInterface::Adaptee::startMechanismWithData";
     DBusError error;
     mInterface->startMechanismWithData(mechanism, initialData, &error);
     if (error.isValid()) {
@@ -1313,7 +1313,7 @@ void BaseChannelSASLAuthenticationInterface::Adaptee::startMechanismWithData(con
 void BaseChannelSASLAuthenticationInterface::Adaptee::respond(const QByteArray &responseData,
         const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::RespondContextPtr &context)
 {
-    qDebug() << "BaseChannelSASLAuthenticationInterface::Adaptee::respond";
+    debug() << "BaseChannelSASLAuthenticationInterface::Adaptee::respond";
     DBusError error;
     mInterface->respond(responseData, &error);
     if (error.isValid()) {
@@ -1326,7 +1326,7 @@ void BaseChannelSASLAuthenticationInterface::Adaptee::respond(const QByteArray &
 void BaseChannelSASLAuthenticationInterface::Adaptee::acceptSasl(
         const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::AcceptSASLContextPtr &context)
 {
-    qDebug() << "BaseChannelSASLAuthenticationInterface::Adaptee::acceptSasl";
+    debug() << "BaseChannelSASLAuthenticationInterface::Adaptee::acceptSasl";
     DBusError error;
     mInterface->acceptSasl(&error);
     if (error.isValid()) {
@@ -1339,7 +1339,7 @@ void BaseChannelSASLAuthenticationInterface::Adaptee::acceptSasl(
 void BaseChannelSASLAuthenticationInterface::Adaptee::abortSasl(uint reason, const QString &debugMessage,
         const Tp::Service::ChannelInterfaceSASLAuthenticationAdaptor::AbortSASLContextPtr &context)
 {
-    qDebug() << "BaseChannelSASLAuthenticationInterface::Adaptee::abortSasl";
+    debug() << "BaseChannelSASLAuthenticationInterface::Adaptee::abortSasl";
     DBusError error;
     mInterface->abortSasl(reason, debugMessage, &error);
     if (error.isValid()) {
@@ -1686,7 +1686,7 @@ Tp::ChatStateMap BaseChannelChatStateInterface::Adaptee::chatStates() const
 void BaseChannelChatStateInterface::Adaptee::setChatState(uint state,
         const Tp::Service::ChannelInterfaceChatStateAdaptor::SetChatStateContextPtr &context)
 {
-    qDebug() << "BaseChannelChatStateInterface::Adaptee::setChatState";
+    debug() << "BaseChannelChatStateInterface::Adaptee::setChatState";
     DBusError error;
     mInterface->setChatState(state, &error);
     if (error.isValid()) {
@@ -2281,7 +2281,7 @@ bool BaseChannelRoomConfigInterface::Adaptee::configurationRetrieved() const
 void BaseChannelRoomConfigInterface::Adaptee::updateConfiguration(const QVariantMap &properties,
         const Tp::Service::ChannelInterfaceRoomConfigAdaptor::UpdateConfigurationContextPtr &context)
 {
-    qDebug() << "BaseChannelRoomConfigInterface::Adaptee::updateConfiguration";
+    debug() << "BaseChannelRoomConfigInterface::Adaptee::updateConfiguration";
     DBusError error;
     mInterface->updateConfiguration(properties, &error);
     if (error.isValid()) {
