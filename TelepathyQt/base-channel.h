@@ -533,31 +533,58 @@ class TP_QT_EXPORT BaseChannelGroupInterface : public AbstractChannelInterface
     Q_DISABLE_COPY(BaseChannelGroupInterface)
 
 public:
-    static BaseChannelGroupInterfacePtr create(ChannelGroupFlags initialFlags, uint selfHandle) {
-        return BaseChannelGroupInterfacePtr(new BaseChannelGroupInterface(initialFlags, selfHandle));
+    static BaseChannelGroupInterfacePtr create(Tp::BaseConnection *connection)
+    {
+        return BaseChannelGroupInterfacePtr(new BaseChannelGroupInterface(connection));
     }
     template<typename BaseChannelGroupInterfaceSubclass>
-    static SharedPtr<BaseChannelGroupInterfaceSubclass> create(ChannelGroupFlags initialFlags, uint selfHandle) {
+    static SharedPtr<BaseChannelGroupInterfaceSubclass> create(Tp::BaseConnection *connection)
+    {
         return SharedPtr<BaseChannelGroupInterfaceSubclass>(
-                   new BaseChannelGroupInterfaceSubclass(initialFlags, selfHandle));
+                new BaseChannelGroupInterfaceSubclass(connection));
     }
+
     virtual ~BaseChannelGroupInterface();
 
     QVariantMap immutableProperties() const;
 
-    typedef Callback3<void, const Tp::UIntList&, const QString&, DBusError*> RemoveMembersCallback;
-    void setRemoveMembersCallback(const RemoveMembersCallback &cb);
+    Tp::ChannelGroupFlags groupFlags() const;
+    void setGroupFlags(const Tp::ChannelGroupFlags &flags);
 
-    typedef Callback3<void, const Tp::UIntList&, const QString&, DBusError*> AddMembersCallback;
+    Tp::UIntList members() const;
+    void setMembers(const Tp::UIntList &members, const QVariantMap &details);
+    void setMembers(const Tp::UIntList &members, const Tp::LocalPendingInfoList &localPending, const Tp::UIntList &remotePending, const QVariantMap &details);
+
+    Tp::HandleOwnerMap handleOwners() const;
+    void setHandleOwners(const Tp::HandleOwnerMap &handleOwners);
+
+    Tp::LocalPendingInfoList localPendingMembers() const;
+    void setLocalPendingMembers(const Tp::LocalPendingInfoList &localPendingMembers);
+
+    Tp::UIntList remotePendingMembers() const;
+    void setRemotePendingMembers(const Tp::UIntList &remotePendingMembers);
+
+    uint selfHandle() const;
+    void setSelfHandle(uint selfHandle);
+
+    Tp::HandleIdentifierMap memberIdentifiers() const;
+
+    typedef Callback3<void, const Tp::UIntList &, const QString &, DBusError*> AddMembersCallback;
     void setAddMembersCallback(const AddMembersCallback &cb);
+    void addMembers(const Tp::UIntList &contacts, const QString &message, DBusError *error);
 
-    /* Adds a contact to this group. No-op if already in this group */
-    void addMembers(const Tp::UIntList &handles, const QStringList &identifiers);
-    void removeMembers(const Tp::UIntList &handles);
+    typedef Callback3<void, const Tp::UIntList &, const QString &, DBusError*> RemoveMembersCallback;
+    void setRemoveMembersCallback(const RemoveMembersCallback &cb);
+    void removeMembers(const Tp::UIntList &contacts, const QString &message, DBusError *error);
 
-private Q_SLOTS:
+    typedef Callback4<void, const Tp::UIntList &, const QString &, uint, DBusError*> RemoveMembersWithReasonCallback;
+    void setRemoveMembersWithReasonCallback(const RemoveMembersWithReasonCallback &cb);
+    void removeMembersWithReason(const Tp::UIntList &contacts, const QString &message, uint reason, DBusError *error);
+
+protected:
+    BaseChannelGroupInterface(Tp::BaseConnection *connection);
+
 private:
-    BaseChannelGroupInterface(ChannelGroupFlags initialFlags, uint selfHandle);
     void createAdaptor();
 
     class Adaptee;
