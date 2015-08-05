@@ -391,8 +391,8 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QVariantMap &request, boo
     if (error->isValid())
         return BaseChannelPtr();
 
-    QString targetID;
-    if (channel->targetHandle() != 0) {
+    QString targetID = channel->targetID();
+    if ((channel->targetHandle() != 0) && targetID.isEmpty()) {
         QStringList list = mPriv->inspectHandlesCB(channel->targetHandleType(),  UIntList() << channel->targetHandle(), error);
         if (error->isValid()) {
             debug() << "BaseConnection::createChannel: could not resolve handle " << channel->targetHandle();
@@ -401,14 +401,15 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QVariantMap &request, boo
             debug() << "BaseConnection::createChannel: found targetID " << *list.begin();
             targetID = *list.begin();
         }
+        channel->setTargetID(targetID);
     }
 
     if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorHandle"))) {
         channel->setInitiatorHandle(request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorHandle")).toUInt());
     }
 
-    QString initiatorID;
-    if (channel->initiatorHandle() != 0) {
+    QString initiatorID = channel->initiatorID();
+    if ((channel->initiatorHandle() != 0) && initiatorID.isEmpty()) {
         QStringList list = mPriv->inspectHandlesCB(HandleTypeContact, UIntList() << channel->initiatorHandle(), error);
         if (error->isValid()) {
             debug() << "BaseConnection::createChannel: could not resolve handle " << channel->initiatorHandle();
@@ -417,9 +418,8 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QVariantMap &request, boo
             debug() << "BaseConnection::createChannel: found initiatorID " << *list.begin();
             initiatorID = *list.begin();
         }
+        channel->setInitiatorID(initiatorID);
     }
-    channel->setInitiatorID(initiatorID);
-    channel->setTargetID(targetID);
     channel->setRequested(suppressHandler);
 
     channel->registerObject(error);
