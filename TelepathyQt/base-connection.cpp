@@ -915,7 +915,7 @@ void BaseConnectionRequestsInterface::createChannel(const QVariantMap &request,
         return;
     }
 
-    BaseChannelPtr channel = mPriv->connection->createChannel(request, /* yours */ false, error);
+    BaseChannelPtr channel = mPriv->connection->createChannel(request, /* suppressHandler */ true, error);
 
     if (error->isValid())
         return;
