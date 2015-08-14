@@ -379,7 +379,10 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QVariantMap &request, boo
         return BaseChannelPtr();
     }
 
-    BaseChannelPtr channel = mPriv->createChannelCB(request, error);
+    QVariantMap requestDetails = request;
+    requestDetails[TP_QT_IFACE_CHANNEL + QLatin1String(".Requested")] = suppressHandler;
+
+    BaseChannelPtr channel = mPriv->createChannelCB(requestDetails, error);
     if (error->isValid())
         return BaseChannelPtr();
 
