@@ -379,6 +379,11 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QVariantMap &request, boo
         return BaseChannelPtr();
     }
 
+    if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"))) {
+        error->set(TP_QT_ERROR_INVALID_ARGUMENT, QString(QLatin1String("The %1.Requested property must not be presented in the request details.")).arg(TP_QT_IFACE_CHANNEL));
+        return BaseChannelPtr();
+    }
+
     QVariantMap requestDetails = request;
     requestDetails[TP_QT_IFACE_CHANNEL + QLatin1String(".Requested")] = suppressHandler;
 
@@ -415,7 +420,7 @@ Tp::BaseChannelPtr BaseConnection::createChannel(const QVariantMap &request, boo
     }
     channel->setInitiatorID(initiatorID);
     channel->setTargetID(targetID);
-    channel->setRequested(request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"), suppressHandler).toBool());
+    channel->setRequested(suppressHandler);
 
     channel->registerObject(error);
     if (error->isValid())
