@@ -28,7 +28,8 @@ if(EXISTS PYTHON_LIBRARY)
   # Already in cache, be silent
   set(PYTHONLIBRARY_FOUND TRUE)
 else(EXISTS PYTHON_LIBRARY)
-  FIND_PACKAGE(PythonInterp)
+  message(STATUS "PythonLibrary find version: ${PythonLibrary_FIND_VERSION}")
+  FIND_PACKAGE(PythonInterp ${PythonLibrary_FIND_VERSION})
 
   if(PYTHONINTERP_FOUND)
     FIND_FILE(_find_lib_python_py FindLibPython.py PATHS ${CMAKE_MODULE_PATH})
