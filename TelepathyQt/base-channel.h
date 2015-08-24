@@ -57,6 +57,8 @@ public:
     bool registerObject(DBusError *error = NULL);
     virtual QString uniqueName() const;
 
+    Tp::BaseConnection *connection() const;
+
     QString channelType() const;
     QList<AbstractChannelInterfacePtr> interfaces() const;
     AbstractChannelInterfacePtr interface(const QString &interfaceName) const;

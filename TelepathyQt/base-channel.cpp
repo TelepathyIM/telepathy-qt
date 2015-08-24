@@ -151,6 +151,11 @@ QString BaseChannel::uniqueName() const
     return mPriv->uniqueName;
 }
 
+BaseConnection *BaseChannel::connection() const
+{
+    return mPriv->connection;
+}
+
 bool BaseChannel::registerObject(DBusError *error)
 {
     if (isRegistered()) {
