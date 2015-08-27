@@ -116,7 +116,7 @@ void BaseChannel::Adaptee::close(const Tp::Service::ChannelAdaptor::CloseContext
 
 /**
  * \class BaseChannel
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for channel implementations.
@@ -346,7 +346,7 @@ bool BaseChannel::plugInterface(const AbstractChannelInterfacePtr &interface)
 
 /**
  * \class AbstractChannelInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for all the Channel object interface implementations.
@@ -403,7 +403,7 @@ struct TP_QT_NO_EXPORT BaseChannelTextType::Private {
 
 /**
  * \class BaseChannelTextType
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Type.Text
@@ -601,7 +601,7 @@ struct TP_QT_NO_EXPORT BaseChannelMessagesInterface::Private {
 
 /**
  * \class BaseChannelMessagesInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.Messages
@@ -826,7 +826,7 @@ void BaseChannelRoomListType::Adaptee::stopListing(
 
 /**
  * \class BaseChannelRoomListType
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Type.RoomList
@@ -951,7 +951,7 @@ QString BaseChannelServerAuthenticationType::Adaptee::authenticationMethod() con
 
 /**
  * \class BaseChannelServerAuthenticationType
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Type.ServerAuthentifcation
@@ -1099,7 +1099,7 @@ void BaseChannelCaptchaAuthenticationInterface::Adaptee::cancelCaptcha(uint reas
 
 /**
  * \class BaseChannelCaptchaAuthenticationInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.CaptchaAuthentication
@@ -1351,7 +1351,7 @@ void BaseChannelSASLAuthenticationInterface::Adaptee::abortSasl(uint reason, con
 
 /**
  * \class BaseChannelSASLAuthenticationInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.SASLAuthentication
@@ -1593,7 +1593,7 @@ bool BaseChannelSecurableInterface::Adaptee::verified() const
 
 /**
  * \class BaseChannelSecurableInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.Securable
@@ -1698,7 +1698,7 @@ void BaseChannelChatStateInterface::Adaptee::setChatState(uint state,
 
 /**
  * \class BaseChannelChatStateInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.Chat.State
@@ -1929,7 +1929,7 @@ void BaseChannelGroupInterface::Adaptee::getSelfHandle(const Tp::Service::Channe
 
 /**
  * \class BaseChannelGroupInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.Group
@@ -2081,7 +2081,7 @@ QDateTime BaseChannelRoomInterface::Adaptee::creationTimestamp() const
 
 /**
  * \class BaseChannelRoomInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.Room2
@@ -2293,7 +2293,7 @@ void BaseChannelRoomConfigInterface::Adaptee::updateConfiguration(const QVariant
 
 /**
  * \class BaseChannelRoomConfigInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.RoomConfig1
@@ -2642,7 +2642,7 @@ void BaseChannelCallType::Adaptee::addContent(const QString &contentName, const 
 
 /**
  * \class BaseChannelCallType
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Type.Call
@@ -2875,7 +2875,7 @@ void BaseChannelHoldInterface::Adaptee::requestHold(bool hold, const Tp::Service
 
 /**
  * \class BaseChannelHoldInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.Hold
@@ -2982,7 +2982,7 @@ void BaseChannelMergeableConferenceInterface::Adaptee::merge(const QDBusObjectPa
 
 /**
  * \class BaseChannelMergeableConferenceInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.MergeableConference
@@ -3070,7 +3070,7 @@ void BaseChannelSplittableInterface::Adaptee::split(const Tp::Service::ChannelIn
 
 /**
  * \class BaseChannelSplittableInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.Splittable
@@ -3158,7 +3158,7 @@ struct TP_QT_NO_EXPORT BaseChannelConferenceInterface::Private {
 
 /**
  * \class BaseChannelConferenceInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.Conference
@@ -3299,7 +3299,7 @@ void BaseChannelSMSInterface::Adaptee::getSMSLength(const Tp::MessagePartList & 
 
 /**
  * \class BaseChannelSMSInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class for implementations of Channel.Interface.SMS

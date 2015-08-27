@@ -42,7 +42,7 @@ namespace Tp
 
 /**
  * \class AbstractCallContentInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-call.h <TelepathyQt/BaseCall>
  *
  * \brief Base class for all the CallContent object interface implementations.
@@ -279,7 +279,7 @@ void BaseCallMuteInterface::Adaptee::requestMuted(bool mute, const Tp::Service::
 
 /**
  * \class BaseCallMuteInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-call.h <TelepathyQt/BaseCall>
  *
  * \brief Base class for implementations of Call.Interface.Mute
@@ -417,7 +417,7 @@ void BaseCallContentDTMFInterface::Adaptee::multipleTones(const QString& tones, 
 
 /**
  * \class BaseCallContentDTMFInterface
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-call.h <TelepathyQt/BaseCall>
  *
  * \brief Base class for implementations of Call.Content.Interface.DTMF

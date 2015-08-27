@@ -767,7 +767,7 @@ bool BaseConnection::matchChannel(const BaseChannelPtr &channel, const QVariantM
 
 /**
  * \class AbstractConnectionInterface
- * \ingroup servicecm
+ * \ingroup serviceconn
  * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
  *
  * \brief Base class for all the Connection object interface implementations.
@@ -834,7 +834,7 @@ struct TP_QT_NO_EXPORT BaseConnectionRequestsInterface::Private {
 
 /**
  * \class BaseConnectionRequestsInterface
- * \ingroup servicecm
+ * \ingroup serviceconn
  * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
  *
  * \brief Base class for implementations of Connection.Interface.Requests
@@ -964,7 +964,7 @@ QStringList BaseConnectionContactsInterface::Adaptee::contactAttributeInterfaces
 
 /**
  * \class BaseConnectionContactsInterface
- * \ingroup servicecm
+ * \ingroup serviceconn
  * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
  *
  * \brief Base class for implementations of Connection.Interface.Contacts
@@ -1056,7 +1056,7 @@ struct TP_QT_NO_EXPORT BaseConnectionSimplePresenceInterface::Private {
 
 /**
  * \class BaseConnectionSimplePresenceInterface
- * \ingroup servicecm
+ * \ingroup serviceconn
  * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
  *
  * \brief Base class for implementations of Connection.Interface.SimplePresence
@@ -1361,7 +1361,7 @@ void BaseConnectionContactListInterface::Adaptee::download(
 
 /**
  * \class BaseConnectionContactListInterface
- * \ingroup servicecm
+ * \ingroup serviceconn
  * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
  *
  * \brief Base class for implementations of Connection.Interface.ContactList
@@ -1652,7 +1652,7 @@ void BaseConnectionContactInfoInterface::Adaptee::setContactInfo(const Tp::Conta
 
 /**
  * \class BaseConnectionContactInfoInterface
- * \ingroup servicecm
+ * \ingroup serviceconn
  * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
  *
  * \brief Base class for implementations of Connection.Interface.Contact.Info
@@ -1798,7 +1798,7 @@ struct TP_QT_NO_EXPORT BaseConnectionAddressingInterface::Private {
 
 /**
  * \class BaseConnectionAddressingInterface
- * \ingroup servicecm
+ * \ingroup serviceconn
  * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
  *
  * \brief Base class for implementations of Connection.Interface.Addressing
@@ -1974,7 +1974,7 @@ void BaseConnectionAliasingInterface::Adaptee::setAliases(const Tp::AliasMap &al
 
 /**
  * \class BaseConnectionAliasingInterface
- * \ingroup servicecm
+ * \ingroup serviceconn
  * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
  *
  * \brief Base class for implementations of Connection.Interface.Aliasing
@@ -2199,7 +2199,7 @@ void BaseConnectionAvatarsInterface::Adaptee::clearAvatar(
 
 /**
  * \class BaseConnectionAvatarsInterface
- * \ingroup servicecm
+ * \ingroup serviceconn
  * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
  *
  * \brief Base class for implementations of Connection.Interface.Avatars
