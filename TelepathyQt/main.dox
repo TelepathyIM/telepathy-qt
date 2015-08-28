@@ -69,7 +69,7 @@
  * \subsection installation_from_source_requirements Requirements
  *
  * Building Telepathy-Qt requires:
- * \li Qt, including QtDBus <http://www.qtsoftware.com/>
+ * \li Qt, including QtDBus <http://http://www.qt.io/>
  * \li GNU make <http://www.gnu.org/software/make/>
  * \li pkg-config <http://ftp.gnome.org/pub/GNOME/sources/pkg-config/>
  * \li libxslt, xsltproc <http://xmlsoft.org/XSLT/>
