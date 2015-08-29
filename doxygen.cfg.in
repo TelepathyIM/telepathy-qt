@@ -447,12 +447,6 @@ MAX_INITIALIZER_LINES  = 0
 
 SHOW_USED_FILES        = NO
 
-# If the sources in your project are distributed over multiple directories 
-# then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy 
-# in the documentation. The default is NO.
-
-SHOW_DIRECTORIES       = NO
-
 # Set the SHOW_FILES tag to NO to disable the generation of the Files page.
 # This will remove the Files entry from the Quick Index and from the 
 # Folder Tree View (if specified). The default is YES.
@@ -772,12 +766,6 @@ HTML_FOOTER            = @abs_top_srcdir@/doxygen-footer.html
 
 HTML_STYLESHEET        = @abs_top_srcdir@/doxygen.css
 
-# If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, 
-# files or namespaces will be aligned in HTML using tables. If set to 
-# NO a bullet list will be used.
-
-HTML_ALIGN_MEMBERS     = NO
-
 # If the GENERATE_HTMLHELP tag is set to YES, additional index files 
 # will be generated that can be used as input for tools like the 
 # Microsoft HTML help workshop to generate a compiled HTML help file (.chm) 
@@ -1058,18 +1046,6 @@ GENERATE_XML           = ${GENERATE_XML}
 # put in front of it. If left blank `xml' will be used as the default path.
 
 XML_OUTPUT             = xml
-
-# The XML_SCHEMA tag can be used to specify an XML schema, 
-# which can be used by a validating XML parser to check the 
-# syntax of the XML files.
-
-XML_SCHEMA             = 
-
-# The XML_DTD tag can be used to specify an XML DTD, 
-# which can be used by a validating XML parser to check the 
-# syntax of the XML files.
-
-XML_DTD                = 
 
 # If the XML_PROGRAMLISTING tag is set to YES Doxygen will 
 # dump the program listings (including syntax highlighting 
@@ -1355,10 +1331,12 @@ CALLER_GRAPH           = NO
 
 GRAPHICAL_HIERARCHY    = YES
 
-# If the DIRECTORY_GRAPH, SHOW_DIRECTORIES and HAVE_DOT tags are set to YES 
-# then doxygen will show the dependencies a directory has on other directories 
-# in a graphical way. The dependency relations are determined by the #include
-# relations between the files in the directories.
+# If the DIRECTORY_GRAPH tag is set to YES then doxygen will show the
+# dependencies a directory has on other directories in a graphical way. The
+# dependency relations are determined by the #include relations between the
+# files in the directories.
+# The default value is: YES.
+# This tag requires that the tag HAVE_DOT is set to YES.
 
 DIRECTORY_GRAPH        = YES
 
