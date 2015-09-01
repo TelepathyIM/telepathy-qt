@@ -2605,9 +2605,9 @@ uint BaseChannelRoomInterface::Adaptee::creatorHandle() const
     return mInterface->creatorHandle();
 }
 
-QDateTime BaseChannelRoomInterface::Adaptee::creationTimestamp() const
+qlonglong BaseChannelRoomInterface::Adaptee::creationTimestamp() const
 {
-    return mInterface->creationTimestamp();
+    return mInterface->creationTimestamp().toTime_t();
 }
 
 /**

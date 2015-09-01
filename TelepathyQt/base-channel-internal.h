@@ -358,7 +358,7 @@ class TP_QT_NO_EXPORT BaseChannelRoomInterface::Adaptee : public QObject
     Q_PROPERTY(QString server READ server)
     Q_PROPERTY(QString creator READ creator)
     Q_PROPERTY(uint creatorHandle READ creatorHandle)
-    Q_PROPERTY(QDateTime creationTimestamp READ creationTimestamp)
+    Q_PROPERTY(qlonglong creationTimestamp READ creationTimestamp)
 
 public:
     Adaptee(BaseChannelRoomInterface *interface);
@@ -368,7 +368,7 @@ public:
     QString server() const;
     QString creator() const;
     uint creatorHandle() const;
-    QDateTime creationTimestamp() const;
+    qlonglong creationTimestamp() const;
 
 private:
     BaseChannelRoomInterface *mInterface;
