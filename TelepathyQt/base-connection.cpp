@@ -130,9 +130,16 @@ void BaseConnection::Adaptee::connect(const Tp::Service::ConnectionAdaptor::Conn
 void BaseConnection::Adaptee::disconnect(const Tp::Service::ConnectionAdaptor::DisconnectContextPtr &context)
 {
     debug() << "BaseConnection::Adaptee::disconnect";
-    /* This will remove the connection from the connection manager
+
+    foreach(const BaseChannelPtr &channel, mConnection->mPriv->channels) {
+        /* BaseChannel::closed() signal triggers removeChannel() method call with proper cleanup */
+        channel->close();
+    }
+
+    /* This signal will remove the connection from the connection manager
      * and destroy this object. */
     emit mConnection->disconnected();
+
     context->setFinished();
 }
 
