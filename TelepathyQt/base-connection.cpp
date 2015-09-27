@@ -1161,10 +1161,19 @@ void BaseConnectionSimplePresenceInterface::createAdaptor()
 
 void BaseConnectionSimplePresenceInterface::setPresences(const Tp::SimpleContactPresences &presences)
 {
+    Tp::SimpleContactPresences newPresences;
+
     foreach(uint handle, presences.keys()) {
+        if (mPriv->presences.contains(handle) && mPriv->presences.value(handle) == presences.value(handle)) {
+            continue;
+        }
         mPriv->presences[handle] = presences[handle];
+        newPresences[handle] = presences[handle];
     }
-    QMetaObject::invokeMethod(mPriv->adaptee, "presencesChanged", Q_ARG(Tp::SimpleContactPresences, presences)); //Can simply use emit in Qt5
+
+    if (!newPresences.isEmpty()) {
+        QMetaObject::invokeMethod(mPriv->adaptee, "presencesChanged", Q_ARG(Tp::SimpleContactPresences, newPresences)); //Can simply use emit in Qt5
+    }
 }
 
 void BaseConnectionSimplePresenceInterface::setSetPresenceCallback(const SetPresenceCallback &cb)
