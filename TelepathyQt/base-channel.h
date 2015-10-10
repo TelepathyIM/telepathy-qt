@@ -576,13 +576,9 @@ public:
     void setAddMembersCallback(const AddMembersCallback &cb);
     void addMembers(const Tp::UIntList &contacts, const QString &message, DBusError *error);
 
-    typedef Callback3<void, const Tp::UIntList &, const QString &, DBusError*> RemoveMembersCallback;
+    typedef Callback4<void, const Tp::UIntList &, const QString &, uint, DBusError*> RemoveMembersCallback;
     void setRemoveMembersCallback(const RemoveMembersCallback &cb);
-    void removeMembers(const Tp::UIntList &contacts, const QString &message, DBusError *error);
-
-    typedef Callback4<void, const Tp::UIntList &, const QString &, uint, DBusError*> RemoveMembersWithReasonCallback;
-    void setRemoveMembersWithReasonCallback(const RemoveMembersWithReasonCallback &cb);
-    void removeMembersWithReason(const Tp::UIntList &contacts, const QString &message, uint reason, DBusError *error);
+    void removeMembers(const Tp::UIntList &contacts, const QString &message, uint reason, DBusError *error);
 
 protected:
     BaseChannelGroupInterface(Tp::BaseConnection *connection);

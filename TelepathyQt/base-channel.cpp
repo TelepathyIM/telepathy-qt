@@ -1805,7 +1805,6 @@ struct TP_QT_NO_EXPORT BaseChannelGroupInterface::Private {
     Tp::HandleIdentifierMap memberIdentifiers;
     AddMembersCallback addMembersCB;
     RemoveMembersCallback removeMembersCB;
-    RemoveMembersWithReasonCallback removeMembersWithReasonCB;
     BaseChannelGroupInterface::Adaptee *adaptee;
 };
 
@@ -1821,7 +1820,7 @@ BaseChannelGroupInterface::Adaptee::~Adaptee()
 
 uint BaseChannelGroupInterface::Adaptee::groupFlags() const
 {
-    return mInterface->groupFlags();
+    return mInterface->groupFlags() | Tp::ChannelGroupFlagMembersChangedDetailed;
 }
 
 Tp::HandleOwnerMap BaseChannelGroupInterface::Adaptee::handleOwners() const
@@ -1872,7 +1871,7 @@ void BaseChannelGroupInterface::Adaptee::removeMembers(const Tp::UIntList &conta
 {
     qDebug() << "BaseChannelGroupInterface::Adaptee::removeMembers";
     DBusError error;
-    mInterface->removeMembers(contacts, message, &error);
+    mInterface->removeMembers(contacts, message, Tp::ChannelGroupChangeReasonNone, &error);
     if (error.isValid()) {
         context->setFinishedWithError(error.name(), error.message());
         return;
@@ -1885,7 +1884,7 @@ void BaseChannelGroupInterface::Adaptee::removeMembersWithReason(const Tp::UIntL
 {
     qDebug() << "BaseChannelGroupInterface::Adaptee::removeMembersWithReason";
     DBusError error;
-    mInterface->removeMembersWithReason(contacts, message, reason, &error);
+    mInterface->removeMembers(contacts, message, reason, &error);
     if (error.isValid()) {
         context->setFinishedWithError(error.name(), error.message());
         return;
@@ -1945,22 +1944,20 @@ void BaseChannelGroupInterface::Private::emitMembersChangedSignal(const UIntList
                               Q_ARG(Tp::UIntList, remotePending),
                               Q_ARG(uint, actor), Q_ARG(uint, reason)); //Can simply use emit in Qt5
 
-    if (groupFlags & Tp::ChannelGroupFlagMembersChangedDetailed) {
-        if (!details.contains(QLatin1String("contact-ids"))) {
-            HandleIdentifierMap contactIds;
-            foreach (uint handle, added + localPending + remotePending) {
-                contactIds[handle] = memberIdentifiers[handle];
-            }
-            details.insert(QLatin1String("contact-ids"), QVariant::fromValue(contactIds));
+    if (!details.contains(QLatin1String("contact-ids"))) {
+        HandleIdentifierMap contactIds;
+        foreach (uint handle, added + localPending + remotePending) {
+            contactIds[handle] = memberIdentifiers[handle];
         }
-
-        QMetaObject::invokeMethod(adaptee, "membersChangedDetailed",
-                                  Q_ARG(Tp::UIntList, added),
-                                  Q_ARG(Tp::UIntList, removed),
-                                  Q_ARG(Tp::UIntList, localPending),
-                                  Q_ARG(Tp::UIntList, remotePending),
-                                  Q_ARG(QVariantMap, details));
+        details.insert(QLatin1String("contact-ids"), QVariant::fromValue(contactIds));
     }
+
+    QMetaObject::invokeMethod(adaptee, "membersChangedDetailed",
+                              Q_ARG(Tp::UIntList, added),
+                              Q_ARG(Tp::UIntList, removed),
+                              Q_ARG(Tp::UIntList, localPending),
+                              Q_ARG(Tp::UIntList, remotePending),
+                              Q_ARG(QVariantMap, details));
 }
 
 /**
@@ -2022,14 +2019,13 @@ void BaseChannelGroupInterface::Private::emitMembersChangedSignal(const UIntList
  * considered to a bug in the connection manager, but clients MUST recover by falling back to
  * closing the channel with the Close method.
  *
- * Depending on the protocol capabilities, addMembers(), removeMembers() and
- * removeMembersWithReason() callbacks can be setup to support group members addition, invitation
- * and removal.
+ * Depending on the protocol capabilities, addMembers() and removeMembers() callbacks can be setup
+ * to support group members addition, invitation and removal.
  *
  * Note, that the interface automatically update the MemberIdentifiers property on members changes.
  *
  * \sa setGroupFlags(), setSelfHandle(), setMembers(), setAddMembersCallback(),
- * setRemoveMembersCallback(), setRemoveMembersWithReasonCallback(), setHandleOwners(),
+ * setRemoveMembersCallback(), setHandleOwners(),
  * setLocalPendingMembers(), setRemotePendingMembers()
  */
 
@@ -2083,6 +2079,9 @@ Tp::ChannelGroupFlags BaseChannelGroupInterface::groupFlags() const
  * Set the group flags for this channel.
  *
  * The user interface can use this to present information about which operations are currently valid.
+ * It is not recommended to set Tp::ChannelGroupFlagMembersChangedDetailed flag: MembersChangedDetailed
+ * signal is implemented in the interface and enabled unconditionally, because there is no reason to
+ * disable it and this improve compatibility with future Telepathy specs.
  *
  * \param flags The flags on this channel.
  *
@@ -2438,7 +2437,6 @@ void BaseChannelGroupInterface::createAdaptor()
  * \param cb The callback to set.
  * \sa addMembers()
  * \sa setRemoveMembersCallback()
- * \sa setRemoveMembersWithReasonCallback()
  */
 void BaseChannelGroupInterface::setAddMembersCallback(const AddMembersCallback &cb)
 {
@@ -2461,42 +2459,6 @@ void BaseChannelGroupInterface::addMembers(const Tp::UIntList &contacts, const Q
         return;
     }
     return mPriv->addMembersCB(contacts, message, error);
-}
-
-/**
- * Set a callback that will be called to remove members from the group.
- *
- * %Connection manager can omit this callback, then the interface will fallback to
- * removeMembersWithReason call with the reason value Tp::ChannelGroupChangeReasonNone.
- *
- * See setRemoveMembersWithReasonCallback() description for details.
- *
- * \param cb The callback to set.
- *
- * \sa removeMembers()
- * \sa setRemoveMembersWithReasonCallback()
- */
-void BaseChannelGroupInterface::setRemoveMembersCallback(const RemoveMembersCallback &cb)
-{
-    mPriv->removeMembersCB = cb;
-}
-
-/**
- * Call the RemoveMembers callback with passed arguments.
- *
- * \param contacts An array of contact handles to remove from the channel.
- * \param message A string message, which can be blank if desired.
- * \param error A pointer to Tp::DBusError object for error information.
- *
- * \sa removeMembersWithReason()
- * \sa setRemoveMembersCallback()
- */
-void BaseChannelGroupInterface::removeMembers(const Tp::UIntList &contacts, const QString &message, DBusError *error)
-{
-    if (!mPriv->removeMembersCB.isValid()) {
-        return removeMembersWithReason(contacts, message, Tp::ChannelGroupChangeReasonNone, error);
-    }
-    return mPriv->removeMembersCB(contacts, message, error);
 }
 
 /**
@@ -2527,32 +2489,31 @@ void BaseChannelGroupInterface::removeMembers(const Tp::UIntList &contacts, cons
  *
  * \param cb The callback to set.
  *
- * \sa removeMembersWithReason()
+ * \sa removeMembers()
  * \sa setRemoveMembersCallback()
  */
-void BaseChannelGroupInterface::setRemoveMembersWithReasonCallback(const RemoveMembersWithReasonCallback &cb)
+void BaseChannelGroupInterface::setRemoveMembersCallback(const RemoveMembersCallback &cb)
 {
-    mPriv->removeMembersWithReasonCB = cb;
+    mPriv->removeMembersCB = cb;
 }
 
 /**
- * Call the RemoveMembersWithReason callback with passed arguments.
+ * Call the RemoveMembers callback with passed arguments.
  *
  * \param contacts An array of contact handles to remove from the channel.
  * \param message A string message, which can be blank if desired.
  * \param reason A reason for the change.
  * \param error A pointer to Tp::DBusError object for error information.
  *
- * \sa setRemoveMembersWithReasonCallback()
- * \sa removeMembers()
+ * \sa setRemoveMembersCallback()
  */
-void BaseChannelGroupInterface::removeMembersWithReason(const Tp::UIntList &contacts, const QString &message, uint reason, DBusError *error)
+void BaseChannelGroupInterface::removeMembers(const Tp::UIntList &contacts, const QString &message, uint reason, DBusError *error)
 {
-    if (!mPriv->removeMembersWithReasonCB.isValid()) {
+    if (!mPriv->removeMembersCB.isValid()) {
         error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
         return;
     }
-    return mPriv->removeMembersWithReasonCB(contacts, message, reason, error);
+    return mPriv->removeMembersCB(contacts, message, reason, error);
 }
 
 // Chan.I.Room2
