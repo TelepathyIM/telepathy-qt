@@ -656,6 +656,7 @@ bool BaseConnection::plugInterface(const AbstractConnectionInterfacePtr &interfa
 
     debug() << "Interface" << interface->interfaceName() << "plugged";
     mPriv->interfaces.insert(interface->interfaceName(), interface);
+    interface->setBaseConnection(this);
     return true;
 }
 
@@ -795,6 +796,11 @@ AbstractConnectionInterface::AbstractConnectionInterface(const QString &interfac
 
 AbstractConnectionInterface::~AbstractConnectionInterface()
 {
+}
+
+void AbstractConnectionInterface::setBaseConnection(BaseConnection *connection)
+{
+    Q_UNUSED(connection)
 }
 
 // Conn.I.Requests

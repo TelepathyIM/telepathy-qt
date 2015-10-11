@@ -143,6 +143,9 @@ public:
     AbstractConnectionInterface(const QString &interfaceName);
     virtual ~AbstractConnectionInterface();
 
+protected:
+    virtual void setBaseConnection(BaseConnection *connection);
+
 private:
     friend class BaseConnection;
 

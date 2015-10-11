@@ -346,6 +346,7 @@ bool BaseChannel::plugInterface(const AbstractChannelInterfacePtr &interface)
 
     debug() << "Interface" << interface->interfaceName() << "plugged";
     mPriv->interfaces.insert(interface->interfaceName(), interface);
+    interface->setBaseChannel(this);
     return true;
 }
 
@@ -364,6 +365,11 @@ AbstractChannelInterface::AbstractChannelInterface(const QString &interfaceName)
 
 AbstractChannelInterface::~AbstractChannelInterface()
 {
+}
+
+void AbstractChannelInterface::setBaseChannel(BaseChannel *channel)
+{
+    Q_UNUSED(channel)
 }
 
 // Chan.T.Text

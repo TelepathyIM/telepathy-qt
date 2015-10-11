@@ -103,6 +103,9 @@ public:
     AbstractChannelInterface(const QString &interfaceName);
     virtual ~AbstractChannelInterface();
 
+protected:
+    virtual void setBaseChannel(BaseChannel *channel);
+
 private:
     friend class BaseChannel;
 
