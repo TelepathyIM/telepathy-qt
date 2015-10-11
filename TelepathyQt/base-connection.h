@@ -202,15 +202,15 @@ class TP_QT_EXPORT BaseConnectionContactsInterface : public AbstractConnectionIn
     Q_DISABLE_COPY(BaseConnectionContactsInterface)
 
 public:
-    static BaseConnectionContactsInterfacePtr create(BaseConnection *connection)
+    static BaseConnectionContactsInterfacePtr create()
     {
-        return BaseConnectionContactsInterfacePtr(new BaseConnectionContactsInterface(connection));
+        return BaseConnectionContactsInterfacePtr(new BaseConnectionContactsInterface());
     }
     template<typename BaseConnectionContactsInterfaceSubclass>
-    static SharedPtr<BaseConnectionContactsInterfaceSubclass> create(BaseConnection *connection)
+    static SharedPtr<BaseConnectionContactsInterfaceSubclass> create()
     {
         return SharedPtr<BaseConnectionContactsInterfaceSubclass>(
-                new BaseConnectionContactsInterfaceSubclass(connection));
+                new BaseConnectionContactsInterfaceSubclass());
     }
 
     virtual ~BaseConnectionContactsInterface();
@@ -227,7 +227,8 @@ public:
     void getContactByID(const QString &identifier, const QStringList &interfaces, uint &handle, QVariantMap &attributes, DBusError *error);
 
 protected:
-    BaseConnectionContactsInterface(BaseConnection *connection);
+    BaseConnectionContactsInterface();
+    void setBaseConnection(BaseConnection *connection);
 
 private:
     void createAdaptor();
