@@ -536,15 +536,15 @@ class TP_QT_EXPORT BaseChannelGroupInterface : public AbstractChannelInterface
     Q_DISABLE_COPY(BaseChannelGroupInterface)
 
 public:
-    static BaseChannelGroupInterfacePtr create(Tp::BaseConnection *connection)
+    static BaseChannelGroupInterfacePtr create()
     {
-        return BaseChannelGroupInterfacePtr(new BaseChannelGroupInterface(connection));
+        return BaseChannelGroupInterfacePtr(new BaseChannelGroupInterface());
     }
     template<typename BaseChannelGroupInterfaceSubclass>
-    static SharedPtr<BaseChannelGroupInterfaceSubclass> create(Tp::BaseConnection *connection)
+    static SharedPtr<BaseChannelGroupInterfaceSubclass> create()
     {
         return SharedPtr<BaseChannelGroupInterfaceSubclass>(
-                new BaseChannelGroupInterfaceSubclass(connection));
+                new BaseChannelGroupInterfaceSubclass());
     }
 
     virtual ~BaseChannelGroupInterface();
@@ -581,7 +581,8 @@ public:
     void removeMembers(const Tp::UIntList &contacts, const QString &message, uint reason, DBusError *error);
 
 protected:
-    BaseChannelGroupInterface(Tp::BaseConnection *connection);
+    BaseChannelGroupInterface();
+    void setBaseChannel(BaseChannel *channel);
 
 private:
     void createAdaptor();
