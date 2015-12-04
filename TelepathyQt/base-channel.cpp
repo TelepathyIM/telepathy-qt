@@ -2100,7 +2100,7 @@ void BaseChannelGroupInterface::setGroupFlags(const Tp::ChannelGroupFlags &flags
     const Tp::ChannelGroupFlags removed   = mPriv->groupFlags & ~keptFlags;
 
     mPriv->groupFlags = flags;
-    QMetaObject::invokeMethod(mPriv->adaptee, "groupFlagsChanged", Q_ARG(Tp::ChannelGroupFlags, added), Q_ARG(Tp::ChannelGroupFlags, removed)); //Can simply use emit in Qt5
+    QMetaObject::invokeMethod(mPriv->adaptee, "groupFlagsChanged", Q_ARG(uint, added), Q_ARG(uint, removed)); //Can simply use emit in Qt5
 }
 
 /**
