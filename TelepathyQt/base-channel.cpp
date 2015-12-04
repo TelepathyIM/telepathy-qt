@@ -2397,11 +2397,13 @@ void BaseChannelGroupInterface::setSelfHandle(uint selfHandle)
     // selfHandleChanged is deprecated since 0.23.4.
     QMetaObject::invokeMethod(mPriv->adaptee, "selfHandleChanged", Q_ARG(uint, selfHandle)); //Can simply use emit in Qt5
 
-    DBusError error;
-    QStringList selfID = mPriv->connection->inspectHandles(Tp::HandleTypeContact, Tp::UIntList() << selfHandle, &error);
+    if (mPriv->connection) {
+        DBusError error;
+        QStringList selfID = mPriv->connection->inspectHandles(Tp::HandleTypeContact, Tp::UIntList() << selfHandle, &error);
 
-    if (!selfID.isEmpty()) {
-        QMetaObject::invokeMethod(mPriv->adaptee, "selfContactChanged", Q_ARG(uint, selfHandle), Q_ARG(QString, selfID.first())); //Can simply use emit in Qt5
+        if (!selfID.isEmpty()) {
+            QMetaObject::invokeMethod(mPriv->adaptee, "selfContactChanged", Q_ARG(uint, selfHandle), Q_ARG(QString, selfID.first())); //Can simply use emit in Qt5
+        }
     }
 }
 
