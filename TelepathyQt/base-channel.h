@@ -104,6 +104,7 @@ public:
     virtual ~AbstractChannelInterface();
 
 protected:
+    virtual void close();
     virtual void setBaseChannel(BaseChannel *channel);
 
 private:

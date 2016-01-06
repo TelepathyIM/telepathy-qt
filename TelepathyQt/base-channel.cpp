@@ -250,6 +250,10 @@ void BaseChannel::setRequested(bool requested)
 
 void BaseChannel::close()
 {
+    foreach(const AbstractChannelInterfacePtr &iface, interfaces()) {
+        iface->close();
+    }
+
     // Method is used in destructor, so (to be sure that adaptee is exists) we should use DirectConnection
     QMetaObject::invokeMethod(mPriv->adaptee, "closed", Qt::DirectConnection);
     emit closed();
@@ -364,6 +368,10 @@ AbstractChannelInterface::AbstractChannelInterface(const QString &interfaceName)
 }
 
 AbstractChannelInterface::~AbstractChannelInterface()
+{
+}
+
+void AbstractChannelInterface::close()
 {
 }
 
