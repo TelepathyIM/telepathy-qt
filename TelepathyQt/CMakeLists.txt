@@ -951,8 +951,14 @@ if(ENABLE_SERVICE_SUPPORT)
     #else (ENABLE_COMPILER_COVERAGE)
     #    add_library(telepathy-qt${QT_VERSION_MAJOR}-service SHARED ${telepathy_qt_service_SRCS})
     #endif (ENABLE_COMPILER_COVERAGE)
-    # lets build a static only library until we have a stable API/ABI
-    add_library(telepathy-qt${QT_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
+
+    if(FORCE_STATIC_SERVICE_LIBRARY)
+        set(SERVICE_LIBRARY_TYPE STATIC)
+    else(FORCE_STATIC_SERVICE_LIBRARY)
+        set(SERVICE_LIBRARY_TYPE SHARED)
+    endif(FORCE_STATIC_SERVICE_LIBRARY)
+
+    add_library(telepathy-qt${QT_VERSION_MAJOR}-service ${SERVICE_LIBRARY_TYPE} ${telepathy_qt_service_SRCS})
     add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service stable-typesgen future-typesgen)
 
     # generate service moc files

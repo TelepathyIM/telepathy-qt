@@ -85,6 +85,8 @@ endif (${TP_QT_NANO_VERSION} EQUAL 0)
 
 # Add an option for compiling tp-qt-service
 option(ENABLE_SERVICE_SUPPORT "Enable compilation of service side bindings for Telepathy-Qt" TRUE)
+# Add an option to select type of service library
+option(FORCE_STATIC_SERVICE_LIBRARY "Force Telepathy-Qt service to be a static library." FALSE)
 # Add an option for compiling examples
 option(ENABLE_EXAMPLES "Enable compilation of examples for Telepathy-Qt" TRUE)
 # Add an option for compiling Farstream
