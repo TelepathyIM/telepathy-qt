@@ -953,6 +953,7 @@ if(ENABLE_SERVICE_SUPPORT)
     #endif (ENABLE_COMPILER_COVERAGE)
     # lets build a static only library until we have a stable API/ABI
     add_library(telepathy-qt${QT_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
+    add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service stable-typesgen future-typesgen)
 
     # generate service moc files
     foreach(moc_src ${telepathy_qt_service_MOC_SRCS})
