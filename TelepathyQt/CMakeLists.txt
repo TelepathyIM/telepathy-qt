@@ -981,7 +981,7 @@ if(ENABLE_SERVICE_SUPPORT)
 
     # Set the correct version number
     set_target_properties(telepathy-qt${QT_VERSION_MAJOR}-service PROPERTIES
-                                                 SOVERSION ${TP_QT_ABI_VERSION}
+                                                 SOVERSION ${TP_QT_SERVICE_ABI_VERSION}
                                                  VERSION ${TP_QT_LIBRARY_VERSION})
 
     # Install the library - watch out for the correct components
