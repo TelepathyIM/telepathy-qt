@@ -26,7 +26,8 @@
 
 #include "TelepathyQt/_gen/base-channel.moc.hpp"
 #include "TelepathyQt/_gen/base-channel-internal.moc.hpp"
-#include "TelepathyQt/future-internal.h"
+#include "TelepathyQt/_gen/future-constants.h"
+#include "TelepathyQt/_gen/future-types.h"
 
 #include "TelepathyQt/debug-internal.h"
 
