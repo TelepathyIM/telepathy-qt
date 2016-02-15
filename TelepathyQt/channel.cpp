@@ -353,7 +353,6 @@ void Channel::Private::introspectMain(Channel::Private *self)
 void Channel::Private::introspectMainProperties()
 {
     QVariantMap props;
-    QString key;
     bool needIntrospectMainProps = false;
     const unsigned numNames = 8;
     const static QString names[numNames] = {
