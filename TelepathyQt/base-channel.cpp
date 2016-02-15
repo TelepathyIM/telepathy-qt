@@ -2,7 +2,9 @@
  * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2013 Matthias Gehre <gehre.matthias@gmail.com>
- * @copyright Copyright 2013 Canonical Ltd.
+ * @copyright Copyright (C) 2013 Canonical Ltd.
+ * @copyright Copyright (C) 2016 Alexandr Akulich <akulichalexander@gmail.com>
+ * @copyright Copyright (C) 2016 Niels Ole Salscheider <niels_ole@salscheider-online.de>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
