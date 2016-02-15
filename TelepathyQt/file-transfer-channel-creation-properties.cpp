@@ -430,4 +430,71 @@ QString FileTransferChannelCreationProperties::uri() const
     return mPriv->uri;
 }
 
+QVariantMap FileTransferChannelCreationProperties::createRequest() const
+{
+    if (!isValid()) {
+        warning() << "Invalid file transfer creation properties";
+        return QVariantMap();
+    }
+
+    QVariantMap request;
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                   TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Filename"),
+                   suggestedFileName());
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentType"),
+                   contentType());
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Size"),
+                   size());
+
+    if (hasContentHash()) {
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentHashType"),
+                       (uint) contentHashType());
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentHash"),
+                       contentHash());
+    }
+
+    if (hasDescription()) {
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Description"),
+                       description());
+    }
+
+    if (hasLastModificationTime()) {
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Date"),
+                       (qulonglong) lastModificationTime().toTime_t());
+    }
+
+    if (hasUri()) {
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".URI"),
+                       uri());
+    }
+
+    return request;
+}
+
+QVariantMap FileTransferChannelCreationProperties::createRequest(const QString &contactIdentifier) const
+{
+    QVariantMap request = createRequest();
+
+    if (!request.isEmpty()) {
+        request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"), contactIdentifier);
+    }
+
+    return request;
+}
+
+QVariantMap FileTransferChannelCreationProperties::createRequest(uint handle) const
+{
+    QVariantMap request = createRequest();
+
+    if (!request.isEmpty()) {
+        request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"), handle);
+    }
+
+    return request;
+}
+
 } // Tp
