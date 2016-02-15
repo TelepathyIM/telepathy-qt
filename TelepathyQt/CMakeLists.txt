@@ -865,6 +865,7 @@ if(ENABLE_SERVICE_SUPPORT)
         dbus-error.cpp
         dbus-object.cpp
         dbus-service.cpp
+        io-device.cpp
         abstract-adaptor.cpp)
 
     set(telepathy_qt_service_HEADERS
@@ -891,6 +892,8 @@ if(ENABLE_SERVICE_SUPPORT)
         dbus-object.h
         DBusService
         dbus-service.h
+        IODevice
+        io-device.h
         ServiceTypes
         service-types.h)
 
@@ -915,6 +918,7 @@ if(ENABLE_SERVICE_SUPPORT)
         base-protocol.h
         base-protocol-internal.h
         dbus-object.h
+        io-device.h
         dbus-service.h)
 
     add_custom_target(all-generated-service-sources)

@@ -1,0 +1,13 @@
+#ifndef _TelepathyQt_IODevice_HEADER_GUARD_
+#define _TelepathyQt_IODevice_HEADER_GUARD_
+
+#ifndef IN_TP_QT_HEADER
+#define IN_TP_QT_HEADER
+#endif
+
+#include <TelepathyQt/io-device.h>
+
+#undef IN_TP_QT_HEADER
+
+#endif // _TelepathyQt_IODevice_HEADER_GUARD_
+// vim:set ft=cpp:
