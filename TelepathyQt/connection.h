@@ -51,7 +51,6 @@ namespace Tp
 class Channel;
 class ConnectionCapabilities;
 class ConnectionLowlevel;
-class Contact;
 class ContactManager;
 class PendingChannel;
 class PendingContactAttributes;
