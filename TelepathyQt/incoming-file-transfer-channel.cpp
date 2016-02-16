@@ -54,6 +54,7 @@ struct TP_QT_NO_EXPORT IncomingFileTransferChannel::Private
 
     qulonglong requestedOffset;
     qint64 pos;
+    bool weOpenedDevice;
 };
 
 IncomingFileTransferChannel::Private::Private(IncomingFileTransferChannel *parent)
@@ -62,7 +63,8 @@ IncomingFileTransferChannel::Private::Private(IncomingFileTransferChannel *paren
       output(0),
       socket(0),
       requestedOffset(0),
-      pos(0)
+      pos(0),
+      weOpenedDevice(false)
 {
     parent->connect(fileTransferInterface,
             SIGNAL(URIDefined(QString)),
@@ -232,12 +234,18 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
                 IncomingFileTransferChannelPtr(this));
     }
 
-    if ((!output->isOpen() && !output->open(QIODevice::WriteOnly)) &&
-        (!output->isWritable())) {
+    if (!output->isOpen()) {
+        if (output->open(QIODevice::WriteOnly)) {
+            mPriv->weOpenedDevice = true;
+        }
+    }
+
+    if (!output->isWritable()) {
+        mPriv->weOpenedDevice = false;
         warning() << "Unable to open IO device for writing";
         return new PendingFailure(TP_QT_ERROR_PERMISSION_DENIED,
-                QLatin1String("Unable to open IO device for writing"),
-                IncomingFileTransferChannelPtr(this));
+                                  QLatin1String("Unable to open IO device for writing"),
+                                  IncomingFileTransferChannelPtr(this));
     }
 
     mPriv->output = output;
@@ -371,7 +379,7 @@ void IncomingFileTransferChannel::setFinished()
         mPriv->socket->close();
     }
 
-    if (mPriv->output) {
+    if (mPriv->output && mPriv->weOpenedDevice) {
         mPriv->output->close();
     }
 
