@@ -56,6 +56,7 @@ struct TP_QT_NO_EXPORT OutgoingFileTransferChannel::Private
     SocketAddressIPv4 addr;
 
     qint64 pos;
+    bool weOpenedDevice;
 };
 
 OutgoingFileTransferChannel::Private::Private(OutgoingFileTransferChannel *parent)
@@ -63,7 +64,8 @@ OutgoingFileTransferChannel::Private::Private(OutgoingFileTransferChannel *paren
       fileTransferInterface(parent->interface<Client::ChannelTypeFileTransferInterface>()),
       input(0),
       socket(0),
-      pos(0)
+      pos(0),
+      weOpenedDevice(false)
 {
 }
 
@@ -180,8 +182,14 @@ PendingOperation *OutgoingFileTransferChannel::provideFile(QIODevice *input)
                 OutgoingFileTransferChannelPtr(this));
     }
 
-    if ((!input->isOpen() && !input->open(QIODevice::ReadOnly)) &&
-        !input->isReadable()) {
+    if (!input->isOpen()) {
+        if (input->open(QIODevice::ReadOnly)) {
+            mPriv->weOpenedDevice = true;
+        }
+    }
+
+    if (!input->isReadable()) {
+        mPriv->weOpenedDevice = false;
         warning() << "Unable to open IO device for reading";
         return new PendingFailure(TP_QT_ERROR_PERMISSION_DENIED,
                 QLatin1String("Unable to open IO device for reading"),
@@ -362,7 +370,10 @@ void OutgoingFileTransferChannel::setFinished()
                    this, SLOT(onInputAboutToClose()));
         disconnect(mPriv->input, SIGNAL(readyRead()),
                    this, SLOT(doTransfer()));
-        mPriv->input->close();
+
+        if (mPriv->weOpenedDevice) {
+            mPriv->input->close();
+        }
     }
 
     FileTransferChannel::setFinished();
