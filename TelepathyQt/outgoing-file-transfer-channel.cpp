@@ -238,6 +238,8 @@ void OutgoingFileTransferChannel::connectToHost()
         return;
     }
 
+    mPriv->pos = initialOffset();
+
     mPriv->socket = new QTcpSocket(this);
 
     connect(mPriv->socket, SIGNAL(connected()),
@@ -263,10 +265,8 @@ void OutgoingFileTransferChannel::onSocketConnected()
             SLOT(doTransfer()));
 
     // for non sequential devices, let's seek to the initialOffset
-    if (!mPriv->input->isSequential()) {
-        if (mPriv->input->seek(initialOffset())) {
-            mPriv->pos = initialOffset();
-        }
+    if (mPriv->weOpenedDevice && !mPriv->input->isSequential()) {
+        mPriv->input->seek(initialOffset());
     }
 
     debug() << "Starting transfer...";
