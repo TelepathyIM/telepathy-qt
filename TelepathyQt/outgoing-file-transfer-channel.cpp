@@ -314,6 +314,7 @@ void OutgoingFileTransferChannel::doTransfer()
         qint64 skip = (qint64) qMin(initialOffset() - mPriv->pos,
                 (qulonglong) len);
 
+        mPriv->pos += skip;
         debug() << "skipping" << skip << "bytes";
         if (skip == len) {
             // nothing to write, all data read was skipped
