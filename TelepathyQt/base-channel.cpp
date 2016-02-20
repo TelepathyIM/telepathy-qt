@@ -2607,7 +2607,7 @@ BaseChannelGroupInterface::Adaptee::~Adaptee()
 
 uint BaseChannelGroupInterface::Adaptee::groupFlags() const
 {
-    return mInterface->groupFlags() | Tp::ChannelGroupFlagMembersChangedDetailed;
+    return mInterface->groupFlags();
 }
 
 Tp::HandleOwnerMap BaseChannelGroupInterface::Adaptee::handleOwners() const
@@ -2864,16 +2864,17 @@ QVariantMap BaseChannelGroupInterface::immutableProperties() const
  */
 Tp::ChannelGroupFlags BaseChannelGroupInterface::groupFlags() const
 {
-    return mPriv->groupFlags;
+    return mPriv->groupFlags | Tp::ChannelGroupFlagProperties | Tp::ChannelGroupFlagMembersChangedDetailed;
 }
 
 /**
  * Set the group flags for this channel.
  *
  * The user interface can use this to present information about which operations are currently valid.
- * It is not recommended to set Tp::ChannelGroupFlagMembersChangedDetailed flag: MembersChangedDetailed
- * signal is implemented in the interface and enabled unconditionally, because there is no reason to
- * disable it and this improve compatibility with future Telepathy specs.
+ * Take a note, that Tp::ChannelGroupFlagProperties and Tp::ChannelGroupFlagMembersChangedDetailed flags setted up
+ * unconditionally. This way we always provide modern properties (ChannelGroupFlagProperties) and automatically
+ * emit signal MembersChangedDetailed. There is no reason to behave differently and this improve compatibility with
+ * future Telepathy specs.
  *
  * \param flags The flags on this channel.
  *
