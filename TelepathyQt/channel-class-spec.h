@@ -313,6 +313,13 @@ inline uint qHash(const ChannelClassSpecList &specList)
     return qHash(uniqueSet);
 }
 
+inline uint qHash(const QList<ChannelClassSpec> &specList)
+{
+    // Make it unique by converting to QSet
+    QSet<ChannelClassSpec> uniqueSet = specList.toSet();
+    return qHash(uniqueSet);
+}
+
 } // Tp
 
 Q_DECLARE_METATYPE(Tp::ChannelClassSpec);
