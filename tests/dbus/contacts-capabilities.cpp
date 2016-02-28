@@ -135,7 +135,7 @@ void TestContactsCapabilities::testCapabilities()
         QCOMPARE(contact->requestedFeatures().contains(Contact::FeatureCapabilities), true);
         QCOMPARE(contact->actualFeatures().contains(Contact::FeatureCapabilities), true);
 
-        QCOMPARE(contact->capabilities().textChats(), supportTextChat[i]);
+        QCOMPARE(contact->capabilities().textChats(), static_cast<bool>(supportTextChat[i]));
         QCOMPARE(contact->capabilities().streamedMediaCalls(), false);
         QCOMPARE(contact->capabilities().streamedMediaAudioCalls(), false);
         QCOMPARE(contact->capabilities().streamedMediaVideoCalls(), false);
