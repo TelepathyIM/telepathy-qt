@@ -1,0 +1,12 @@
+#ifndef _TelepathyQt_BaseDebug_HEADER_GUARD_
+#define _TelepathyQt_BaseDebug_HEADER_GUARD_
+
+#ifndef IN_TP_QT_HEADER
+#define IN_TP_QT_HEADER
+#endif
+
+#include <TelepathyQt/base-debug.h>
+
+#undef IN_TP_QT_HEADER
+
+#endif // _TelepathyQt_BaseDebug_HEADER_GUARD_

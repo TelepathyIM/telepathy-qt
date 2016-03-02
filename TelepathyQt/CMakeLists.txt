@@ -861,6 +861,7 @@ if(ENABLE_SERVICE_SUPPORT)
         base-connection-manager.cpp
         base-connection.cpp
         base-channel.cpp
+        base-debug.cpp
         base-protocol.cpp
         dbus-error.cpp
         dbus-object.cpp
@@ -881,6 +882,8 @@ if(ENABLE_SERVICE_SUPPORT)
         base-connection.h
         BaseChannel
         base-channel.h
+        BaseDebug
+        base-debug.h
         BaseProtocol
         BaseProtocolAddressingInterface
         BaseProtocolAvatarsInterface
@@ -915,6 +918,8 @@ if(ENABLE_SERVICE_SUPPORT)
         base-channel-internal.h
         base-connection.h
         base-connection-internal.h
+        base-debug.h
+        base-debug-internal.h
         base-protocol.h
         base-protocol-internal.h
         dbus-object.h
@@ -927,7 +932,9 @@ if(ENABLE_SERVICE_SUPPORT)
         svc-channel
         svc-call
         svc-connection
-        svc-connection-manager)
+        svc-connection-manager
+        svc-debug
+        )
     foreach(spec ${SPECS})
         tpqt_xincludator(${spec}-spec-xincludator ${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
                          DEPENDS stable-typesgen)
@@ -944,6 +951,7 @@ if(ENABLE_SERVICE_SUPPORT)
     tpqt_service_generator(svc-call servicecall Channel Tp::Service DEPENDS svc-call-spec-xincludator)
     tpqt_service_generator(svc-connection serviceconn Connection Tp::Service DEPENDS svc-connection-spec-xincludator)
     tpqt_service_generator(svc-connection-manager servicecm ConnectionManager Tp::Service DEPENDS svc-connection-manager-spec-xincludator)
+    tpqt_service_generator(svc-debug servicecm Debug Tp::Service DEPENDS svc-debug-spec-xincludator)
 
     if (TARGET doxygen-doc)
         add_dependencies(doxygen-doc all-generated-service-sources)
