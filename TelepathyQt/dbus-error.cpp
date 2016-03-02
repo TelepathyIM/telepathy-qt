@@ -71,6 +71,9 @@ DBusError::DBusError(const QString &name, const QString &message)
  */
 DBusError::~DBusError()
 {
+    if (mPriv) {
+        delete mPriv;
+    }
 }
 
 /**
