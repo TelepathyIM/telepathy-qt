@@ -42,6 +42,7 @@ public:
     explicit BaseDebug(const QDBusConnection &dbusConnection = QDBusConnection::sessionBus());
 
     bool isEnabled() const;
+    int getMessagesLimit() const;
 
     typedef Callback1<DebugMessageList, DBusError*> GetMessagesCallback;
     void setGetMessagesCallback(const GetMessagesCallback &cb);
@@ -50,6 +51,8 @@ public:
 
 public Q_SLOTS:
     void setEnabled(bool enabled);
+    void setGetMessagesLimit(int limit);
+    void clear();
 
     void newDebugMessage(const QString &domain, DebugLevel level, const QString &message);
     void newDebugMessage(double time, const QString &domain, DebugLevel level, const QString &message);

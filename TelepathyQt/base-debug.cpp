@@ -35,12 +35,19 @@ struct TP_QT_NO_EXPORT BaseDebug::Private
     Private(BaseDebug *parent, const QDBusConnection &dbusConnection)
         : parent(parent),
           enabled(false),
+          getMessagesLimit(0),
+          lastMessageIndex(-1),
           adaptee(new BaseDebug::Adaptee(dbusConnection, parent))
     {
     }
 
     BaseDebug *parent;
     bool enabled;
+    int getMessagesLimit;
+    int lastMessageIndex;
+
+    DebugMessageList messages;
+
     GetMessagesCallback getMessageCB;
     BaseDebug::Adaptee *adaptee;
 };
@@ -85,6 +92,11 @@ bool BaseDebug::isEnabled() const
     return mPriv->enabled;
 }
 
+int BaseDebug::getMessagesLimit() const
+{
+    return mPriv->getMessagesLimit;
+}
+
 void BaseDebug::setGetMessagesCallback(const BaseDebug::GetMessagesCallback &cb)
 {
     mPriv->getMessageCB = cb;
@@ -93,6 +105,13 @@ void BaseDebug::setGetMessagesCallback(const BaseDebug::GetMessagesCallback &cb)
 DebugMessageList BaseDebug::getMessages(Tp::DBusError *error) const
 {
     if (!mPriv->getMessageCB.isValid()) {
+        if (mPriv->getMessagesLimit) {
+            if (mPriv->lastMessageIndex < 0) {
+                return mPriv->messages;
+            } else {
+                return mPriv->messages.mid(mPriv->lastMessageIndex + 1) + mPriv->messages.mid(0, mPriv->lastMessageIndex + 1);
+            }
+        }
         error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
         return DebugMessageList();
     }
@@ -105,6 +124,32 @@ void BaseDebug::setEnabled(bool enabled)
     mPriv->enabled = enabled;
 }
 
+void BaseDebug::setGetMessagesLimit(int limit)
+{
+    mPriv->getMessagesLimit = limit;
+    DebugMessageList messages;
+
+    if (mPriv->lastMessageIndex < 0) {
+        messages = mPriv->messages;
+    } else {
+        messages = mPriv->messages.mid(mPriv->lastMessageIndex + 1) + mPriv->messages.mid(0, mPriv->lastMessageIndex + 1);
+    }
+
+    mPriv->lastMessageIndex = -1;
+
+    if (mPriv->messages.count() <= limit) {
+        mPriv->messages = messages;
+    } else {
+        mPriv->messages = messages.mid(messages.count() - limit, limit);
+    }
+}
+
+void BaseDebug::clear()
+{
+    mPriv->messages.clear();
+    mPriv->lastMessageIndex = -1;
+}
+
 void BaseDebug::newDebugMessage(const QString &domain, DebugLevel level, const QString &message)
 {
     qint64 msec = QDateTime::currentMSecsSinceEpoch();
@@ -115,6 +160,26 @@ void BaseDebug::newDebugMessage(const QString &domain, DebugLevel level, const Q
 
 void BaseDebug::newDebugMessage(double time, const QString &domain, DebugLevel level, const QString &message)
 {
+    if (mPriv->getMessagesLimit != 0) {
+        DebugMessage newMessage;
+        newMessage.timestamp = time;
+        newMessage.domain = domain;
+        newMessage.level = level;
+        newMessage.message = message;
+
+        if (mPriv->messages.count() == mPriv->getMessagesLimit) {
+            ++mPriv->lastMessageIndex;
+
+            if (mPriv->lastMessageIndex >= mPriv->messages.count()) {
+                mPriv->lastMessageIndex = 0;
+            }
+
+            mPriv->messages[mPriv->lastMessageIndex] = newMessage;
+        } else { // This works when the limit is not hitted yet, or when there is no limit at all (negative limit number)
+            mPriv->messages << newMessage;
+        }
+    }
+
     if (!isEnabled()) {
         return;
     }
