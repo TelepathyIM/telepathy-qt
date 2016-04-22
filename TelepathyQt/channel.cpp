@@ -3491,8 +3491,8 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
         PendingContacts *pc = qobject_cast<PendingContacts *>(op);
 
         if (pc->isValid()) {
-            Q_ASSERT(pc->contacts().size() == 1);
-            actorContact = pc->contacts().first();
+            if (pc->contacts().size() > 0)
+                actorContact = pc->contacts().first();
         } else {
             warning().nospace() << "Getting conference channel removed actor "
                 "failed with " << pc->errorName() << ":" <<
