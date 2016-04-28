@@ -320,6 +320,27 @@ private:
     BaseConnectionAvatarsInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseConnectionClientTypesInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+
+public:
+    Adaptee(BaseConnectionClientTypesInterface *interface);
+    ~Adaptee();
+
+private Q_SLOTS:
+    void getClientTypes(const Tp::UIntList &contacts,
+            const Tp::Service::ConnectionInterfaceClientTypesAdaptor::GetClientTypesContextPtr &context);
+    void requestClientTypes(uint contact,
+            const Tp::Service::ConnectionInterfaceClientTypesAdaptor::RequestClientTypesContextPtr &context);
+
+Q_SIGNALS:
+    void clientTypesUpdated(uint contact, const QStringList &clientTypes);
+
+private:
+    BaseConnectionClientTypesInterface *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseConnectionContactCapabilitiesInterface::Adaptee : public QObject
 {
     Q_OBJECT
