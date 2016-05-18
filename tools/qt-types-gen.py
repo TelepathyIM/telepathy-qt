@@ -525,10 +525,10 @@ typedef QList<%s> %sList;
         return """\
 struct %(visibility)s %(fake)s : public %(real)s
 {
-    inline %(fake)s() : %(real)s() {}
-    inline %(fake)s(const %(real)s& a) : %(real)s(a) {}
+    %(fake)s() : %(real)s() {}
+    %(fake)s(const %(real)s& a) : %(real)s(a) {}
 
-    inline %(fake)s& operator=(const %(real)s& a)
+    %(fake)s& operator=(const %(real)s& a)
     {
         *(static_cast<%(real)s*>(this)) = a;
         return *this;
