@@ -18,5 +18,6 @@ if(ENABLE_TP_GLIB_TESTS)
         ${DBUS_GLIB_LIBRARIES}
         ${QT_QTCORE_LIBRARY}
         ${QT_QTDBUS_LIBRARY}
+        ${QT_QTTEST_LIBRARY}
         telepathy-qt${QT_VERSION_MAJOR})
 endif(ENABLE_TP_GLIB_TESTS)
