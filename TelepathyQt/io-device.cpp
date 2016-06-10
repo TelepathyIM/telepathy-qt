@@ -54,6 +54,11 @@ IODevice::IODevice(QObject *parent) :
 {
 }
 
+IODevice::~IODevice()
+{
+    delete mPriv;
+}
+
 qint64 IODevice::bytesAvailable() const
 {
     return QIODevice::bytesAvailable() + mPriv->data.size();
