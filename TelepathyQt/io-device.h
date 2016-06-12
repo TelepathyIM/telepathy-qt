@@ -40,12 +40,12 @@ class TP_QT_EXPORT IODevice : public QIODevice
 public:
     explicit IODevice(QObject *parent = 0);
     ~IODevice();
-    bool isSequential() const Q_DECL_OVERRIDE;
-    qint64 bytesAvailable() const Q_DECL_OVERRIDE;
+    bool isSequential() const;
+    qint64 bytesAvailable() const;
 
 protected:
-    qint64 readData(char *data, qint64 maxSize) Q_DECL_OVERRIDE;
-    qint64 writeData(const char *data, qint64 maxSize) Q_DECL_OVERRIDE;
+    qint64 readData(char *data, qint64 maxSize);
+    qint64 writeData(const char *data, qint64 maxSize);
 
 private:
     class Private;
