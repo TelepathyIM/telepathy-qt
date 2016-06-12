@@ -1,7 +1,53 @@
-telepathy-qt 0.9.7 ()
+telepathy-qt 0.9.7 (2016-06-12)
 =================================
 
-The "..." release.
+The "Back on track" release.
+
+Dependencies:
+ * CMake minimum version bumped to 2.8.12.
+
+Enhancements:
+ * Various documentation fixes and improvements.
+ * Service library is now a shared library with own ABI versioning.
+ * Implemented BaseConnectionContactsInterface::getContactByID().
+ * Reimplemented BaseChannelGroupInterface class
+   - Has new future-proof API.
+   - Has documentation for all methods.
+   - Flags Properties and MembersChangedDetailed now always ON.
+ * Added service-side Debug Interface implementation.
+ * Added service-side Connection ClientTypes interface.
+ * Added service-side Connection ContactCapabilities interface.
+ * Implemented service-side FileTransfer Interface:
+   - Well documented and covered with tests!
+   - Supports IPv4 and IPv6 socket types with localhost access control.
+   - Supports custom sockets and access control.
+ * Added IODevice class, which is interesting for all CMs that have backend,
+   that accepts a QIODevice for file transfers.
+ * Other improvements.
+
+API changes:
+ * Service-side of ChannelGroup Interface redone with different API.
+
+Fixes:
+ * Fixed build with glibc-2.20+
+ * Fixed build with GStreamer-1.5.1+
+ * Added missing link to QtTest in tests.
+ * Added missing link to glib2 in Farstream.
+ * Fixed hash calculation of QList<ChannelClassSpec> for Qt-5.6.
+ * fd.o #91659: CMake now search for Python 2, rather than Python 3.
+ * fd.o #95376: Removed usage of deprecated QDBusArgument stream operators
+   (fixes build with Qt-5.7 beta and (probably) Qt-5.8+).
+ * fd.o #65981: Fixed build with Ninja (cmake).
+ * Fixed memory leak in DBusError.
+ * Fixed BaseConnection::createChannel() ".Requested" property processing.
+ * Fixed BaseChannelGroupInterface::removeMembers().
+ * Fixed BaseChannelGroupInterface::groupFlagsChanged() signal emission.
+ * Fixed CreationTimestamp property in BaseChannelRoomInterface.
+ * Fixed device management in IncomingFileTransferChannel.
+ * Fixed device management in OutgoingFileTransferChannel.
+ * BaseConnection now properly closes channels on disconnect.
+ * BaseConnection and BaseChannel debug output now respects Tp::enableDebug().
+ * Other small fixes.
 
 telepathy-qt 0.9.6.1 (2015-05-25)
 =================================
