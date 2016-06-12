@@ -34,6 +34,7 @@
 #include <QMetaType>
 #include <QSharedDataPointer>
 #include <QString>
+#include <QVariantMap>
 
 namespace Tp
 {
