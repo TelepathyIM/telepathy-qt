@@ -15,21 +15,21 @@ MACRO (QT5_GET_MOC_FLAGS _moc_flags)
     IF("${_current}" MATCHES "\\.framework/?$")
       STRING(REGEX REPLACE "/[^/]+\\.framework" "" framework_path "${_current}")
       SET(${_moc_flags} ${${_moc_flags}} "-F${framework_path}")
-    ELSE("${_current}" MATCHES "\\.framework/?$")
+    ELSE()
       SET(${_moc_flags} ${${_moc_flags}} "-I${_current}")
-    ENDIF("${_current}" MATCHES "\\.framework/?$")
-  ENDFOREACH(_current ${_inc_DIRS})
+    ENDIF()
+  ENDFOREACH()
 
   GET_DIRECTORY_PROPERTY(_defines COMPILE_DEFINITIONS)
   FOREACH(_current ${_defines})
     SET(${_moc_flags} ${${_moc_flags}} "-D${_current}")
-  ENDFOREACH(_current ${_defines})
+  ENDFOREACH()
 
   IF(Q_WS_WIN)
     SET(${_moc_flags} ${${_moc_flags}} -DWIN32)
-  ENDIF(Q_WS_WIN)
+  ENDIF()
 
-ENDMACRO (QT5_GET_MOC_FLAGS)
+ENDMACRO ()
 
 # helper macro to set up a moc rule
 MACRO (QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options)
@@ -44,7 +44,7 @@ MACRO (QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options)
     GET_FILENAME_COMPONENT(_moc_outfile_dir "${outfile}" PATH)
     IF(_moc_outfile_dir)
       SET(_moc_working_dir WORKING_DIRECTORY ${_moc_outfile_dir})
-    ENDIF(_moc_outfile_dir)
+    ENDIF()
     SET (_moc_parameters_file ${outfile}_parameters)
     SET (_moc_parameters ${moc_flags} ${moc_options} -o "${outfile}" "${infile}")
     STRING (REPLACE ";" "\n" _moc_parameters "${_moc_parameters}")
@@ -54,10 +54,10 @@ MACRO (QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options)
                        DEPENDS ${infile}
                        ${_moc_working_dir}
                        VERBATIM)
-  ELSE (WIN32)
+  ELSE ()
     ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
                        COMMAND ${QT_MOC_EXECUTABLE}
                        ARGS ${moc_flags} ${moc_options} -o ${outfile} ${infile}
                        DEPENDS ${infile})
-  ENDIF (WIN32)
-ENDMACRO (QT5_CREATE_MOC_COMMAND)
+  ENDIF ()
+ENDMACRO ()

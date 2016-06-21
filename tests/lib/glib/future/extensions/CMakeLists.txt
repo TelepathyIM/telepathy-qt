@@ -76,7 +76,7 @@ if(ENABLE_TP_GLIB_TESTS)
                  > ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.xml
             DEPENDS ${spec}.xml
                     ${CMAKE_SOURCE_DIR}/tools/xincludator.py)
-    endforeach(spec ${SPECS})
+    endforeach()
 
     function(SVC_GENERATOR spec)
         set(ARGS
@@ -94,7 +94,7 @@ if(ENABLE_TP_GLIB_TESTS)
             DEPENDS ${CMAKE_SOURCE_DIR}/tools/glib-ginterface-gen.py
                     ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.xml
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    endfunction(SVC_GENERATOR spec)
+    endfunction()
 
     svc_generator(channel)
     svc_generator(connection)
@@ -120,4 +120,4 @@ if(ENABLE_TP_GLIB_TESTS)
 
     add_library(tp-glib-tests-future-extensions STATIC ${tp_glib_tests_future_extensions_SRCS})
     target_link_libraries(tp-glib-tests-future-extensions ${TPGLIB_LIBRARIES})
-endif(ENABLE_TP_GLIB_TESTS)
+endif()

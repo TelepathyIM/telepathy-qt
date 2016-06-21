@@ -691,7 +691,7 @@ foreach(spec ${SPECS})
     list(APPEND telepathy_qt_SRCS ${NEW_FILES})
     list(APPEND telepathy_qt_generated_specs_mocs "moc-cli-${spec}.moc.hpp")
     set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
-endforeach(spec ${SPECS})
+endforeach()
 
 set(FUTURE_SPECS
     channel
@@ -707,14 +707,14 @@ foreach(spec ${FUTURE_SPECS})
     list(APPEND telepathy_qt_SRCS ${NEW_FILES})
     list(APPEND telepathy_qt_generated_specs_mocs "moc-future-${spec}.moc.hpp")
     set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
-endforeach(spec ${FUTURE_SPECS})
+endforeach()
 
 # The escape character in MSVC is ^
 if(MSVC)
     set(TYPES_INCLUDE ^<TelepathyQt/Types^> )
-else(MSVC)
+else()
     set(TYPES_INCLUDE '<TelepathyQt/Types>' )
-endif(MSVC)
+endif()
 
 # Use the client generator for generating headers out of specs
 tpqt_client_generator(account clientaccount AccountManager Tp::Client --mainiface=Tp::Client::AccountInterface DEPENDS account-spec-xincludator)
@@ -743,14 +743,14 @@ tpqt_future_client_generator(misc TpFuture::Client DEPENDS misc-future-xincludat
 
 if (TARGET doxygen-doc)
     add_dependencies(doxygen-doc all-generated-sources)
-endif (TARGET doxygen-doc)
+endif ()
 
 # Create the library
 if (ENABLE_COMPILER_COVERAGE)
     add_library(telepathy-qt${QT_VERSION_MAJOR} STATIC ${telepathy_qt_SRCS})
-else (ENABLE_COMPILER_COVERAGE)
+else ()
     add_library(telepathy-qt${QT_VERSION_MAJOR} SHARED ${telepathy_qt_SRCS})
-endif (ENABLE_COMPILER_COVERAGE)
+endif ()
 
 # Library used by tests to test some unexported functionality
 add_library(telepathy-qt-test-backdoors STATIC ${telepathy_qt_test_backdoors_SRCS})
@@ -766,7 +766,7 @@ foreach(moc_src ${telepathy_qt_MOC_SRCS})
     list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
     string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
     add_dependencies(telepathy-qt${QT_VERSION_MAJOR} "moc-${moc_src}")
-endforeach(moc_src ${telepathy_qt_MOC_SRCS})
+endforeach()
 
 # Link
 target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}
@@ -788,7 +788,7 @@ target_link_libraries(telepathy-qt-test-backdoors
 if (ENABLE_COMPILER_COVERAGE)
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} gcov)
     target_link_libraries(telepathy-qt-test-backdoors gcov)
-endif (ENABLE_COMPILER_COVERAGE)
+endif ()
 
 # Set the correct version number
 set_target_properties(telepathy-qt${QT_VERSION_MAJOR} PROPERTIES
@@ -806,19 +806,19 @@ if (WIN32)
             EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
             RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
             ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
-else (WIN32)
+else ()
     install(TARGETS telepathy-qt${QT_VERSION_MAJOR}
             EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
             LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
             ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
-endif (WIN32)
+endif ()
 
 # pkg-config files, only if we are not using windows
 if (NOT WIN32)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}-uninstalled.pc)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
-endif (NOT WIN32)
+endif ()
 
 # CMake Version and config files
 include(MacroWriteBasicCMakeVersionFile)
@@ -839,9 +839,9 @@ macro_write_basic_cmake_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT
 # Find out the correct installation directory
 if (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
     set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR})
-else (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
+else ()
     set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}/cmake)
-endif (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
+endif ()
 
 install(EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
         DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
@@ -945,7 +945,7 @@ if(ENABLE_SERVICE_SUPPORT)
         list(APPEND telepathy_qt_service_SRCS ${NEW_FILES})
         list(APPEND telepathy_qt_service_generated_specs_mocs "moc-${spec}.moc.hpp")
         set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
-    endforeach(spec ${SPECS})
+    endforeach()
 
     tpqt_service_generator(svc-channel servicechannel Channel Tp::Service DEPENDS svc-channel-spec-xincludator)
     tpqt_service_generator(svc-call servicecall Channel Tp::Service DEPENDS svc-call-spec-xincludator)
@@ -955,7 +955,7 @@ if(ENABLE_SERVICE_SUPPORT)
 
     if (TARGET doxygen-doc)
         add_dependencies(doxygen-doc all-generated-service-sources)
-    endif (TARGET doxygen-doc)
+    endif ()
 
     # Create the library
     #if (ENABLE_COMPILER_COVERAGE)
@@ -966,9 +966,9 @@ if(ENABLE_SERVICE_SUPPORT)
 
     if(FORCE_STATIC_SERVICE_LIBRARY)
         set(SERVICE_LIBRARY_TYPE STATIC)
-    else(FORCE_STATIC_SERVICE_LIBRARY)
+    else()
         set(SERVICE_LIBRARY_TYPE SHARED)
-    endif(FORCE_STATIC_SERVICE_LIBRARY)
+    endif()
 
     add_library(telepathy-qt${QT_VERSION_MAJOR}-service ${SERVICE_LIBRARY_TYPE} ${telepathy_qt_service_SRCS})
     add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service stable-typesgen future-typesgen)
@@ -983,7 +983,7 @@ if(ENABLE_SERVICE_SUPPORT)
         list(APPEND telepathy_qt_service_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
         string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
         add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service "moc-${moc_src}")
-    endforeach(moc_src ${telepathy_qt_service_MOC_SRCS})
+    endforeach()
 
     # Link
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-service
@@ -1003,12 +1003,12 @@ if(ENABLE_SERVICE_SUPPORT)
                 EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
                 RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT service
                 ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT service_libs)
-    else (WIN32)
+    else ()
         install(TARGETS telepathy-qt${QT_VERSION_MAJOR}-service
                 EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
                 LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT service
                 ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT service_libs)
-    endif (WIN32)
+    endif ()
 
     # Install headers
     install(FILES ${telepathy_qt_service_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt
@@ -1021,7 +1021,7 @@ if(ENABLE_SERVICE_SUPPORT)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtService.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Service.pc)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtService-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Service-uninstalled.pc)
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Service.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
-    endif (NOT WIN32)
+    endif ()
 
     # Configure the actual Config file
     configure_file(TelepathyQtServiceConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfig.cmake" @ONLY)
@@ -1032,13 +1032,13 @@ if(ENABLE_SERVICE_SUPPORT)
 
     if(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
         set(_TelepathyQtServiceConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR}Service)
-    else(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
+    else()
         set(_TelepathyQtServiceConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}Service/cmake)
-    endif(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
+    endif()
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfigVersion.cmake
                   ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfig.cmake
             DESTINATION ${_TelepathyQtServiceConfig_INSTALL_DIR}
             COMPONENT headers)
 
-endif(ENABLE_SERVICE_SUPPORT)
+endif()

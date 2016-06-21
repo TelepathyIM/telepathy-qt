@@ -16,7 +16,7 @@
 IF (LIBXML2_INCLUDE_DIR AND LIBXML2_LIBRARIES)
    # in cache already
    SET(LibXml2_FIND_QUIETLY TRUE)
-ENDIF (LIBXML2_INCLUDE_DIR AND LIBXML2_LIBRARIES)
+ENDIF ()
 
 IF (NOT WIN32)
    # use pkg-config to get the directories and then use these values
@@ -24,7 +24,7 @@ IF (NOT WIN32)
    FIND_PACKAGE(PkgConfig)
    PKG_CHECK_MODULES(PC_LIBXML libxml-2.0)
    SET(LIBXML2_DEFINITIONS ${PC_LIBXML_CFLAGS_OTHER})
-ENDIF (NOT WIN32)
+ENDIF ()
 
 FIND_PATH(LIBXML2_INCLUDE_DIR libxml/xpath.h
    HINTS
@@ -45,7 +45,7 @@ SET(XMLLINT_EXECUTABLE "${LIBXML2_XMLLINT_EXECUTABLE}")
 
 IF( NOT LIBXML2_XMLLINT_EXECUTABLE )
    MESSAGE(STATUS "xmllint program not found. Install it if you want validate generated doc file.")
-ENDIF(NOT LIBXML2_XMLLINT_EXECUTABLE )
+ENDIF()
 
 
 INCLUDE(FindPackageHandleStandardArgs)

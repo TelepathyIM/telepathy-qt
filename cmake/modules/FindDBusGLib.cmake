@@ -13,20 +13,20 @@ set(DBUS_GLIB_FIND_REQUIRED ${DBusGLib_FIND_REQUIRED})
 if(DBUS_GLIB_INCLUDE_DIR AND DBUS_GLIB_LIBRARIES)
   # Already in cache, be silent
   set(DBUS_GLIB_FIND_QUIETLY TRUE)
-endif(DBUS_GLIB_INCLUDE_DIR AND DBUS_GLIB_LIBRARIES)
+endif()
 
 if(NOT WIN32)
     find_package(PkgConfig)
     if (DBusGLib_FIND_VERSION_EXACT)
         pkg_check_modules(PC_DBUS_GLIB QUIET dbus-glib-1=${DBusGLib_FIND_VERSION})
-    else (DBusGLib_FIND_VERSION_EXACT)
+    else ()
         if (DBusGLib_FIND_VERSION)
             pkg_check_modules(PC_DBUS_GLIB REQUIRED dbus-glib-1>=${DBusGLib_FIND_VERSION})
-        else (DBusGLib_FIND_VERSION)
+        else ()
             pkg_check_modules(PC_DBUS_GLIB REQUIRED dbus-glib-1)
-        endif (DBusGLib_FIND_VERSION)
-    endif (DBusGLib_FIND_VERSION_EXACT)
-endif(NOT WIN32)
+        endif ()
+    endif ()
+endif()
 
 find_path(DBUS_GLIB_INCLUDE_DIR
           NAMES dbus-1.0/dbus/dbus-glib.h

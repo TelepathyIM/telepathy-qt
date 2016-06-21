@@ -16,7 +16,7 @@ set(CMAKE_COLOR_MAKEFILE ON)
 # Add an option to decide where to install the config files
 if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VERSION_GREATER 2.6.2)
     option(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR "Prefer to install the <package>Config.cmake files to lib/cmake/<package> instead of lib/<package>/cmake" TRUE)
-endif (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VERSION_GREATER 2.6.2)
+endif ()
 
 # Set compiler flags
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -43,27 +43,27 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     CHECK_CXX_ACCEPTS_FLAG("-fvisibility=hidden" CXX_FVISIBILITY_HIDDEN)
     if (CXX_FVISIBILITY_HIDDEN)
         set(VISIBILITY_HIDDEN_FLAGS "-fvisibility=hidden")
-    else (CXX_FVISIBILITY_HIDDEN)
+    else ()
         set(VISIBILITY_HIDDEN_FLAGS)
-    endif (CXX_FVISIBILITY_HIDDEN)
+    endif ()
 
     CHECK_CXX_ACCEPTS_FLAG("-fvisibility-inlines-hidden" CXX_FVISIBILITY_INLINES_HIDDEN)
     if (CXX_FVISIBILITY_INLINES_HIDDEN)
         set(VISIBILITY_HIDDEN_FLAGS "${VISIBILITY_HIDDEN_FLAGS} -fvisibility-inlines-hidden")
-    endif (CXX_FVISIBILITY_INLINES_HIDDEN)
+    endif ()
 
     CHECK_CXX_ACCEPTS_FLAG("-Wdeprecated-declarations" CXX_DEPRECATED_DECLARATIONS)
     if (CXX_DEPRECATED_DECLARATIONS)
         set(DEPRECATED_DECLARATIONS_FLAGS "-Wdeprecated-declarations -DTP_QT_DEPRECATED_WARNINGS")
-    else (CXX_DEPRECATED_DECLARATIONS)
+    else ()
         set(DEPRECATED_DECLARATIONS_FLAGS)
-    endif (CXX_DEPRECATED_DECLARATIONS)
+    endif ()
 
     if(${TP_QT_NANO_VERSION} EQUAL 0)
         set(NOT_RELEASE 0)
-    else(${TP_QT_NANO_VERSION} EQUAL 0)
+    else()
         set(NOT_RELEASE 1)
-    endif(${TP_QT_NANO_VERSION} EQUAL 0)
+    endif()
 
     set(desired
         all
@@ -105,11 +105,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     if(${NOT_RELEASE} EQUAL 1)
         set(CMAKE_EXE_LINKER_FLAGS            "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-add-needed")
         set(CMAKE_SHARED_LINKER_FLAGS         "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-add-needed")
-    endif(${NOT_RELEASE} EQUAL 1)
+    endif()
 
     if(CMAKE_SYSTEM_NAME MATCHES Linux)
         add_definitions(-D_BSD_SOURCE -D_DEFAULT_SOURCE)
-    endif(CMAKE_SYSTEM_NAME MATCHES Linux)
+    endif()
 
     # Compiler coverage
     set(ENABLE_COMPILER_COVERAGE OFF CACHE BOOL "Enables compiler coverage tests through lcov. Enabling this option will build
@@ -124,16 +124,16 @@ Telepathy-Qt as a static library.")
             find_program(LCOV_GENHTML genhtml)
             if (NOT LCOV OR NOT LCOV_GENHTML)
                 message(FATAL_ERROR "You chose to use compiler coverage tests, but lcov or genhtml could not be found in your PATH.")
-            else (NOT LCOV OR NOT LCOV_GENHTML)
+            else ()
                 message(STATUS "Compiler coverage tests enabled - Telepathy-Qt will be compiled as a static library")
                 set(COMPILER_COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage")
-            endif (NOT LCOV OR NOT LCOV_GENHTML)
-        else (CXX_FPROFILE_ARCS AND CXX_FTEST_COVERAGE)
+            endif ()
+        else ()
             message(FATAL_ERROR "You chose to use compiler coverage tests, but it appears your compiler is not able to support them.")
-        endif (CXX_FPROFILE_ARCS AND CXX_FTEST_COVERAGE)
-    else (ENABLE_COMPILER_COVERAGE)
+        endif ()
+    else ()
         set(COMPILER_COVERAGE_FLAGS)
-    endif (ENABLE_COMPILER_COVERAGE)
+    endif ()
 
     # gcc under Windows
     if(MINGW)
@@ -145,12 +145,12 @@ Telepathy-Qt as a static library.")
         # or else QPluginLoader rejects plugins because it thinks
         # they're built against the wrong QT.
         add_definitions(-DQT_NO_DEBUG)
-    endif(MINGW)
-endif(CMAKE_COMPILER_IS_GNUCXX)
+    endif()
+endif()
 
 if(MSVC)
     set(ESCAPE_CHAR ^)
-endif(MSVC)
+endif()
 
 set(LIB_SUFFIX "" CACHE STRING "Define suffix of library directory name (32/64)" )
 set(LIB_INSTALL_DIR     "lib${LIB_SUFFIX}"  CACHE PATH "The subdirectory where libraries will be installed (default is ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})" FORCE)

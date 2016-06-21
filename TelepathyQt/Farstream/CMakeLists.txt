@@ -32,10 +32,10 @@ if(FARSTREAM_COMPONENTS_FOUND)
     if (ENABLE_COMPILER_COVERAGE)
         add_library(telepathy-qt${QT_VERSION_MAJOR}-farstream STATIC
                     ${telepathy_qt_farstream_SRCS} ${telepathy_qt_farstream_MOC_SRCS})
-    else (ENABLE_COMPILER_COVERAGE)
+    else ()
         add_library(telepathy-qt${QT_VERSION_MAJOR}-farstream SHARED
                     ${telepathy_qt_farstream_SRCS} ${telepathy_qt_farstream_MOC_SRCS})
-    endif (ENABLE_COMPILER_COVERAGE)
+    endif ()
 
     # Link
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-farstream
@@ -50,7 +50,7 @@ if(FARSTREAM_COMPONENTS_FOUND)
 
     if (ENABLE_COMPILER_COVERAGE)
         target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-farstream gcov)
-    endif (ENABLE_COMPILER_COVERAGE)
+    endif ()
 
     # Set the correct version number
     set_target_properties(telepathy-qt${QT_VERSION_MAJOR}-farstream PROPERTIES
@@ -63,12 +63,12 @@ if(FARSTREAM_COMPONENTS_FOUND)
                 EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
                 RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream
                 ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream_libs)
-    else (WIN32)
+    else ()
         install(TARGETS telepathy-qt${QT_VERSION_MAJOR}-farstream
                 EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
                 LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream
                 ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream_libs)
-    endif (WIN32)
+    endif ()
 
     # Install headers
     install(FILES ${telepathy_qt_farstream_HEADERS}
@@ -83,7 +83,7 @@ if(FARSTREAM_COMPONENTS_FOUND)
                        ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farstream-uninstalled.pc)
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farstream.pc
                 DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
-    endif (NOT WIN32)
+    endif ()
 
     # Configure the actual Config file
     configure_file(TelepathyQtFarstreamConfig.cmake.in
@@ -95,13 +95,13 @@ if(FARSTREAM_COMPONENTS_FOUND)
 
     if(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
         set(_TelepathyQtFarstreamConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR}Farstream)
-    else(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
+    else()
         set(_TelepathyQtFarstreamConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farstream/cmake)
-    endif(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
+    endif()
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}FarstreamConfigVersion.cmake
                   ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}FarstreamConfig.cmake
             DESTINATION ${_TelepathyQtFarstreamConfig_INSTALL_DIR}
             COMPONENT headers)
 
-endif(FARSTREAM_COMPONENTS_FOUND)
+endif()

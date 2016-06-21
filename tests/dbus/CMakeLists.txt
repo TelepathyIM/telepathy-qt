@@ -4,7 +4,7 @@ tpqt_setup_dbus_test_environment()
 
 if(HAVE_TEST_PYTHON)
     tpqt_add_dbus_unit_test(DBusProperties dbus-properties "")
-endif(HAVE_TEST_PYTHON)
+endif()
 
 if(ENABLE_TP_GLIB_TESTS)
     include_directories(${CMAKE_SOURCE_DIR}/tests/lib/glib
@@ -21,12 +21,12 @@ if(ENABLE_TP_GLIB_TESTS)
             #         fixed
             SET(ENABLE_TESTS_WITH_RACES_IN_QT_4_6 TRUE)
             SET(ENABLE_TESTS_WITH_ISSUES_IN_QT_5 TRUE)
-        endif (NOT ${QT_VERSION_MINOR} EQUAL 6)
-    else (${QT_VERSION_MAJOR} EQUAL 4)
+        endif ()
+    else ()
         # Currently none - this variable is here in case some issues arise
         SET(ENABLE_TESTS_WITH_ISSUES_IN_QT_5 FALSE)
         SET(ENABLE_TESTS_WITH_RACES_IN_QT_4_6 TRUE)
-    endif (${QT_VERSION_MAJOR} EQUAL 4)
+    endif ()
 
     if(HAVE_TEST_PYTHON)
         tpqt_add_dbus_unit_test(AccountBasics account-basics tp-glib-tests tp-qt-tests-glib-helpers)
@@ -34,7 +34,7 @@ if(ENABLE_TP_GLIB_TESTS)
         tpqt_add_dbus_unit_test(AccountChannelDispatcher account-channel-dispatcher tp-glib-tests tp-qt-tests-glib-helpers)
         tpqt_add_dbus_unit_test(Client client tp-glib-tests tp-qt-tests-glib-helpers)
         tpqt_add_dbus_unit_test(ClientFactories client-factories tp-glib-tests)
-    endif(HAVE_TEST_PYTHON)
+    endif()
 
     tpqt_add_dbus_unit_test(AccountConnectionFactory account-connection-factory tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(CallChannel call-channel tp-glib-tests tp-qt-tests-glib-helpers)
@@ -75,16 +75,16 @@ if(ENABLE_TP_GLIB_TESTS)
         tpqt_add_dbus_unit_test(StreamTubeHandlers stream-tube-handlers tp-glib-tests tp-qt-tests-glib-helpers)
         if(ENABLE_TP_GLIB_GIO_TESTS)
             tpqt_add_dbus_unit_test(StreamTubeChannel stream-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
-        endif(ENABLE_TP_GLIB_GIO_TESTS)
-    endif (ENABLE_TESTS_WITH_RACES_IN_QT_4_6)
+        endif()
+    endif ()
 
     if(NOT (${QT_VERSION_MAJOR} EQUAL 4 AND ${QT_VERSION_MINOR} LESS 8))
         message(STATUS "Enabling Qt 4.8+ tests")
         tpqt_add_dbus_unit_test(DBusTubeChannel dbus-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
-    endif(NOT (${QT_VERSION_MAJOR} EQUAL 4 AND ${QT_VERSION_MINOR} LESS 8))
+    endif()
 
 
-endif(ENABLE_TP_GLIB_TESTS)
+endif()
 
 tpqt_add_dbus_unit_test(CmProtocol cm-protocol)
 tpqt_add_dbus_unit_test(ProfileManager profile-manager)
@@ -94,7 +94,7 @@ if(ENABLE_SERVICE_SUPPORT)
     tpqt_add_dbus_unit_test(BaseConnectionManager base-cm telepathy-qt${QT_VERSION_MAJOR}-service)
     tpqt_add_dbus_unit_test(BaseProtocol base-protocol telepathy-qt${QT_VERSION_MAJOR}-service)
     tpqt_add_dbus_unit_test(BaseChannelFileTransferType base-filetransfer telepathy-qt${QT_VERSION_MAJOR}-service)
-endif(ENABLE_SERVICE_SUPPORT)
+endif()
 
 # Make check target. In case of check, output on failure and put it into a log
 # This target has to stay here for catching all of the tests

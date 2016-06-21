@@ -17,4 +17,4 @@ if(ENABLE_TP_GLIB_TESTS)
 
     add_library(example-cm-call STATIC ${example_cm_call_SRCS})
     target_link_libraries(example-cm-call ${TPGLIB_LIBRARIES})
-endif(ENABLE_TP_GLIB_TESTS)
+endif()

@@ -14,9 +14,9 @@
 if (TELEPATHY_FARSTREAM_INCLUDE_DIR AND TELEPATHY_FARSTREAM_LIBRARIES)
    # in cache already
    set(TelepathyFarstream_FIND_QUIETLY TRUE)
-else (TELEPATHY_FARSTREAM_INCLUDE_DIR AND TELEPATHY_FARSTREAM_LIBRARIES)
+else ()
    set(TelepathyFarstream_FIND_QUIETLY FALSE)
-endif (TELEPATHY_FARSTREAM_INCLUDE_DIR AND TELEPATHY_FARSTREAM_LIBRARIES)
+endif ()
 
 if (NOT WIN32)
     # use pkg-config to get the directories and then use these values
@@ -24,11 +24,11 @@ if (NOT WIN32)
     find_package(PkgConfig)
     if (TELEPATHY_FARSTREAM_MIN_VERSION)
         PKG_CHECK_MODULES(PC_TELEPATHY_FARSTREAM telepathy-farstream>=${TELEPATHY_FARSTREAM_MIN_VERSION})
-    else (TELEPATHY_FARSTREAM_MIN_VERSION)
+    else ()
         PKG_CHECK_MODULES(PC_TELEPATHY_FARSTREAM telepathy-farstream)
-    endif (TELEPATHY_FARSTREAM_MIN_VERSION)
+    endif ()
     set(TELEPATHY_FARSTREAM_DEFINITIONS ${PC_TELEPATHY_FARSTREAM_CFLAGS_OTHER})
-endif (NOT WIN32)
+endif ()
 
 find_path(TELEPATHY_FARSTREAM_INCLUDE_DIR telepathy-farstream/telepathy-farstream.h
    PATHS

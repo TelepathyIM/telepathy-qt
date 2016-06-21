@@ -19,9 +19,9 @@ set(PACKAGE_NAME telepathy-qt)
 
 if (${TP_QT_NANO_VERSION} EQUAL 0)
     set(PACKAGE_VERSION ${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
-else (${TP_QT_NANO_VERSION} EQUAL 0)
+else ()
     set(PACKAGE_VERSION ${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
-endif (${TP_QT_NANO_VERSION} EQUAL 0)
+endif ()
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is
 # checked
@@ -32,10 +32,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 if(NOT CMAKE_BUILD_TYPE)
     if(TP_QT_NANO_VERSION EQUAL 0)
         set(CMAKE_BUILD_TYPE RelWithDebInfo)
-    else(TP_QT_NANO_VERSION EQUAL 0)
+    else()
         set(CMAKE_BUILD_TYPE Debug)
-    endif(TP_QT_NANO_VERSION EQUAL 0)
-endif(NOT CMAKE_BUILD_TYPE)
+    endif()
+endif()
 
 # This file contains all the needed initialization macros
 include(TelepathyDefaults)
@@ -58,22 +58,22 @@ find_package(Qt REQUIRED)
 IF(QT_VERSION_MAJOR MATCHES 5)
     # It is QtCore for Qt4 but Qt5Core for Qt5 in pkg-config
     SET(QT_VERSION_PC 5)
-ENDIF(QT_VERSION_MAJOR MATCHES 5)
+ENDIF()
 
 foreach(flag ${QT_CONFIG_FLAGS})
     if (${flag} MATCHES "reduce_relocations")
         set(TP_QT_EXECUTABLE_LINKER_FLAGS "-fPIE")
         set(TP_QT_LIBRARY_LINKER_FLAGS "-fPIC")
-    endif (${flag} MATCHES "reduce_relocations")
-endforeach(flag ${QT_CONFIG_FLAGS})
+    endif ()
+endforeach()
 
 # This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
 # occurs, and will be used for the SOVERSION of the generated shared libraries.
 if (${QT_VERSION_MAJOR} EQUAL 4)
     set(TP_QT_ABI_VERSION 2)
-else (${QT_VERSION_MAJOR} EQUAL 4)
+else ()
     set(TP_QT_ABI_VERSION 0)
-endif (${QT_VERSION_MAJOR} EQUAL 4)
+endif ()
 
 set(TP_QT_SERVICE_ABI_VERSION 0)
 
@@ -81,9 +81,9 @@ set(TP_QT_SERVICE_ABI_VERSION 0)
 # value! Change TP_QT_ABI_VERSION and TP_QT_*_VERSION instead.
 if (${TP_QT_NANO_VERSION} EQUAL 0)
     set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
-else (${TP_QT_NANO_VERSION} EQUAL 0)
+else ()
     set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
-endif (${TP_QT_NANO_VERSION} EQUAL 0)
+endif ()
 
 # Add an option for compiling tp-qt-service
 option(ENABLE_SERVICE_SUPPORT "Enable compilation of service side bindings for Telepathy-Qt" TRUE)
@@ -108,7 +108,7 @@ add_definitions(-DQT_NO_CAST_FROM_ASCII)
 set(ENABLE_DEBUG_OUTPUT ON CACHE BOOL "If activated, compiles support for printing debug output to stderr")
 if (ENABLE_DEBUG_OUTPUT)
     add_definitions(-DENABLE_DEBUG)
-endif (ENABLE_DEBUG_OUTPUT)
+endif ()
 
 # Check for Qt Glib support
 include(CheckCXXSourceCompiles)
@@ -141,18 +141,18 @@ set(REQUIRED_PY 2.7)
 find_package(PythonLibrary ${REQUIRED_PY} REQUIRED)
 if(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERSION} VERSION_EQUAL ${REQUIRED_PY})
     message(STATUS "Python ${PYTHON_SHORT_VERSION} found")
-else(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERSION} VERSION_EQUAL ${REQUIRED_PY})
+else()
     message(SEND_ERROR "Python >= ${REQUIRED_PY} is required")
-endif(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERSION} VERSION_EQUAL ${REQUIRED_PY})
+endif()
 
 # Check for dbus-python
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import dbus.mainloop.glib"
                 RESULT_VARIABLE PYTHON_DBUS_RESULT)
 if(PYTHON_DBUS_RESULT EQUAL 0)
     set(HAVE_TEST_PYTHON 1)
-else(PYTHON_DBUS_RESULT EQUAL 0)
+else()
     set(HAVE_TEST_PYTHON 0)
-endif(PYTHON_DBUS_RESULT EQUAL 0)
+endif()
 macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
                   "GLib-based Python DBus support"
                   "http://www.python.org/" FALSE ""
@@ -210,9 +210,9 @@ endif()
 # Build TelepathyQt-Farstream only if GStreamer, TelepathyFarstream and all of their dependencies were found
 if (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSTREAM)
     set (FARSTREAM_COMPONENTS_FOUND 1)
-else (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSTREAM)
+else ()
     set (FARSTREAM_COMPONENTS_FOUND 0)
-endif (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSTREAM)
+endif ()
 
 if (ENABLE_TESTS)
     # Enable glib-based tests only if Qt has GLib support and Telepathy-glib was found
@@ -223,14 +223,14 @@ if (ENABLE_TESTS)
         set(ENABLE_TP_GLIB_TESTS 1)
         if(GIO_FOUND AND GIOUNIX_FOUND)
             set(ENABLE_TP_GLIB_GIO_TESTS 1)
-        else(GIO_FOUND AND GIOUNIX_FOUND)
+        else()
             set(ENABLE_TP_GLIB_GIO_TESTS 0)
-        endif(GIO_FOUND AND GIOUNIX_FOUND)
-    else(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+        endif()
+    else()
         set(ENABLE_TP_GLIB_TESTS 0)
         set(ENABLE_TP_GLIB_GIO_TESTS 0)
-    endif(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
-endif(ENABLE_TESTS)
+    endif()
+endif()
 
 # Add the source subdirectories
 add_subdirectory(TelepathyQt)

@@ -128,15 +128,15 @@ MACRO (TPQT_EXTRACT_DEPENDS _tpqt_other _tpqt_depends)
   FOREACH(_currentArg ${ARGN})
     IF ("${_currentArg}" STREQUAL "DEPENDS")
       SET(_TPQT_DOING_DEPENDS TRUE)
-    ELSE ("${_currentArg}" STREQUAL "DEPENDS")
+    ELSE ()
       IF(_TPQT_DOING_DEPENDS)
         LIST(APPEND ${_tpqt_depends} "${_currentArg}")
-      ELSE(_TPQT_DOING_DEPENDS)
+      ELSE()
         LIST(APPEND ${_tpqt_other} "${_currentArg}")
-      ENDIF(_TPQT_DOING_DEPENDS)
-    ENDIF ("${_currentArg}" STREQUAL "DEPENDS")
-  ENDFOREACH(_currentArg)
-ENDMACRO (TPQT_EXTRACT_DEPENDS)
+      ENDIF()
+    ENDIF ()
+  ENDFOREACH()
+ENDMACRO ()
 
 # helper function to set up a moc rule
 FUNCTION (TPQT_CREATE_MOC_COMMAND_TARGET_DEPS infile outfile moc_flags moc_options)
@@ -151,28 +151,28 @@ FUNCTION (TPQT_CREATE_MOC_COMMAND_TARGET_DEPS infile outfile moc_flags moc_optio
     GET_FILENAME_COMPONENT(_moc_outfile_dir "${outfile}" PATH)
     IF(_moc_outfile_dir)
       SET(_moc_working_dir WORKING_DIRECTORY ${_moc_outfile_dir})
-    ENDIF(_moc_outfile_dir)
+    ENDIF()
     SET (_moc_parameters_file ${outfile}_parameters)
     SET (_moc_parameters ${moc_flags} ${moc_options} -o "${outfile}" "${infile}")
     FILE (REMOVE ${_moc_parameters_file})
     FOREACH(arg ${_moc_parameters})
       FILE (APPEND ${_moc_parameters_file} "${arg}\n")
-    ENDFOREACH(arg)
+    ENDFOREACH()
     ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
                        COMMAND ${QT_MOC_EXECUTABLE} @${_moc_outfile_name}_parameters
                        DEPENDS ${infile}
                        ${_moc_working_dir}
                        VERBATIM)
-  ELSE (WIN32)
+  ELSE ()
     ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
                        COMMAND ${QT_MOC_EXECUTABLE}
                        ARGS ${moc_flags} ${moc_options} -o ${outfile} ${infile}
                        DEPENDS ${infile})
-  ENDIF (WIN32)
+  ENDIF ()
 
   add_custom_target(moc-${_moc_outfile_name} DEPENDS ${outfile})
   add_dependencies(moc-${_moc_outfile_name} ${ARGN})
-ENDFUNCTION (TPQT_CREATE_MOC_COMMAND_TARGET_DEPS)
+ENDFUNCTION ()
 
 # add the -i option to QT_GENERATE_MOC
 function(TPQT_GENERATE_MOC_I infile outfile)
@@ -180,7 +180,7 @@ function(TPQT_GENERATE_MOC_I infile outfile)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
     qt_create_moc_command(${abs_infile} ${outfile} "${moc_flags}" "-i")
     set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
-endfunction(TPQT_GENERATE_MOC_I)
+endfunction()
 
 # same as tpqt_generate_moc_i, but lets the caller specify a list of targets which the mocs should depend on
 function(TPQT_GENERATE_MOC_I_TARGET_DEPS infile outfile)
@@ -188,7 +188,7 @@ function(TPQT_GENERATE_MOC_I_TARGET_DEPS infile outfile)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
     tpqt_create_moc_command_target_deps(${abs_infile} ${outfile} "${moc_flags}" "-i" ${ARGN})
     set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
-endfunction(TPQT_GENERATE_MOC_I_TARGET_DEPS)
+endfunction()
 
 # generates mocs for the passed list. The list should be added to the target's sources
 function(tpqt_generate_mocs)
@@ -197,8 +197,8 @@ function(tpqt_generate_mocs)
         string(REPLACE ".h" ".moc.hpp" generated_file ${moc_src})
         tpqt_generate_moc_i(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
         set_property(SOURCE ${moc_src} APPEND PROPERTY OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
-    endforeach(moc_src ${ARGN})
-endfunction(tpqt_generate_mocs)
+    endforeach()
+endfunction()
 
 function(tpqt_client_generator spec group pretty_include namespace)
     tpqt_extract_depends(client_generator_args client_generator_depends ${ARGN})
@@ -231,12 +231,12 @@ function(tpqt_client_generator spec group pretty_include namespace)
 
     if (client_generator_depends)
         add_dependencies(generate_cli-${spec}-body ${client_generator_depends})
-    endif (client_generator_depends)
+    endif ()
 
     tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp
                        "generate_cli-${spec}-body")
-endfunction(tpqt_client_generator spec group pretty_include namespace)
+endfunction()
 
 function(tpqt_future_client_generator spec namespace)
     tpqt_extract_depends(future_client_generator_args future_client_generator_depends ${ARGN})
@@ -269,12 +269,12 @@ function(tpqt_future_client_generator spec namespace)
 
     if (future_client_generator_depends)
         add_dependencies(generate_future-${spec}-body ${future_client_generator_depends})
-    endif (future_client_generator_depends)
+    endif ()
 
     tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp
                        "generate_future-${spec}-body")
-endfunction(tpqt_future_client_generator spec namespace)
+endfunction()
 
 function(tpqt_service_generator spec group pretty_include namespace)
     tpqt_extract_depends(service_generator_args service_generator_depends ${ARGN})
@@ -306,12 +306,12 @@ function(tpqt_service_generator spec group pretty_include namespace)
 
     if (service_generator_depends)
         add_dependencies(generate_service-${spec}-body ${service_generator_depends})
-    endif (service_generator_depends)
+    endif ()
 
     tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.moc.hpp
                        "generate_service-${spec}-body")
-endfunction(tpqt_service_generator spec group pretty_include namespace)
+endfunction()
 
 # This function is used for generating CM in various examples
 function(tpqt_generate_manager_file MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAME)
@@ -330,7 +330,7 @@ function(tpqt_generate_manager_file MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAME
 
     set_source_files_properties(${DEPEND_FILENAME}
                                 PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/param-spec-struct.h)
-endfunction(tpqt_generate_manager_file MANAGER_FILE)
+endfunction()
 
 function(tpqt_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
     tpqt_extract_depends(xincludator_gen_args xincludator_gen_depends ${ARGN})
@@ -352,8 +352,8 @@ function(tpqt_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
 
     if (xincludator_gen_depends)
         add_dependencies(${_TARGET_NAME} ${xincludator_gen_depends})
-    endif (xincludator_gen_depends)
-endfunction(tpqt_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
+    endif ()
+endfunction()
 
 function(tpqt_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
     tpqt_extract_depends(constants_gen_args constants_gen_depends ${ARGN})
@@ -377,8 +377,8 @@ function(tpqt_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
 
     if (constants_gen_depends)
         add_dependencies(${_TARGET_NAME} ${constants_gen_depends})
-    endif (constants_gen_depends)
-endfunction (tpqt_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
+    endif ()
+endfunction ()
 
 function(tpqt_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
     tpqt_extract_depends(types_gen_args types_gen_depends ${ARGN})
@@ -404,8 +404,8 @@ function(tpqt_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAME
 
     if (types_gen_depends)
         add_dependencies(${_TARGET_NAME} ${types_gen_depends})
-    endif (types_gen_depends)
-endfunction(tpqt_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
+    endif ()
+endfunction()
 
 macro(tpqt_add_generic_unit_test _fancyName _name)
     tpqt_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
@@ -416,7 +416,7 @@ macro(tpqt_add_generic_unit_test _fancyName _name)
 
     # Valgrind and Callgrind targets
     _tpqt_add_check_targets(${_fancyName} ${_name} ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
-endmacro(tpqt_add_generic_unit_test _fancyName _name)
+endmacro()
 
 macro(tpqt_add_dbus_unit_test _fancyName _name)
     tpqt_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
@@ -428,7 +428,7 @@ macro(tpqt_add_dbus_unit_test _fancyName _name)
 
     # Valgrind and Callgrind targets
     _tpqt_add_check_targets(${_fancyName} ${_name} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
-endmacro(tpqt_add_dbus_unit_test _fancyName _name)
+endmacro()
 
 macro(_tpqt_add_check_targets _fancyName _name _runnerScript)
     set_tests_properties(${_fancyName}
@@ -480,7 +480,7 @@ macro(_tpqt_add_check_targets _fancyName _name _runnerScript)
         COMMENT
             "Running callgrind on test \"${_fancyName}\"")
     add_dependencies(check-callgrind check-callgrind-${_fancyName})
-endmacro(_tpqt_add_check_targets _fancyName _name)
+endmacro()
 
 function(tpqt_setup_dbus_test_environment)
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh "
@@ -488,12 +488,12 @@ ${test_environment}
 sh ${CMAKE_SOURCE_DIR}/tools/with-session-bus.sh \\
     --config-file=${CMAKE_BINARY_DIR}/tests/dbus-1/session.conf -- $@
 ")
-endfunction(tpqt_setup_dbus_test_environment)
+endfunction()
 
 macro(make_install_path_absolute out in)
     if (IS_ABSOLUTE "${in}")
         set(${out} "${in}")
-    else (IS_ABSOLUTE "${in}")
+    else ()
         set(${out} "\${TELEPATHY_QT${QT_VERSION_MAJOR}_INSTALL_DIR}/${in}")
-    endif (IS_ABSOLUTE "${in}")
-endmacro(make_install_path_absolute out in)
+    endif ()
+endmacro()

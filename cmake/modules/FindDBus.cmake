@@ -18,7 +18,7 @@
 if (NOT WIN32)
     find_package(PkgConfig)
     pkg_check_modules(PC_DBUS dbus-1)
-endif (NOT WIN32)
+endif ()
 
 find_path(DBUS_INCLUDE_DIR dbus/dbus.h
     PATHS ${PC_DBUS_INCLUDE_DIRS}
