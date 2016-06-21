@@ -127,8 +127,6 @@ EXECUTE_PROCESS(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable qt_config Qt5Core
     RESULT_VARIABLE _pkgconfig_failed)
 STRING(REPLACE " " ";" QT_CONFIG_FLAGS "${_pkgconfig_flags}")
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-
 INCLUDE(Qt5Macros)
 
 SET(QT_FOUND TRUE)
