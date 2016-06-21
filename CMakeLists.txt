@@ -136,8 +136,8 @@ macro_log_feature(QT_GLIB_SUPPORT "Qt Glib Support"
 # reset flags
 set(CMAKE_REQUIRED_FLAGS "")
 
-# Find python version >= 2.5
-set(REQUIRED_PY 2.5)
+# Find python version >= 2.7
+set(REQUIRED_PY 2.7)
 find_package(PythonLibrary ${REQUIRED_PY} REQUIRED)
 if(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERSION} VERSION_EQUAL ${REQUIRED_PY})
     message(STATUS "Python ${PYTHON_SHORT_VERSION} found")
