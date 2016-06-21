@@ -43,7 +43,7 @@ include(TelepathyDefaults)
 # This file contains all the tpqt macros used in the buildsystem
 include(TpQtMacros)
 
-include(MacroLogFeature)
+include(FeatureSummary)
 
 # external dependencies
 
@@ -128,10 +128,8 @@ int main()
 return 0;
 }"
 QT_GLIB_SUPPORT)
-macro_log_feature(QT_GLIB_SUPPORT "Qt Glib Support"
-                  "QtCore library using Glib's main event loop"
-                  "http://qt.nokia.com/" FALSE ""
-                  "Needed, together with Telepathy-Glib, to build most of the unit tests")
+add_feature_info("Qt GLib support" QT_GLIB_SUPPORT
+    "QtCore library using Glib's main event loop; needed, together with Telepathy-Glib, to build most of the unit tests")
 
 # reset flags
 set(CMAKE_REQUIRED_FLAGS "")
@@ -149,19 +147,18 @@ if(PYTHON_DBUS_RESULT EQUAL 0)
 else()
     set(HAVE_TEST_PYTHON 0)
 endif()
-macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
-                  "GLib-based Python DBus support"
-                  "http://www.python.org/" FALSE ""
-                  "Needed to build some additional unit tests")
+add_feature_info(dbus-python HAVE_TEST_PYTHON
+    "GLib-based Python DBus support; needed to build some additional unit tests")
 
 if(ENABLE_TESTS OR ENABLE_FARSTREAM)
     # Find telepathy-glib
     set(TELEPATHY_GLIB_MIN_VERSION 0.18.0)
-    find_package(TelepathyGlib)
-    macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
-                      "Glib bindings for Telepathy"
-                      "http://telepathy.freedesktop.org/" FALSE ${TELEPATHY_GLIB_MIN_VERSION}
-                      "Needed, together with Qt Glib integration, to build most of the unit tests")
+    find_package(TelepathyGlib ${TELEPATHY_GLIB_MIN_VERSION})
+    set_package_properties(TelepathyGlib PROPERTIES
+          DESCRIPTION "Glib bindings for Telepathy"
+          URL "http://telepathy.freedesktop.org/"
+          TYPE RECOMMENDED
+          PURPOSE "Needed, together with Qt Glib integration, to build most of the unit tests")
 
     find_program(GLIB_GENMARSHAL glib-genmarshal)
 
@@ -180,27 +177,30 @@ if(ENABLE_FARSTREAM)
     # Find tp-farstream
     set(FARSTREAM_MIN_VERSION "0.2.0")
     find_package(Farstream)
-    macro_log_feature(FARSTREAM_FOUND "Farstream"
-                      "A Framework for dealing with audio/video conferencing protocols"
-                      "http://www.freedesktop.org/wiki/Software/Farstream" FALSE "${FARSTREAM_MIN_VERSION}"
-                      "Needed, together with GStreamer and Telepathy-Farstream, to build telepathy-qt-farstream")
+    set_package_properties(Farstream PROPERTIES
+        DESCRIPTION "A Framework for dealing with audio/video conferencing protocols"
+        URL "http://www.freedesktop.org/wiki/Software/Farstream"
+        TYPE RECOMMENDED
+        PURPOSE "Needed, together with GStreamer and Telepathy-Farstream, to build telepathy-qt-farstream")
 
     # Find tp-farstream
     set(TELEPATHY_FARSTREAM_MIN_VERSION "0.6.0")
     find_package(TelepathyFarstream)
-    macro_log_feature(TELEPATHYFARSTREAM_FOUND "Telepathy-Farstream"
-                      "A Framework for dealing with audio/video conferencing protocols"
-                      "http://telepathy.freedesktop.org/wiki/" FALSE "${TELEPATHY_FARSTREAM_MIN_VERSION}"
-                      "Needed, together with GStreamer and Farstream, to build telepathy-qt-farstream")
+    set_package_properties(TelepathyFarstream PROPERTIES
+        DESCRIPTION "A Framework for dealing with audio/video conferencing protocols"
+        URL "http://telepathy.freedesktop.org/wiki/"
+        TYPE RECOMMENDED
+        PURPOSE "Needed, together with GStreamer and Farstream, to build telepathy-qt-farstream")
 endif()
 
 if(ENABLE_FARSTREAM)
     # Find GStreamer
     find_package(GStreamer)
-    macro_log_feature(GSTREAMER_FOUND "GStreamer"
-                      "An open source multimedia framework"
-                      "Needed, together with Tp-Farstream, to build telepathy-qt-farstream and some additional examples"
-                      "http://www.gstreamer.net/" FALSE)
+    set_package_properties(GStreamer PROPERTIES
+        DESCRIPTION "An open source multimedia framework"
+        URL "http://www.gstreamer.net/"
+        TYPE RECOMMENDED
+        PURPOSE "Needed, together with Tp-Farstream, to build telepathy-qt-farstream and some additional examples")
 endif()
 
 # Build TelepathyQt-Farstream only if GStreamer, TelepathyFarstream and all of their dependencies were found
@@ -252,7 +252,7 @@ add_custom_target(uninstall
     "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
 # Display the feature log
-macro_display_feature_log()
+feature_summary(WHAT ALL)
 
 # Always keep it last: CPack definitions file
 include(TelepathyDist)
