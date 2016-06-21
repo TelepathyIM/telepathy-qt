@@ -34,4 +34,9 @@ point to its location to enable crosslinking.")
     set(GENERATE_QHP     ${QHELPGENERATOR_FOUND})
     configure_file(doxygen.cfg.in ${CMAKE_BINARY_DIR}/doxygen.cfg)
     add_custom_target(doxygen-doc ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/doxygen.cfg)
+else()
+    # Suppress cmake policy CMP0046 warnings.
+    # This target is being used as a dependency in other targets,
+    # so it always needs to be available, even if empty.
+    add_custom_target(doxygen-doc)
 endif()
