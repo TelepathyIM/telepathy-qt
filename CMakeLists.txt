@@ -164,13 +164,13 @@ if(ENABLE_TESTS OR ENABLE_FARSTREAM)
 
     # Find GLib2, GObject, DBus and LibXml2
     # Those are needed for the insane include dir dependency hell
-    find_package(GLIB2)
-    find_package(GObject)
-    find_package(GIO)
-    find_package(GIOUnix)
-    find_package(DBus)
-    find_package(DBusGLib)
-    find_package(LibXml2)
+    find_package(GLIB2 QUIET)
+    find_package(GObject QUIET)
+    find_package(GIO QUIET)
+    find_package(GIOUnix QUIET)
+    find_package(DBus QUIET)
+    find_package(DBusGLib QUIET)
+    find_package(LibXml2 QUIET)
 endif()
 
 if(ENABLE_FARSTREAM)

@@ -11,7 +11,7 @@ if(DOXYGEN_FOUND)
 
     set(QT_TAGS_FILE     ${QT_DOC_DIR}/html/qt.tags)
     if(EXISTS ${QT_TAGS_FILE})
-        find_package(Perl)
+        find_package(Perl QUIET)
 
         if (NOT PERL_FOUND)
             message(WARNING "Perl was not found. Qt crosslinks in uploaded docs won't be valid.")
