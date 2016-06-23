@@ -2,6 +2,11 @@
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/doc)
 
 find_package(Doxygen)
+set_package_properties(Doxygen PROPERTIES
+    DESCRIPTION "Documentation generator"
+    URL "http://doxygen.org"
+    PURPOSE "Needed to generate the API documentation")
+
 if(DOXYGEN_FOUND)
     find_program(QHELPGENERATOR_EXECUTABLE qhelpgenerator)
     mark_as_advanced(QHELPGENERATOR_EXECUTABLE)
