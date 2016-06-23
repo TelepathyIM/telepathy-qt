@@ -800,18 +800,12 @@ set_target_properties(telepathy-qt${QT_VERSION_MAJOR} PROPERTIES
 install(FILES ${telepathy_qt_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt COMPONENT headers)
 install(FILES ${telepathy_qt_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt/_gen COMPONENT headers)
 
-# Install the library - watch out for the correct components
-if (WIN32)
-    install(TARGETS telepathy-qt${QT_VERSION_MAJOR}
-            EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
-            RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
-            ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
-else ()
-    install(TARGETS telepathy-qt${QT_VERSION_MAJOR}
-            EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
-            LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
-            ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
-endif ()
+# Install the library
+install(TARGETS telepathy-qt${QT_VERSION_MAJOR}
+        EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
+        RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
+        LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
+        ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
 
 # pkg-config files, only if we are not using windows
 if (NOT WIN32)
@@ -995,18 +989,12 @@ if(ENABLE_SERVICE_SUPPORT)
                                                  SOVERSION ${TP_QT_SERVICE_ABI_VERSION}
                                                  VERSION ${TP_QT_LIBRARY_VERSION})
 
-    # Install the library - watch out for the correct components
-    if (WIN32)
-        install(TARGETS telepathy-qt${QT_VERSION_MAJOR}-service
-                EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
-                RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT service
-                ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT service_libs)
-    else ()
-        install(TARGETS telepathy-qt${QT_VERSION_MAJOR}-service
-                EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
-                LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT service
-                ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT service_libs)
-    endif ()
+    # Install the library
+    install(TARGETS telepathy-qt${QT_VERSION_MAJOR}-service
+            EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
+            RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT service
+            LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT service
+            ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT service_libs)
 
     # Install headers
     install(FILES ${telepathy_qt_service_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt

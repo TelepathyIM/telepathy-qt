@@ -57,18 +57,12 @@ if(FARSTREAM_COMPONENTS_FOUND)
                                                        SOVERSION ${TP_QT_ABI_VERSION}
                                                        VERSION ${TP_QT_LIBRARY_VERSION})
 
-    # Install the library - watch out for the correct components
-    if (WIN32)
-        install(TARGETS telepathy-qt${QT_VERSION_MAJOR}-farstream
-                EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
-                RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream
-                ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream_libs)
-    else ()
-        install(TARGETS telepathy-qt${QT_VERSION_MAJOR}-farstream
-                EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
-                LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream
-                ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream_libs)
-    endif ()
+    # Install the library
+    install(TARGETS telepathy-qt${QT_VERSION_MAJOR}-farstream
+            EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
+            RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream
+            LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream
+            ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farstream_libs)
 
     # Install headers
     install(FILES ${telepathy_qt_farstream_HEADERS}
