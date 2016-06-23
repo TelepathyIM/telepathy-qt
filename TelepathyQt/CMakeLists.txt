@@ -820,28 +820,26 @@ if (NOT WIN32)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
 endif ()
 
-# CMake Version and config files
-include(MacroWriteBasicCMakeVersionFile)
-
-# all the following variables are put into TelepathyQt*Config.cmake, so
-# they are usable by projects using TelepathyQt.
-make_install_path_absolute(TELEPATHY_QT_INCLUDE_DIR         ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR})
-make_install_path_absolute(TELEPATHY_QT_LIB_DIR             ${LIB_INSTALL_DIR})
-make_install_path_absolute(TELEPATHY_QT_DATA_DIR            ${DATA_INSTALL_DIR})
-
-# Configure the actual Config file
-configure_file(TelepathyQtConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Config.cmake" @ONLY)
-
-# this file is used by to check if the installed version can be used.
-macro_write_basic_cmake_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVersion.cmake
-                                     ${PACKAGE_VERSION})
-
 # Find out the correct installation directory
 if (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
     set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR})
 else ()
     set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}/cmake)
 endif ()
+
+# CMake Version and config files
+include(CMakePackageConfigHelpers)
+
+# Configure the actual Config file
+configure_package_config_file(TelepathyQtConfig.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Config.cmake"
+    INSTALL_DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
+    PATH_VARS CMAKE_INSTALL_PREFIX INCLUDE_INSTALL_DIR LIB_INSTALL_DIR DATA_INSTALL_DIR
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+# this file is used by to check if the installed version can be used.
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVersion.cmake
+                                 VERSION ${PACKAGE_VERSION} COMPATIBILITY SameMajorVersion)
 
 install(EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
         DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
@@ -1023,18 +1021,22 @@ if(ENABLE_SERVICE_SUPPORT)
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Service.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
     endif ()
 
-    # Configure the actual Config file
-    configure_file(TelepathyQtServiceConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfig.cmake" @ONLY)
-
-    # this file is used by to check if the installed version can be used.
-    macro_write_basic_cmake_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfigVersion.cmake
-                                         ${PACKAGE_VERSION})
-
     if(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
         set(_TelepathyQtServiceConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR}Service)
     else()
         set(_TelepathyQtServiceConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}Service/cmake)
     endif()
+
+    # Configure the actual Config file
+    configure_package_config_file(TelepathyQtServiceConfig.cmake.in
+        "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfig.cmake"
+        INSTALL_DESTINATION ${_TelepathyQtServiceConfig_INSTALL_DIR}
+        PATH_VARS CMAKE_INSTALL_PREFIX INCLUDE_INSTALL_DIR LIB_INSTALL_DIR DATA_INSTALL_DIR
+        NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+    # this file is used by to check if the installed version can be used.
+    write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfigVersion.cmake
+                                     VERSION ${PACKAGE_VERSION} COMPATIBILITY SameMajorVersion)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfigVersion.cmake
                   ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfig.cmake

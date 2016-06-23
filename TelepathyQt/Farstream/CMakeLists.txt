@@ -85,19 +85,22 @@ if(FARSTREAM_COMPONENTS_FOUND)
                 DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
     endif ()
 
-    # Configure the actual Config file
-    configure_file(TelepathyQtFarstreamConfig.cmake.in
-                   "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}FarstreamConfig.cmake" @ONLY)
-
-    # this file is used by to check if the installed version can be used.
-    macro_write_basic_cmake_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}FarstreamConfigVersion.cmake
-                                         ${PACKAGE_VERSION})
-
     if(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
         set(_TelepathyQtFarstreamConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR}Farstream)
     else()
         set(_TelepathyQtFarstreamConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farstream/cmake)
     endif()
+
+    # Configure the actual Config file
+    configure_package_config_file(TelepathyQtFarstreamConfig.cmake.in
+        "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}FarstreamConfig.cmake"
+        INSTALL_DESTINATION ${_TelepathyQtFarstreamConfig_INSTALL_DIR}
+        PATH_VARS CMAKE_INSTALL_PREFIX INCLUDE_INSTALL_DIR LIB_INSTALL_DIR DATA_INSTALL_DIR
+        NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+    # this file is used by to check if the installed version can be used.
+    write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}FarstreamConfigVersion.cmake
+                                     VERSION ${PACKAGE_VERSION} COMPATIBILITY SameMajorVersion)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}FarstreamConfigVersion.cmake
                   ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}FarstreamConfig.cmake

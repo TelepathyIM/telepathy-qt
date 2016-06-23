@@ -2,6 +2,9 @@
 # Any changed value in this file will be overwritten by CMake.
 
 if(NOT TelepathyQt@QT_VERSION_MAJOR@_FOUND)
+
+    @PACKAGE_INIT@
+
     # set the version number
     set(TELEPATHY_QT@QT_VERSION_MAJOR@_VERSION_MAJOR @TP_QT_MAJOR_VERSION@)
     set(TELEPATHY_QT@QT_VERSION_MAJOR@_VERSION_MINOR @TP_QT_MINOR_VERSION@)
@@ -11,12 +14,12 @@ if(NOT TelepathyQt@QT_VERSION_MAJOR@_FOUND)
 
     # set the directories
     if(NOT TELEPATHY_QT@QT_VERSION_MAJOR@_INSTALL_DIR)
-        set(TELEPATHY_QT@QT_VERSION_MAJOR@_INSTALL_DIR "@CMAKE_INSTALL_PREFIX@")
+        set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_INSTALL_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@")
     endif()
 
-    set(TELEPATHY_QT@QT_VERSION_MAJOR@_INCLUDE_DIR              "@TELEPATHY_QT_INCLUDE_DIR@")
-    set(TELEPATHY_QT@QT_VERSION_MAJOR@_LIB_DIR                  "@TELEPATHY_QT_LIB_DIR@")
-    set(TELEPATHY_QT@QT_VERSION_MAJOR@_SHARE_DIR                "@TELEPATHY_QT_DATA_DIR@")
+    set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_INCLUDE_DIR   "@PACKAGE_INCLUDE_INSTALL_DIR@/telepathy-qt@QT_VERSION_MAJOR@")
+    set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_LIB_DIR       "@PACKAGE_LIB_INSTALL_DIR@")
+    set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_SHARE_DIR     "@PACKAGE_DATA_INSTALL_DIR@")
 
     # attempt to find the generated TelepathyQt4Targets.cmake in the same directory
     get_filename_component(_TPQT@QT_VERSION_MAJOR@_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
