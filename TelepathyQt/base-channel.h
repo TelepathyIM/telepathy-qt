@@ -142,6 +142,7 @@ public:
 
     /* Convenience function */
     void addReceivedMessage(const Tp::MessagePartList &message);
+    void acknowledgePendingMessages(const QStringList &tokens, DBusError *error);
 
 private Q_SLOTS:
     void sent(uint timestamp, uint type, QString text);

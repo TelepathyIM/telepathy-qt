@@ -543,6 +543,28 @@ void BaseChannelTextType::setMessageAcknowledgedCallback(const MessageAcknowledg
     mPriv->messageAcknowledgedCB = cb;
 }
 
+void BaseChannelTextType::acknowledgePendingMessages(const QStringList &tokens, DBusError *error)
+{
+    Tp::UIntList IDs;
+
+    Q_FOREACH (const QString &token, tokens) {
+        Q_FOREACH (const Tp::MessagePartList &message, mPriv->pendingMessages) {
+            const MessagePart &header = message.front();
+            if (header.value(QLatin1String("message-token")).variant().toString() == token) {
+                uint id = mPriv->pendingMessages.key(message);
+                IDs.append(id);
+            }
+        }
+    }
+
+    if (tokens.count() != IDs.count()) {
+        error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Token not found"));
+        return;
+    }
+
+    removePendingMessages(IDs);
+}
+
 void BaseChannelTextType::acknowledgePendingMessages(const Tp::UIntList &IDs, DBusError* error)
 {
     Q_FOREACH (uint id, IDs) {
