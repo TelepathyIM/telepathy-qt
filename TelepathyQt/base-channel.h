@@ -142,11 +142,13 @@ public:
 
     /* Convenience function */
     void addReceivedMessage(const Tp::MessagePartList &message);
+
 private Q_SLOTS:
     void sent(uint timestamp, uint type, QString text);
 protected:
     BaseChannelTextType(BaseChannel* channel);
-    void acknowledgePendingMessages(const Tp::UIntList &IDs, DBusError* error);
+    void acknowledgePendingMessages(const Tp::UIntList &IDs, DBusError *error);
+    void removePendingMessages(const Tp::UIntList &IDs);
 
 private:
     void createAdaptor();

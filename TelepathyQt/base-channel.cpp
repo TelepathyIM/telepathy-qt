@@ -545,7 +545,7 @@ void BaseChannelTextType::setMessageAcknowledgedCallback(const MessageAcknowledg
 
 void BaseChannelTextType::acknowledgePendingMessages(const Tp::UIntList &IDs, DBusError* error)
 {
-    foreach(uint id, IDs) {
+    Q_FOREACH (uint id, IDs) {
         QMap<uint, Tp::MessagePartList>::Iterator i = mPriv->pendingMessages.find(id);
         if (i == mPriv->pendingMessages.end()) {
             error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("id not found"));
@@ -553,10 +553,18 @@ void BaseChannelTextType::acknowledgePendingMessages(const Tp::UIntList &IDs, DB
         }
 
         const MessagePart &header = i->front();
-        if (header.count(QLatin1String("message-token")) && mPriv->messageAcknowledgedCB.isValid())
+        if (header.count(QLatin1String("message-token")) && mPriv->messageAcknowledgedCB.isValid()) {
             mPriv->messageAcknowledgedCB(header[QLatin1String("message-token")].variant().toString());
+        }
+    }
 
-        mPriv->pendingMessages.erase(i);
+    removePendingMessages(IDs);
+}
+
+void BaseChannelTextType::removePendingMessages(const UIntList &IDs)
+{
+    foreach (uint id, IDs) {
+        mPriv->pendingMessages.remove(id);
     }
 
     /* Signal on ChannelMessagesInterface */
