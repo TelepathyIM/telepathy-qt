@@ -529,7 +529,7 @@ void BaseChannelTextType::addReceivedMessage(const Tp::MessagePartList &msg)
                                   Q_ARG(Tp::MessagePartList, message));
 }
 
-Tp::MessagePartListList BaseChannelTextType::pendingMessages()
+Tp::MessagePartListList BaseChannelTextType::pendingMessages() const
 {
     return mPriv->pendingMessages.values();
 }
@@ -552,7 +552,7 @@ void BaseChannelTextType::acknowledgePendingMessages(const Tp::UIntList &IDs, DB
             return;
         }
 
-        MessagePart &header = i->front();
+        const MessagePart &header = i->front();
         if (header.count(QLatin1String("message-token")) && mPriv->messageAcknowledgedCB.isValid())
             mPriv->messageAcknowledgedCB(header[QLatin1String("message-token")].variant().toString());
 
@@ -703,7 +703,7 @@ uint BaseChannelMessagesInterface::deliveryReportingSupport()
     return mPriv->deliveryReportingSupport;
 }
 
-Tp::MessagePartListList BaseChannelMessagesInterface::pendingMessages()
+Tp::MessagePartListList BaseChannelMessagesInterface::pendingMessages() const
 {
     return mPriv->textTypeInterface->pendingMessages();
 }

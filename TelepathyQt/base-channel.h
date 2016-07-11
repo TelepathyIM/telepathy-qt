@@ -146,7 +146,7 @@ public:
     typedef Callback1<void, QString> MessageAcknowledgedCallback;
     void setMessageAcknowledgedCallback(const MessageAcknowledgedCallback &cb);
 
-    Tp::MessagePartListList pendingMessages();
+    Tp::MessagePartListList pendingMessages() const;
 
     /* Convenience function */
     void addReceivedMessage(const Tp::MessagePartList &message);
@@ -196,7 +196,7 @@ public:
     Tp::UIntList messageTypes();
     uint messagePartSupportFlags();
     uint deliveryReportingSupport();
-    Tp::MessagePartListList pendingMessages();
+    Tp::MessagePartListList pendingMessages() const;
 
     void messageSent(const Tp::MessagePartList &content, uint flags, const QString &messageToken);
 
