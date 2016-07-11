@@ -131,17 +131,9 @@ public:
                    new BaseChannelTextTypeSubclass(channel));
     }
 
-    typedef Callback2<QDBusObjectPath, const QVariantMap&, DBusError*> CreateChannelCallback;
-    CreateChannelCallback createChannel;
-
-    typedef Callback2<bool, const QVariantMap&, DBusError*> EnsureChannelCallback;
-    EnsureChannelCallback ensureChannel;
-
     virtual ~BaseChannelTextType();
 
     QVariantMap immutableProperties() const;
-
-    Tp::RequestableChannelClassList requestableChannelClasses;
 
     typedef Callback1<void, QString> MessageAcknowledgedCallback;
     void setMessageAcknowledgedCallback(const MessageAcknowledgedCallback &cb);
