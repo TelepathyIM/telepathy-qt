@@ -75,7 +75,7 @@ else ()
     set(TP_QT_ABI_VERSION 0)
 endif ()
 
-set(TP_QT_SERVICE_ABI_VERSION 0)
+set(TP_QT_SERVICE_ABI_VERSION 1)
 
 # This variable is used for the library's long version. It is generated dynamically, so don't change its
 # value! Change TP_QT_ABI_VERSION and TP_QT_*_VERSION instead.
