@@ -204,6 +204,45 @@ private:
     BaseConnectionContactListInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseConnectionContactGroupsInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool disjointGroups READ disjointGroups)
+    Q_PROPERTY(uint groupStorage READ groupStorage)
+    Q_PROPERTY(QStringList groups READ groups)
+
+public:
+    Adaptee(BaseConnectionContactGroupsInterface *interface);
+    ~Adaptee();
+
+    bool disjointGroups() const;
+    uint groupStorage() const;
+    QStringList groups() const;
+
+private Q_SLOTS:
+    void setContactGroups(uint contact, const QStringList &groups,
+            const Tp::Service::ConnectionInterfaceContactGroupsAdaptor::SetContactGroupsContextPtr &context);
+    void setGroupMembers(const QString &group, const Tp::UIntList &members,
+            const Tp::Service::ConnectionInterfaceContactGroupsAdaptor::SetGroupMembersContextPtr &context);
+    void addToGroup(const QString &group, const Tp::UIntList &members,
+            const Tp::Service::ConnectionInterfaceContactGroupsAdaptor::AddToGroupContextPtr &context);
+    void removeFromGroup(const QString &group, const Tp::UIntList &members,
+            const Tp::Service::ConnectionInterfaceContactGroupsAdaptor::RemoveFromGroupContextPtr &context);
+    void removeGroup(const QString &group,
+            const Tp::Service::ConnectionInterfaceContactGroupsAdaptor::RemoveGroupContextPtr &context);
+    void renameGroup(const QString &oldName, const QString &newName,
+            const Tp::Service::ConnectionInterfaceContactGroupsAdaptor::RenameGroupContextPtr &context);
+
+Q_SIGNALS:
+    void groupsChanged(const Tp::UIntList &contact, const QStringList &added, const QStringList &removed);
+    void groupsCreated(const QStringList &names);
+    void groupRenamed(const QString &oldName, const QString &newName);
+    void groupsRemoved(const QStringList &names);
+
+private:
+    BaseConnectionContactGroupsInterface *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseConnectionContactInfoInterface::Adaptee : public QObject
 {
     Q_OBJECT

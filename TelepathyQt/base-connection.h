@@ -366,6 +366,78 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseConnectionContactGroupsInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionContactGroupsInterface)
+
+public:
+    static BaseConnectionContactGroupsInterfacePtr create()
+    {
+        return BaseConnectionContactGroupsInterfacePtr(new BaseConnectionContactGroupsInterface());
+    }
+    template<typename BaseConnectionContactGroupsInterfaceSubclass>
+    static SharedPtr<BaseConnectionContactGroupsInterfaceSubclass> create()
+    {
+        return SharedPtr<BaseConnectionContactGroupsInterfaceSubclass>(
+                new BaseConnectionContactGroupsInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionContactGroupsInterface();
+
+    QVariantMap immutableProperties() const;
+
+    bool disjointGroups() const;
+    void setDisjointGroups(bool disjointGroups);
+
+    Tp::ContactMetadataStorageType groupStorage() const;
+    void setGroupStorage(Tp::ContactMetadataStorageType groupStorage);
+
+    QStringList groups() const;
+    void setGroups(const QStringList &groups);
+
+    typedef Callback3<void, uint, const QStringList &, DBusError*> SetContactGroupsCallback;
+    void setSetContactGroupsCallback(const SetContactGroupsCallback &cb);
+    void setContactGroups(uint contact, const QStringList &groups, DBusError *error);
+
+    typedef Callback3<void, const QString &, const Tp::UIntList &, DBusError*> SetGroupMembersCallback;
+    void setSetGroupMembersCallback(const SetGroupMembersCallback &cb);
+    void setGroupMembers(const QString &group, const Tp::UIntList &members, DBusError *error);
+
+    typedef Callback3<void, const QString &, const Tp::UIntList &, DBusError*> AddToGroupCallback;
+    void setAddToGroupCallback(const AddToGroupCallback &cb);
+    void addToGroup(const QString &group, const Tp::UIntList &members, DBusError *error);
+
+    typedef Callback3<void, const QString &, const Tp::UIntList &, DBusError*> RemoveFromGroupCallback;
+    void setRemoveFromGroupCallback(const RemoveFromGroupCallback &cb);
+    void removeFromGroup(const QString &group, const Tp::UIntList &members, DBusError *error);
+
+    typedef Callback2<void, const QString &, DBusError*> RemoveGroupCallback;
+    void setRemoveGroupCallback(const RemoveGroupCallback &cb);
+    void removeGroup(const QString &group, DBusError *error);
+
+    typedef Callback3<void, const QString &, const QString &, DBusError*> RenameGroupCallback;
+    void setRenameGroupCallback(const RenameGroupCallback &cb);
+    void renameGroup(const QString &oldName, const QString &newName, DBusError *error);
+
+    void groupsCreated(const QStringList &names);
+    void groupRenamed(const QString &oldName, const QString &newName);
+    void groupsRemoved(const QStringList &names);
+    void groupsChanged(const Tp::UIntList &contact, const QStringList &added, const QStringList &removed);
+
+protected:
+    BaseConnectionContactGroupsInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 class TP_QT_EXPORT BaseConnectionContactInfoInterface : public AbstractConnectionInterface
 {
     Q_OBJECT
