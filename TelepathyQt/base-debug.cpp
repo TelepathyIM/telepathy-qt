@@ -195,18 +195,19 @@ QVariantMap BaseDebug::immutableProperties() const
     return QVariantMap();
 }
 
-bool BaseDebug::registerObject(Tp::DBusError *error)
+bool BaseDebug::registerObject(const QString &busName, DBusError *error)
 {
     if (isRegistered()) {
         return true;
     }
 
     DBusError _error;
-    bool ret = DBusService::registerObject(TP_QT_IFACE_DEBUG, TP_QT_DEBUG_OBJECT_PATH, &_error);
+    bool ret = DBusService::registerObject(busName, TP_QT_DEBUG_OBJECT_PATH, &_error);
 
     if (!ret && error) {
         error->set(_error.name(), _error.message());
     }
+
     return ret;
 }
 

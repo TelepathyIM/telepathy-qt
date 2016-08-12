@@ -59,7 +59,7 @@ public Q_SLOTS:
 
     QVariantMap immutableProperties() const;
 
-    bool registerObject(DBusError *error = NULL);
+    bool registerObject(const QString &busName, DBusError *error = NULL);
 
 protected:
     class Adaptee;
