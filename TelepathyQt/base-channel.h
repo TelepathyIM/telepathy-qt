@@ -217,6 +217,71 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelContactSearchType : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelContactSearchType)
+
+public:
+    static BaseChannelContactSearchTypePtr create(uint limit,
+                                                  const QStringList &availableSearchKeys,
+                                                  const QString &server)
+    {
+        return BaseChannelContactSearchTypePtr(new BaseChannelContactSearchType(limit,
+                                                                                availableSearchKeys,
+                                                                                server));
+    }
+    template<typename BaseChannelContactSearchTypeSubclass>
+    static SharedPtr<BaseChannelContactSearchTypeSubclass> create(uint limit,
+                                                                  const QStringList &availableSearchKeys,
+                                                                  const QString &server)
+    {
+        return SharedPtr<BaseChannelContactSearchTypeSubclass>(
+                new BaseChannelContactSearchTypeSubclass(limit,
+                                                         availableSearchKeys,
+                                                         server));
+    }
+
+    virtual ~BaseChannelContactSearchType();
+
+    QVariantMap immutableProperties() const;
+
+    uint limit() const;
+    QStringList availableSearchKeys() const;
+    QString server() const;
+
+    uint searchState() const;
+    void setSearchState(uint state, const QString &error, const QVariantMap &details);
+
+    typedef Callback2<void, const Tp::ContactSearchMap &, DBusError*> SearchCallback;
+    void setSearchCallback(const SearchCallback &cb);
+    void search(const Tp::ContactSearchMap &terms, DBusError *error);
+
+    typedef Callback1<void, DBusError*> MoreCallback;
+    void setMoreCallback(const MoreCallback &cb);
+    void more(DBusError *error);
+
+    typedef Callback1<void, DBusError*> StopCallback;
+    void setStopCallback(const StopCallback &cb);
+    void stop(DBusError *error);
+
+    void searchResultReceived(const Tp::ContactSearchResultMap &result);
+
+protected:
+    BaseChannelContactSearchType(uint limit,
+                                 const QStringList &availableSearchKeys,
+                                 const QString &server);
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 class TP_QT_EXPORT BaseChannelFileTransferType : public AbstractChannelInterface
 {
     Q_OBJECT

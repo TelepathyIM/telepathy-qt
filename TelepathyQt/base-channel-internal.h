@@ -157,6 +157,39 @@ public:
     BaseChannelMessagesInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelContactSearchType::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(uint searchState READ searchState)
+    Q_PROPERTY(uint limit READ limit)
+    Q_PROPERTY(QStringList availableSearchKeys READ availableSearchKeys)
+    Q_PROPERTY(QString server READ server)
+
+public:
+    Adaptee(BaseChannelContactSearchType *interface);
+    ~Adaptee();
+
+    uint searchState() const;
+    uint limit() const;
+    QStringList availableSearchKeys() const;
+    QString server() const;
+
+private Q_SLOTS:
+    void search(const Tp::ContactSearchMap &terms,
+            const Tp::Service::ChannelTypeContactSearchAdaptor::SearchContextPtr &context);
+    void more(
+            const Tp::Service::ChannelTypeContactSearchAdaptor::MoreContextPtr &context);
+    void stop(
+            const Tp::Service::ChannelTypeContactSearchAdaptor::StopContextPtr &context);
+
+Q_SIGNALS:
+    void searchStateChanged(uint state, const QString &error, const QVariantMap &details);
+    void searchResultReceived(const Tp::ContactSearchResultMap &result);
+
+private:
+    BaseChannelContactSearchType *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseChannelFileTransferType::Adaptee : public QObject
 {
     Q_OBJECT
