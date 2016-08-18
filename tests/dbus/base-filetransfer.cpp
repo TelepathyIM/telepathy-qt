@@ -47,6 +47,76 @@
 #include <TelepathyQt/IncomingFileTransferChannel>
 #include <TelepathyQt/OutgoingFileTransferChannel>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#define QTRY_LOOP_IMPL(__expr, __timeoutValue, __step) \
+    if (!(__expr)) { \
+        QTest::qWait(0); \
+    } \
+    int __i = 0; \
+    for (; __i < __timeoutValue && !(__expr); __i += __step) { \
+        QTest::qWait(__step); \
+    }
+#define QTRY_TIMEOUT_DEBUG_IMPL(__expr, __timeoutValue, __step)\
+    if (!(__expr)) { \
+        QTRY_LOOP_IMPL((__expr), (2 * __timeoutValue), __step);\
+        if (__expr) { \
+            QString msg = QString::fromUtf8("QTestLib: This test case check (\"%1\") failed because the requested timeout (%2 ms) was too short, %3 ms would have been sufficient this time."); \
+            msg = msg.arg(QString::fromUtf8(#__expr)).arg(__timeoutValue).arg(__timeoutValue + __i); \
+            QFAIL(qPrintable(msg)); \
+        } \
+    }
+
+#define QTRY_IMPL(__expr, __timeout)\
+    const int __step = 50; \
+    const int __timeoutValue = __timeout; \
+    QTRY_LOOP_IMPL((__expr), __timeoutValue, __step); \
+    QTRY_TIMEOUT_DEBUG_IMPL((__expr), __timeoutValue, __step)\
+
+#define QTRY_VERIFY_WITH_TIMEOUT(__expr, __timeout) \
+do { \
+    QTRY_IMPL((__expr), __timeout);\
+    QVERIFY(__expr); \
+} while (0)
+
+#define QTRY_COMPARE(__expr, __expected) QTRY_COMPARE_WITH_TIMEOUT((__expr), __expected, 5000)
+
+#define QTRY_COMPARE_WITH_TIMEOUT(__expr, __expected, __timeout) \
+do { \
+    QTRY_IMPL(((__expr) == (__expected)), __timeout);\
+    QCOMPARE((__expr), __expected); \
+} while (0)
+
+class SignalSpy : public QSignalSpy
+{
+public:
+    SignalSpy(QObject *obj, const char *aSignal) :
+        QSignalSpy(obj, aSignal),
+        m_waiting(false)
+    {
+    }
+
+    bool wait(int timeout = 5000)
+    {
+        Q_ASSERT(!m_waiting);
+        const int origCount = count();
+        m_waiting = true;
+
+        int i = 0;
+        for (; i < timeout && count() == origCount; i += 50) {
+            QTest::qWait(50);
+        }
+
+        m_waiting = false;
+        return count() > origCount;
+    }
+private:
+    QEventLoop m_loop;
+    bool m_waiting;
+};
+
+#define QSignalSpy SignalSpy
+#endif
+
 static const int c_defaultTimeout = 500;
 
 Tp::RequestableChannelClass createRequestableChannelClassFileTransfer()
