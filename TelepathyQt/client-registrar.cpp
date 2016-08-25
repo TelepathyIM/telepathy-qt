@@ -903,8 +903,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
                 .arg((quintptr) client.data(), 0, 16));
     }
 
-    if (mPriv->services.contains(busName) ||
-        !mPriv->bus.registerService(busName)) {
+    if (mPriv->services.contains(busName)) {
         warning() << "Unable to register client: busName" <<
             busName << "already registered";
         return false;
@@ -950,7 +949,6 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
     if (interfaces.isEmpty()) {
         warning() << "Client does not implement any known interface";
         // cleanup
-        mPriv->bus.unregisterService(busName);
         return false;
     }
 
@@ -965,9 +963,17 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
             objectPath << "already registered";
         // cleanup
         delete object;
-        mPriv->bus.unregisterService(busName);
         return false;
     }
+
+    if (!mPriv->bus.registerService(busName)) {
+        warning() << "Unable to register service: busName" <<
+            busName << "already registered";
+        mPriv->bus.unregisterObject(objectPath, QDBusConnection::UnregisterTree);
+        delete object;
+        return false;
+    }
+
 
     if (handler) {
         handler->setRegistered(true);
