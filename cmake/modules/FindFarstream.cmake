@@ -14,9 +14,9 @@
 if (FARSTREAM_INCLUDE_DIR AND FARSTREAM_LIBRARIES)
    # in cache already
    set(Farstream_FIND_QUIETLY TRUE)
-else (FARSTREAM_INCLUDE_DIR AND FARSTREAM_LIBRARIES)
+else ()
    set(Farstream_FIND_QUIETLY FALSE)
-endif (FARSTREAM_INCLUDE_DIR AND FARSTREAM_LIBRARIES)
+endif ()
 
 if (NOT WIN32)
     # use pkg-config to get the directories and then use these values
@@ -24,11 +24,11 @@ if (NOT WIN32)
     find_package(PkgConfig)
     if (FARSTREAM_MIN_VERSION)
         PKG_CHECK_MODULES(PC_FARSTREAM farstream-0.2>=${FARSTREAM_MIN_VERSION})
-    else (FARSTREAM_MIN_VERSION)
+    else ()
         PKG_CHECK_MODULES(PC_FARSTREAM farstream-0.2)
-    endif (FARSTREAM_MIN_VERSION)
+    endif ()
     set(FARSTREAM_DEFINITIONS ${PC_FARSTREAM_CFLAGS_OTHER})
-endif (NOT WIN32)
+endif ()
 
 find_path(FARSTREAM_INCLUDE_DIR farstream/fs-conference.h
    PATHS

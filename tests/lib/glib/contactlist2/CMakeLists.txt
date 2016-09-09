@@ -11,4 +11,4 @@ if(ENABLE_TP_GLIB_TESTS)
 
     add_library(example-cm-contactlist2 STATIC ${example_cm_contactlist2_SRCS})
     target_link_libraries(example-cm-contactlist2 ${TPGLIB_LIBRARIES})
-endif(ENABLE_TP_GLIB_TESTS)
+endif()

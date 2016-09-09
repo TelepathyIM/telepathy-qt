@@ -12,4 +12,4 @@ if(ENABLE_TP_GLIB_TESTS)
     target_link_libraries(future-example-conn-addressing ${TPGLIB_LIBRARIES}
                           tp-glib-tests
                           tp-glib-tests-future-extensions)
-endif(ENABLE_TP_GLIB_TESTS)
+endif()

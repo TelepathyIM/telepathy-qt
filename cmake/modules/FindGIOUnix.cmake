@@ -13,7 +13,7 @@
 if(GIOUNIX_INCLUDE_DIR)
     # Already in cache, be silent
     set(GIOUNIX_FIND_QUIETLY TRUE)
-endif(GIOUNIX_INCLUDE_DIR)
+endif()
 
 include(UsePkgConfig)
 pkg_check_modules(PC_LibGIOUnix gio-unix-2.0)

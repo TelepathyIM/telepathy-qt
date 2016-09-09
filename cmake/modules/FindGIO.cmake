@@ -14,7 +14,7 @@
 if(GIO_INCLUDE_DIR AND GIO_LIBRARIES)
     # Already in cache, be silent
     set(GIO_FIND_QUIETLY TRUE)
-endif(GIO_INCLUDE_DIR AND GIO_LIBRARIES)
+endif()
 
 include(UsePkgConfig)
 pkg_check_modules(PC_LibGIO gio-2.0)

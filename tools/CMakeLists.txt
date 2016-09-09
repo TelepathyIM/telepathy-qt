@@ -23,8 +23,8 @@ if (GIT_BRANCH_CURRENT)
         add_custom_target(upload-branch-docs rsync -rtzvPp --chmod=a+rX doc/html/ ${UPLOAD_BRANCH_TO}-${GIT_BRANCH_CURRENT}
                                             WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
         add_dependencies(upload-branch-docs doxygen-doc)
-    endif (HAVE_GIT_BRANCH)
-endif (GIT_BRANCH_CURRENT)
+    endif ()
+endif ()
 
 if (PERL_FOUND)
     add_custom_target(maintainer-fix-qt-links-in-docs
@@ -32,7 +32,7 @@ if (PERL_FOUND)
 
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
     add_dependencies(maintainer-fix-qt-links-in-docs doxygen-doc _maintainer-upload-release-check)
-endif (PERL_FOUND)
+endif ()
 
 add_custom_target(maintainer-upload-release-docs
         rsync -rtOvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/doc/telepathy-qt/
@@ -41,9 +41,9 @@ add_custom_target(maintainer-upload-release-docs
 
 if (PERL_FOUND)
     add_dependencies(maintainer-upload-release-docs maintainer-fix-qt-links-in-docs)
-else (PERL_FOUND)
+else ()
     add_dependencies(maintainer-upload-release-docs doxygen-doc _maintainer-upload-release-check)
-endif (PERL_FOUND)
+endif ()
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/maintainer-upload-release-check.sh "
 #!/bin/sh

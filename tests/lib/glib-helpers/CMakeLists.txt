@@ -20,4 +20,4 @@ if(ENABLE_TP_GLIB_TESTS)
         ${QT_QTDBUS_LIBRARY}
         ${QT_QTTEST_LIBRARY}
         telepathy-qt${QT_VERSION_MAJOR})
-endif(ENABLE_TP_GLIB_TESTS)
+endif()

@@ -29,9 +29,9 @@ tpqt_constants_gen(example-extensions-constants ${generated_all_xml} ${CMAKE_CUR
 
 if(MSVC)
     set(TYPES_INCLUDE ^<TelepathyQt/Types^>)
-else(MSVC)
+else()
     set(TYPES_INCLUDE '<TelepathyQt/Types>')
-endif(MSVC)
+endif()
 
 tpqt_types_gen(example-extensions-typesgen ${generated_all_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
@@ -45,10 +45,10 @@ tpqt_xincludator(example-extensions-connection-includator ${CMAKE_CURRENT_SOURCE
 if(MSVC)
   set(ESCAPED_QUOTES \"\"\")
   set(connection_include ^<TelepathyQt/Connection^>)
-else(MSVC)
+else()
   set(ESCAPED_QUOTES \\\")
   set(connection_include '<TelepathyQt/Connection>')
-endif(MSVC)
+endif()
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-body.hpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h
     COMMAND ${PYTHON_EXECUTABLE}

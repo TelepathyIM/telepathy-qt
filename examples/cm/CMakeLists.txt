@@ -18,4 +18,4 @@ if(ENABLE_SERVICE_SUPPORT)
         telepathy-qt${QT_VERSION_MAJOR}
         telepathy-qt${QT_VERSION_MAJOR}-service
         ${TP_QT_EXECUTABLE_LINKER_FLAGS})
-endif(ENABLE_SERVICE_SUPPORT)
+endif()

@@ -19,7 +19,7 @@ foreach(moc_src ${tp_qt_tests_MOC_SRCS})
     tpqt_generate_moc_i(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src}
                         ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
     list(APPEND tp_qt_tests_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
-endforeach(moc_src ${tp_qt_tests_MOC_SRCS})
+endforeach()
 
 add_library(tp-qt-tests ${tp_qt_tests_SRCS})
 target_link_libraries(tp-qt-tests ${QT_QTCORE_LIBRARY} ${QT_QTDBUS_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt${QT_VERSION_MAJOR})
@@ -27,4 +27,4 @@ target_link_libraries(tp-qt-tests ${QT_QTCORE_LIBRARY} ${QT_QTDBUS_LIBRARY} ${QT
 if(ENABLE_TP_GLIB_TESTS)
     add_subdirectory(glib)
     add_subdirectory(glib-helpers)
-endif(ENABLE_TP_GLIB_TESTS)
+endif()

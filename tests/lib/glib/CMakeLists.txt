@@ -51,10 +51,12 @@ if(ENABLE_TP_GLIB_TESTS)
         textchan-null.h
         util.c
         util.h)
+
     if(ENABLE_TP_GLIB_GIO_TESTS)
         list(APPEND tp_glib_tests_SRCS dbus-tube-chan.c dbus-tube-chan.h
                                        stream-tube-chan.c stream-tube-chan.h)
-    endif(ENABLE_TP_GLIB_GIO_TESTS)
+    endif()
+
     add_library(tp-glib-tests SHARED ${tp_glib_tests_SRCS})
     target_link_libraries(tp-glib-tests
         ${TELEPATHY_GLIB_LIBRARIES}
@@ -70,4 +72,4 @@ if(ENABLE_TP_GLIB_TESTS)
         example-cm-echo2
         tp-glib-tests-future-extensions)
 
-endif(ENABLE_TP_GLIB_TESTS)
+endif()
