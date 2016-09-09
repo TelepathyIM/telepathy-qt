@@ -31,6 +31,7 @@
 <xi:include href="../spec/Channel_Interface_Hold.xml"/>
 <xi:include href="../spec/Channel_Interface_Media_Signalling.xml"/>
 <xi:include href="../spec/Channel_Interface_Messages.xml"/>
+<xi:include href="../spec/Channel_Interface_Message_Archive.xml"/>
 <xi:include href="../spec/Channel_Interface_Password.xml"/>
 <xi:include href="../spec/Channel_Interface_Room.xml"/>
 <xi:include href="../spec/Channel_Interface_Room_Config.xml"/>

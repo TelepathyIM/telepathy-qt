@@ -1,0 +1,108 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Interface_Message_Archive"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2016 Alexandr Akulich</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+USA.</p>
+  </tp:license>
+  <interface
+    name="org.freedesktop.Telepathy.Channel.Interface.MessageArchive">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Text"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Interface.Messages"/>
+    <tp:added version="0.28.0"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface extends the <tp:dbus-ref
+          namespace='org.freedesktop.Telepathy.Channel.Type'>Text</tp:dbus-ref>
+        interface to support logs retrieval</p>
+
+      <p>If this interface is present, clients SHOULD listen for the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface.Messages">MessageReceived</tp:dbus-ref>
+          signal for requested scrollback messages.
+      </p>
+    </tp:docstring>
+
+    <method name="GetMessages" tp:name-for-bindings="Get_Messages">
+      <arg direction="in" type="a{sv}" tp:type="Qualified_Property_Value_Map"
+        name="Filter">
+        <tp:docstring>
+          See <tp:member-ref>SupportedFilterKeys</tp:member-ref> for details.
+        <h4>Example calls</h4>
+            <p>A request for 20 messages after a certain one might be represented as:</p>
+          <pre>
+{
+  'limit': 20,
+  'offset': 1, # Skip the known message
+  'message-token': '9de9546a-3400-4419-a505-3ea270cb834c',
+}</pre>
+            <p>A request for a single message by its token:</p>
+          <pre>
+{
+  'limit': 1,
+  'offset': 0, # Can be omitted
+  'message-token': '9de9546a-3400-4419-a505-3ea270cb834c',
+}</pre>
+            <p>A request for all messages in a certain timespan:</p>
+          <pre>
+{
+  'limit': 0,
+  'start-timestamp': 1210123456,
+  'end-timestamp': 1210234567,
+}</pre>
+        </tp:docstring>
+        </arg>
+    </method>
+
+    <property name="SupportedFilterKeys"
+      tp:name-for-bindings="Supported_Filter_Keys"
+      type="as" access="read" tp:immutable="yes">
+        <tp:docstring>
+          <p>List of supported filter keys, sorted by preference (more suitable keys listed first).</p>
+              <tp:rationale>
+                <p>Various protocols have different history retrieval API. Order of the keys let the CM
+                    to inform a client about possible overhead of various API calls (especially in case if the CM supports one API is ontop of the other).</p>
+                <p>For instance, XMPP with XEP-0313 natively supports filtering by time received, but emulation
+                    of "offset from a message-token" API would take an uncertain amount of traffic and would be tricky.</p>
+                <p>On the other side, Telegram offers the "skip N messages after the message X and return M messages that" API and it would require to get
+                    all messages in order to filter them by timestamp.</p>
+              </tp:rationale>
+          <dl>
+            <dt>limit (u)</dt>
+            <dd>Maximum number of messages to be returned. Must be supported by all CMs and must be presented in all request. If 0, the number of messages is unlimited.</dd>
+
+            <dt>offset (u)</dt>
+            <dd>Number of messages to be skipped. Usually goes well with the 'message-token' key.</dd>
+            
+            <dt>message-token (s - <tp:type>Protocol_Message_Token</tp:type>)</dt>
+            <dd>If specified, the connection manager MUST only return messages starting with the referenced one. This key is not compatible with the 'start-timestamp' key.</dd>
+
+            <dt>start-timestamp (x - <tp:type>Unix_Timestamp64</tp:type>)</dt>
+            <dd>A value to filter out messages before a certain date/time. If specified,
+                the connection manager MUST only return messages whose timestamp is equal to or later
+                than the given timestamp.
+            </dd>
+
+            <dt>end-timestamp (x - <tp:type>Unix_Timestamp64</tp:type>)</dt>
+            <dd>A value to filter out messages after a certain date/time. If specified,
+                the connection manager MUST only return messages whose timestamp is equal to or earlier
+                than the given timestamp.
+            </dd>
+        </dl>
+        </tp:docstring>
+    </property>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->
