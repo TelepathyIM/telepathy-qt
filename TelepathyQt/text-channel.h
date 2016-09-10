@@ -48,6 +48,7 @@ public:
     static const Feature FeatureMessageCapabilities;
     static const Feature FeatureMessageSentSignal;
     static const Feature FeatureChatState;
+    static const Feature FeatureMessageArchive;
 
     static TextChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
@@ -55,6 +56,7 @@ public:
     virtual ~TextChannel();
 
     bool hasMessagesInterface() const;
+    bool hasArchiveInterface() const;
     bool hasChatStateInterface() const;
     bool canInviteContacts() const;
 
@@ -91,6 +93,8 @@ public Q_SLOTS:
     }
 
     PendingOperation *requestChatState(ChannelChatState state);
+
+    PendingOperation *getMessages(const QVariantMap &filter = QVariantMap());
 
 Q_SIGNALS:
     // FeatureMessageSentSignal

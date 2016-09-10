@@ -49,6 +49,7 @@ struct TP_QT_NO_EXPORT TextChannel::Private
     static void introspectMessageQueue(Private *self);
     static void introspectMessageCapabilities(Private *self);
     static void introspectMessageSentSignal(Private *self);
+    static void introspectMessageArchive(Private *self);
     static void enableChatStateNotifications(Private *self);
 
     void updateInitialMessages();
@@ -161,6 +162,14 @@ TextChannel::Private::Private(TextChannel *parent)
         this);
     introspectables[FeatureChatState] = introspectableChatState;
 
+    ReadinessHelper::Introspectable introspectableMessageArchive(
+        QSet<uint>() << ConnectionStatusConnected,                              // makesSenseForStatuses
+        Features() << Channel::FeatureCore,                                     // dependsOnFeatures (core)
+        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGE_ARCHIVE,         // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectMessageArchive,
+        this);
+    introspectables[FeatureMessageArchive] = introspectableMessageArchive;
+
     readinessHelper->addIntrospectables(introspectables);
 }
 
@@ -270,6 +279,12 @@ void TextChannel::Private::introspectMessageSentSignal(
     }
 
     self->readinessHelper->setIntrospectCompleted(FeatureMessageSentSignal, true);
+}
+
+void TextChannel::Private::introspectMessageArchive(Tp::TextChannel::Private *self)
+{
+    debug() << "Introspecting message archive";
+    self->readinessHelper->setIntrospectCompleted(FeatureMessageArchive, true);
 }
 
 void TextChannel::Private::enableChatStateNotifications(
@@ -561,6 +576,13 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(QLatin1String(Text
 const Feature TextChannel::FeatureChatState = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 3);
 
 /**
+ * Feature used in order to access messages archive.
+ *
+ * \sa getMessages()
+ */
+const Feature TextChannel::FeatureMessageArchive = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 4);
+
+/**
  * \fn void TextChannel::messageSent(const Tp::Message &message,
  *          Tp::MessageSendingFlags flags,
  *          const QString &sentMessageToken)
@@ -677,6 +699,20 @@ TextChannel::~TextChannel()
 bool TextChannel::hasMessagesInterface() const
 {
     return interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES);
+}
+
+/**
+ * Return whether this channel supports the Message Archive interface.
+ *
+ * If the interface is not supported, some advanced functionality will be unavailable.
+ *
+ * This method requires TextChannel::FeatureCore to be ready.
+ *
+ * \return \c true if the Message Archive interface is supported, \c false otherwise.
+ */
+bool TextChannel::hasArchiveInterface() const
+{
+    return interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGE_ARCHIVE);
 }
 
 /**
@@ -1059,7 +1095,22 @@ PendingOperation *TextChannel::requestChatState(ChannelChatState state)
     Client::ChannelInterfaceChatStateInterface *chatStateInterface =
         interface<Client::ChannelInterfaceChatStateInterface>();
     return new PendingVoid(chatStateInterface->SetChatState(
-                (uint) state), TextChannelPtr(this));
+                               (uint) state), TextChannelPtr(this));
+}
+
+Tp::PendingOperation *TextChannel::getMessages(const QVariantMap &filter)
+{
+    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGE_ARCHIVE)) {
+        warning() << "TextChannel::getMessages() used with no message archive interface";
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("TextChannel does not support message archive interface"),
+                TextChannelPtr(this));
+    }
+
+    Client::ChannelInterfaceMessageArchiveInterface *archiveInterface =
+        interface<Client::ChannelInterfaceMessageArchiveInterface>();
+    return new PendingVoid(archiveInterface->GetMessages(
+                               filter), TextChannelPtr(this));
 }
 
 void TextChannel::onMessageSent(const MessagePartList &parts,
