@@ -107,9 +107,6 @@ dl.el {
 	font-family: monospace, fixed;
 	font-size: 100%;
 	white-space: pre;
-}
-
-pre.fragment {
 	border: 1px solid #CCCCCC;
 	background-color: #f5f5f5;
 	padding: 4px 6px;
