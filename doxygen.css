@@ -1,6 +1,6 @@
 body, table, div, p, dl {
 	font-family: Lucida Grande, Verdana, Geneva, Arial, sans-serif;
-	font-size: 12px;
+	font-size: 13px;
 }
 
 /* @group Heading Levels */
@@ -136,8 +136,9 @@ div.groupText {
 body {
 	background: white;
 	color: black;
-	margin-right: 20px;
-	margin-left: 20px;
+	margin: auto;
+	width: 95%;
+	max-width: 60em;
 }
 
 td.indexkey {
