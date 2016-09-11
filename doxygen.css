@@ -37,6 +37,23 @@ div.title{
 	padding: 2px;
 }
 
+#top.navigation {
+	position: fixed;
+	background: #e2e2e2;
+	border-bottom: solid 1px #babdd6;
+	border-spacing: 5px;
+	top: 0;
+	left: 0;
+}
+
+a.navigation {
+	color: #004faf;
+}
+
+span.navdim {
+	color: #babdd6;
+}
+
 div.qindex, div.navtab{
 	background-color: #e8eef2;
 	border: 1px solid #84b0c7;
@@ -137,6 +154,7 @@ body {
 	background: white;
 	color: black;
 	margin: auto;
+	margin-top: 4em;
 	width: 95%;
 	max-width: 60em;
 }
