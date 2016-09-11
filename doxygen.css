@@ -106,6 +106,7 @@ dl.el {
 .fragment {
 	font-family: monospace, fixed;
 	font-size: 100%;
+	white-space: pre;
 }
 
 pre.fragment {
