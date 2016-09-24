@@ -521,6 +521,7 @@ set(telepathy_qt_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-session-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-stream-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-properties.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-protocol.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-tls-certificate.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
@@ -681,6 +682,7 @@ set(SPECS
     media-session-handler
     media-stream-handler
     properties
+    protocol
     tls-certificate)
 foreach(spec ${SPECS})
     tpqt_xincludator(${spec}-spec-xincludator ${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
@@ -735,6 +737,7 @@ tpqt_client_generator(debug-receiver clientdebug DebugReceiver Tp::Client --main
 tpqt_client_generator(media-session-handler clientmsesh MediaSessionHandler Tp::Client --mainiface=Tp::Client::MediaSessionHandlerInterface DEPENDS media-session-handler-spec-xincludator)
 tpqt_client_generator(media-stream-handler clientmstrh MediaStreamHandler Tp::Client --mainiface=Tp::Client::MediaStreamHandlerInterface DEPENDS media-stream-handler-spec-xincludator)
 tpqt_client_generator(properties clientprops Properties Tp::Client DEPENDS properties-spec-xincludator)
+tpqt_client_generator(protocol clientconn Protocol Tp::Client --mainiface=Tp::Client::ProtocolInterface DEPENDS protocol-spec-xincludator)
 tpqt_client_generator(tls-certificate clienttls TLSCertificate Tp::Client DEPENDS tls-certificate-spec-xincludator)
 
 tpqt_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-future-xincludator)
