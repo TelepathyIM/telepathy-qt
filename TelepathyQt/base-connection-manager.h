@@ -100,8 +100,8 @@ private:
 
     class Adaptee;
     friend class Adaptee;
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 

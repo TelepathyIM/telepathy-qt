@@ -65,8 +65,8 @@ protected:
             DBusError *error);
 
 private:
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 
@@ -94,8 +94,8 @@ public:
     bool notifyPropertyChanged(const QString &propertyName, const QVariant &propertyValue);
 
 private:
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 

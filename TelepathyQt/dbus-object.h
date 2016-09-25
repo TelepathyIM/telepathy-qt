@@ -52,8 +52,8 @@ protected:
     void setObjectPath(const QString &path);
 
 private:
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 
     friend class DBusService;

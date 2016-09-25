@@ -48,8 +48,8 @@ protected:
     qint64 writeData(const char *data, qint64 maxSize);
 
 private:
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 

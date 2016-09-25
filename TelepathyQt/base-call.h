@@ -54,8 +54,8 @@ public:
 private:
     friend class BaseCallContent;
 
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 

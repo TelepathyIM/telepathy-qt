@@ -125,8 +125,8 @@ private:
     friend class BaseConnectionManager;
     class Adaptee;
     friend class Adaptee;
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 
@@ -142,8 +142,8 @@ public:
 private:
     friend class BaseProtocol;
 
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 
