@@ -20,45 +20,48 @@
  */
 
 /**
- * \mainpage Telepathy-Qt
+ * \mainpage TelepathyQt
  *
  * \section Introduction
  *
- * Telepathy-Qt is a Qt high-level binding for \telepathy.
+ * TelepathyQt is a Qt high-level bindings library for \telepathy.
  *
  * \telepathy is a \dbus framework for unifying real time communication, including instant
  * messaging, voice calls and video calls. It abstracts differences between protocols to
  * provide a unified interface for applications.
  *
- * Releases can be found <a
- * href="http://telepathy.freedesktop.org/releases/telepathy-qt">here</a>.
+ * [Releases](http://telepathy.freedesktop.org/releases/telepathy-qt) -
+ * [Git repository](http://cgit.freedesktop.org/telepathy/telepathy-qt/)
  *
- * Development is done in the git repository found <a
- * href="http://cgit.freedesktop.org/telepathy/telepathy-qt/">here</a>.
+ * \section documentation Documentation
+ * Getting started:
+ * - \subpage installation
  *
- * \li <a href="classes.html">All Classes</a>
+ * Understanding concepts:
+ * - \subpage async_model
+ * - \subpage shared_ptr
+ * - \subpage callbacks
  *
- * \section getting_started Getting Started
- * \li \subpage installation
+ * API documentation:
+ * - [Modules (API Groups)](modules.html)
+ * - [All Classes](classes.html)
  *
  * \section examples Examples
  *
- * This is the list of examples in Telepathy-Qt's examples directory.
- * The examples demonstrate Telepathy-Qt features in small, self-contained
+ * This is the list of examples in TelepathyQt's examples directory.
+ * The examples demonstrate TelepathyQt features in small, self-contained
  * programs. They are not all designed to be impressive when you run them,
- * but their source code is carefully written to show good Telepathy-Qt
+ * but their source code is carefully written to show good TelepathyQt
  * programming practices.
  *
- * \li \subpage accounts_example
- * \li \subpage contact_messenger_example
- * \li \subpage protocols_example
- * \li \subpage roster_example
+ * - \subpage accounts_example
+ * - \subpage contact_messenger_example
+ * - \subpage protocols_example
+ * - \subpage roster_example
  *
  * \section developer_resources Further Information
- * \li \subpage bugreport
- * \li \subpage mailing_lists
- * \li \subpage async_model
- * \li \subpage shared_ptr
+ * - \subpage bugreport
+ * - \subpage mailing_lists
  */
 
 /**
@@ -68,21 +71,21 @@
  *
  * \subsection installation_from_source_requirements Requirements
  *
- * Building Telepathy-Qt requires:
- * \li Qt, including QtDBus <http://http://www.qt.io/>
- * \li GNU make <http://www.gnu.org/software/make/>
- * \li pkg-config <http://ftp.gnome.org/pub/GNOME/sources/pkg-config/>
- * \li libxslt, xsltproc <http://xmlsoft.org/XSLT/>
- * \li Python <http://www.python.org/>
+ * Building TelepathyQt requires:
+ * - Qt, including QtDBus <http://www.qt.io/>
+ * - GNU make <http://www.gnu.org/software/make/>
+ * - pkg-config <http://ftp.gnome.org/pub/GNOME/sources/pkg-config/>
+ * - libxslt, xsltproc <http://xmlsoft.org/XSLT/>
+ * - Python <http://www.python.org/>
  *
  * For the full set of regression tests to run, you'll also need:
- * \li telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
+ * - telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
  *
  * and to build the example VoIP call UI (examples/call), you'll need:
- * \li telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
- * \li telepathy-farstream
+ * - telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
+ * - telepathy-farstream
  *  <http://telepathy.freedesktop.org/releases/telepathy-farstream/>
- * \li GStreamer <http://gstreamer.freedesktop.org/>\n
+ * - GStreamer <http://gstreamer.freedesktop.org/>
  *
  * Building also requires the cmake build system.
  *
@@ -100,34 +103,30 @@
 /**
  * \page bugreport How to report a bug
  *
- * Before reporting a bug, please check the <a
- * href="https://bugs.freedesktop.org/query.cgi?product=Telepathy&component=telepathy-qt">
- * Bug Tracker</a> to see if the issue is already known.
+ * Before reporting a bug, please check the
+ * [Bug Tracker](https://bugs.freedesktop.org/query.cgi?product=Telepathy&component=telepathy-qt)
+ * to see if the issue is already known.
  *
  * Always include the following information in your bug report:
- * \li The version of Telepathy-Qt you are using
+ * - The version of TelepathyQt you are using
  *
  * Please submit the bug report, feature request or "to-do" item
- * <a
- * href="https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=telepathy-qt">
- * here</a>.
+ * [here](https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=telepathy-qt).
  */
 
 /**
  * \page mailing_lists Mailing Lists
  *
- * <a href="http://lists.freedesktop.org/mailman/listinfo/telepathy">General
- * discussion list</a>\n
+ * [General discussion list](http://lists.freedesktop.org/mailman/listinfo/telepathy)
+ * \n
  * This list should be used for general discussion about \telepathy usage,
  * development.
  *
- * <a
- * href="http://lists.freedesktop.org/mailman/listinfo/telepathy-commits">
- * Commits list</a>\n
+ * [Commits list](http://lists.freedesktop.org/mailman/listinfo/telepathy-commits)
+ * \n
  * Subscribe to this list to follow the commits.
  *
- * <a
- * href="http://lists.freedesktop.org/mailman/listinfo/telepathy-bugs">
- * Bugs list</a>\n
+ * [Bugs list](http://lists.freedesktop.org/mailman/listinfo/telepathy-bugs)
+ * \n
  * Subscribe to this list to follow the bug reports.
  */
