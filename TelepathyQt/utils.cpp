@@ -27,10 +27,6 @@
 #include <QByteArray>
 #include <QStringList>
 
-/**
- * \defgroup utility functions
- */
-
 namespace Tp
 {
 
@@ -42,6 +38,8 @@ static inline bool isBad(char c, bool isFirst)
 }
 
 /**
+ * \ingroup utils
+ *
  * Escape an arbitrary string so it follows the rules for a C identifier,
  * and hence an object path component, interface element component,
  * bus name component or member name in D-Bus.
@@ -119,6 +117,9 @@ QString escapeAsIdentifier(const QString &string)
     return QString::fromLatin1(op.constData());
 }
 
+/**
+ * \ingroup utils
+ */
 bool checkValidProtocolName(const QString &protocolName)
 {
     if (protocolName.isEmpty()) {
@@ -145,6 +146,9 @@ bool checkValidProtocolName(const QString &protocolName)
     return true;
 }
 
+/**
+ * \ingroup utils
+ */
 QVariant::Type variantTypeFromDBusSignature(const QString &signature)
 {
     QVariant::Type type;
@@ -171,6 +175,9 @@ QVariant::Type variantTypeFromDBusSignature(const QString &signature)
     return type;
 }
 
+/**
+ * \ingroup utils
+ */
 QVariant parseValueWithDBusSignature(const QString &value,
         const QString &dbusSignature)
 {
