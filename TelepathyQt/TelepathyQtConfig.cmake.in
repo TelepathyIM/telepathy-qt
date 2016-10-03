@@ -19,7 +19,6 @@ if(NOT TelepathyQt@QT_VERSION_MAJOR@_FOUND)
 
     set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_INCLUDE_DIR   "@PACKAGE_INCLUDE_INSTALL_DIR@/telepathy-qt@QT_VERSION_MAJOR@")
     set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_LIB_DIR       "@PACKAGE_LIB_INSTALL_DIR@")
-    set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_SHARE_DIR     "@PACKAGE_DATA_INSTALL_DIR@")
 
     # attempt to find the generated TelepathyQt4Targets.cmake in the same directory
     get_filename_component(_TPQT@QT_VERSION_MAJOR@_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)

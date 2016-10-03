@@ -89,7 +89,7 @@ if(FARSTREAM_COMPONENTS_FOUND)
     configure_package_config_file(TelepathyQtFarstreamConfig.cmake.in
         "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}FarstreamConfig.cmake"
         INSTALL_DESTINATION ${_TelepathyQtFarstreamConfig_INSTALL_DIR}
-        PATH_VARS CMAKE_INSTALL_PREFIX INCLUDE_INSTALL_DIR LIB_INSTALL_DIR DATA_INSTALL_DIR
+        PATH_VARS CMAKE_INSTALL_PREFIX INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
         NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
     # this file is used by to check if the installed version can be used.

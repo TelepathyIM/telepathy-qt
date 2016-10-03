@@ -828,7 +828,7 @@ include(CMakePackageConfigHelpers)
 configure_package_config_file(TelepathyQtConfig.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Config.cmake"
     INSTALL_DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
-    PATH_VARS CMAKE_INSTALL_PREFIX INCLUDE_INSTALL_DIR LIB_INSTALL_DIR DATA_INSTALL_DIR
+    PATH_VARS CMAKE_INSTALL_PREFIX INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 # this file is used by to check if the installed version can be used.
@@ -1019,7 +1019,7 @@ if(ENABLE_SERVICE_SUPPORT)
     configure_package_config_file(TelepathyQtServiceConfig.cmake.in
         "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfig.cmake"
         INSTALL_DESTINATION ${_TelepathyQtServiceConfig_INSTALL_DIR}
-        PATH_VARS CMAKE_INSTALL_PREFIX INCLUDE_INSTALL_DIR LIB_INSTALL_DIR DATA_INSTALL_DIR
+        PATH_VARS CMAKE_INSTALL_PREFIX INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
         NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
     # this file is used by to check if the installed version can be used.
