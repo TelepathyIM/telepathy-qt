@@ -1004,7 +1004,7 @@ void BaseChannelFileTransferType::Adaptee::provideFile(uint addressType, uint ac
 
 /**
  * \class BaseChannelFileTransferType
- * \ingroup servicecm
+ * \ingroup servicechannel
  * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
  *
  * \brief Base class of Channel.Type.FileTransfer channel type.
