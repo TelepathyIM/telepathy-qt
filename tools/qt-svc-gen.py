@@ -277,7 +277,7 @@ Q_SIGNALS: // SIGNALS
             else:
                 self.h("""\
 "    <property access=\\"%(access)s\\" type=\\"%(sig)s\\" name=\\"%(name)s\\">\\n"
-"      <annotation value=\\"%(type)s\\" name=\\"com.trolltech.QtDBus.QtTypeName\\"/>\\n"
+"      <annotation value=\\"%(type)s\\" name=\\"org.qtproject.QtDBus.QtTypeName\\"/>\\n"
 "    </property>\\n"
 """ % {'access': access,
        'sig': sig,
@@ -324,7 +324,7 @@ Q_SIGNALS: // SIGNALS
                     else:
                         self.h("""\
 "      <arg direction=\\"%(direction)s\\" type=\\"%(sig)s\\" name=\\"%(name)s\\">\\n"
-"        <annotation value=\\"%(type)s\\" name=\\"com.trolltech.QtDBus.QtTypeName.%(index)s\\"/>\\n"
+"        <annotation value=\\"%(type)s\\" name=\\"org.qtproject.QtDBus.QtTypeName.%(index)s\\"/>\\n"
 "      </arg>\\n"
 """ % {'direction': argdirection,
        'sig': argsig,
@@ -373,7 +373,7 @@ Q_SIGNALS: // SIGNALS
                     else:
                         self.h("""\
 "      <arg type=\\"%(sig)s\\" name=\\"%(name)s\\">\\n"
-"        <annotation value=\\"%(type)s\\" name=\\"com.trolltech.QtDBus.QtTypeName.In%(index)d\\"/>\\n"
+"        <annotation value=\\"%(type)s\\" name=\\"org.qtproject.QtDBus.QtTypeName.In%(index)d\\"/>\\n"
 "      </arg>\\n"
 """ % {'sig': argsig,
        'name': argname,
