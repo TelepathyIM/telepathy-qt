@@ -99,6 +99,7 @@ public:
     Tp::ChannelInfoList channelsInfo();
     Tp::ChannelDetailsList channelsDetails();
 
+    BaseChannelPtr getExistingChannel(const QVariantMap &request, DBusError *error);
     BaseChannelPtr ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error);
 
     void addChannel(BaseChannelPtr channel, bool suppressHandler = false);

@@ -496,24 +496,20 @@ Tp::ChannelDetailsList BaseConnection::channelsDetails()
 }
 
 /**
- * \fn Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error)
+ * \fn Tp::BaseChannelPtr BaseConnection::getExistingChannel(const QVariantMap &request, DBusError *error)
  *
- * Return a new or exists channel, satisfying the given \a request.
+ * Returns an existing channel satisfying the given \a request or a null pointer if such a channel does not exist.
  *
- * This method iterate over exist channels to find the one satisfying the \a request. If there is no
- * suitable channel, then new channel with given request details will be created.
- * This method uses the matchChannel() method to check whether there exists a channel which confirms with the \a request.
+ * This method iterates over the existing channels and calls matchChannel() to find the one satisfying the \a request.
  *
  * If \a error is passed, any error that may occur will be stored there.
  *
  * \param request A dictionary containing the desirable properties.
- * \param yours A returning argument. \c true if returned channel is a new one and \c false otherwise.
- * \param suppressHandler An option to suppress handler in case of a new channel creation.
  * \param error A pointer to an empty DBusError where any possible error will be stored.
- * \return A pointer to a channel, satisfying the given \a request.
+ * \return A pointer to a channel satisfying the given \a request or a null pointer.
  * \sa matchChannel()
  */
-Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error)
+Tp::BaseChannelPtr BaseConnection::getExistingChannel(const QVariantMap &request, DBusError *error)
 {
     if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))) {
         error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Missing parameters"));
@@ -534,9 +530,41 @@ Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, boo
         }
 
         if (match) {
-            yours = false;
             return channel;
         }
+    }
+
+    return Tp::BaseChannelPtr();
+}
+
+/**
+ * \fn Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error)
+ *
+ * Returns a new or existing channel satisfying the given \a request.
+ *
+ * This method uses getExistingChannel() to find one satisfying the \a request. If there is no
+ * suitable channel, then a new channel with the given request details will be created.
+ *
+ * If \a error is passed, any error that may occur will be stored there.
+ *
+ * \param request A dictionary containing the desirable properties.
+ * \param yours A returning argument. \c true if returned channel is a new one and \c false otherwise.
+ * \param suppressHandler An option to suppress handler in case of a new channel creation.
+ * \param error A pointer to an empty DBusError where any possible error will be stored.
+ * \return A pointer to a channel satisfying the given \a request.
+ * \sa getExistingChannel()
+ */
+Tp::BaseChannelPtr BaseConnection::ensureChannel(const QVariantMap &request, bool &yours, bool suppressHandler, DBusError *error)
+{
+    if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))) {
+        error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Missing parameters"));
+        return Tp::BaseChannelPtr();
+    }
+
+    Tp::BaseChannelPtr existingChannel = getExistingChannel(request, error);
+    if (existingChannel) {
+        yours = false;
+        return existingChannel;
     }
 
     yours = true;
