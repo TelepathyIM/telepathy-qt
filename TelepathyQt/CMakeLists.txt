@@ -849,12 +849,12 @@ if(ENABLE_SERVICE_SUPPORT)
     # lets build tp-qt service side support as a separate library until we can guarantee API/ABI
     # stability
     set(telepathy_qt_service_SRCS
-        base-call.cpp
-        base-connection-manager.cpp
-        base-connection.cpp
-        base-channel.cpp
-        base-debug.cpp
-        base-protocol.cpp
+        #base-call.cpp
+        #base-connection-manager.cpp
+        #base-connection.cpp
+        #base-channel.cpp
+        #base-debug.cpp
+        #base-protocol.cpp
         dbus-error.cpp
         dbus-object.cpp
         dbus-service.cpp
@@ -866,21 +866,21 @@ if(ENABLE_SERVICE_SUPPORT)
         abstract-adaptor.h
         AbstractDBusServiceInterface
         AbstractProtocolInterface
-        BaseCall
-        base-call.h
-        BaseConnectionManager
-        base-connection-manager.h
-        BaseConnection
-        base-connection.h
-        BaseChannel
-        base-channel.h
-        BaseDebug
-        base-debug.h
-        BaseProtocol
-        BaseProtocolAddressingInterface
-        BaseProtocolAvatarsInterface
-        BaseProtocolPresenceInterface
-        base-protocol.h
+        #BaseCall
+        #base-call.h
+        #BaseConnectionManager
+        #base-connection-manager.h
+        #BaseConnection
+        #base-connection.h
+        #BaseChannel
+        #base-channel.h
+        #BaseDebug
+        #base-debug.h
+        #BaseProtocol
+        #BaseProtocolAddressingInterface
+        #BaseProtocolAvatarsInterface
+        #BaseProtocolPresenceInterface
+        #base-protocol.h
         DBusError
         dbus-error.h
         DBusObject
@@ -902,18 +902,18 @@ if(ENABLE_SERVICE_SUPPORT)
     # Headers file moc will be run on
     set(telepathy_qt_service_MOC_SRCS
         abstract-adaptor.h
-        base-call.h
-        base-call-internal.h
-        base-connection-manager.h
-        base-connection-manager-internal.h
-        base-channel.h
-        base-channel-internal.h
-        base-connection.h
-        base-connection-internal.h
-        base-debug.h
-        base-debug-internal.h
-        base-protocol.h
-        base-protocol-internal.h
+        #base-call.h
+        #base-call-internal.h
+        #base-connection-manager.h
+        #base-connection-manager-internal.h
+        #base-channel.h
+        #base-channel-internal.h
+        #base-connection.h
+        #base-connection-internal.h
+        #base-debug.h
+        #base-debug-internal.h
+        #base-protocol.h
+        #base-protocol-internal.h
         dbus-object.h
         io-device.h
         dbus-service.h)

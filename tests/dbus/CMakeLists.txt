@@ -91,11 +91,11 @@ tpqt_add_dbus_unit_test(ProfileManager profile-manager)
 tpqt_add_dbus_unit_test(Types types)
 
 if(ENABLE_SERVICE_SUPPORT)
-    tpqt_add_dbus_unit_test(BaseConnectionManager base-cm telepathy-qt${QT_VERSION_MAJOR}-service)
-    tpqt_add_dbus_unit_test(BaseProtocol base-protocol telepathy-qt${QT_VERSION_MAJOR}-service)
-    if (${QT_VERSION_MAJOR} EQUAL 5)
-        tpqt_add_dbus_unit_test(BaseChannelFileTransferType base-filetransfer telepathy-qt${QT_VERSION_MAJOR}-service)
-    endif()
+    #tpqt_add_dbus_unit_test(BaseConnectionManager base-cm telepathy-qt${QT_VERSION_MAJOR}-service)
+    #tpqt_add_dbus_unit_test(BaseProtocol base-protocol telepathy-qt${QT_VERSION_MAJOR}-service)
+    #if (${QT_VERSION_MAJOR} EQUAL 5)
+    #    tpqt_add_dbus_unit_test(BaseChannelFileTransferType base-filetransfer telepathy-qt${QT_VERSION_MAJOR}-service)
+    #endif()
 endif()
 
 # Make check target. In case of check, output on failure and put it into a log
