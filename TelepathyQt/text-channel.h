@@ -67,6 +67,9 @@ public:
     MessagePartSupportFlags messagePartSupport() const;
     DeliveryReportingSupportFlags deliveryReportingSupport() const;
 
+    // requires FeatureMessageArchive
+    QStringList archiveFilterKeys() const;
+
     // requires FeatureMessageQueue
     QList<ReceivedMessage> messageQueue() const;
 
@@ -130,6 +133,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onTextSendError(uint, uint, uint, const QString &);
 
     TP_QT_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void gotArchiveProperties(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void gotPendingMessages(QDBusPendingCallWatcher *);
 
     TP_QT_NO_EXPORT void onChatStateChanged(uint, uint);

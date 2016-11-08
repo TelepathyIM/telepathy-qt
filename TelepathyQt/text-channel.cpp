@@ -54,6 +54,7 @@ struct TP_QT_NO_EXPORT TextChannel::Private
 
     void updateInitialMessages();
     void updateCapabilities();
+    void updateArchiveCapabilities();
 
     void processMessageQueue();
     void processChatStateQueue();
@@ -79,6 +80,11 @@ struct TP_QT_NO_EXPORT TextChannel::Private
     QStringList supportedContentTypes;
     MessagePartSupportFlags messagePartSupport;
     DeliveryReportingSupportFlags deliveryReportingSupport;
+
+    // requires FeatureMessageArchive
+    QVariantMap archiveProps;
+    bool gotArchiveProperties;
+    QStringList archiveFilterKeys;
 
     // FeatureMessageQueue
     bool initialMessagesReceived;
@@ -284,7 +290,24 @@ void TextChannel::Private::introspectMessageSentSignal(
 void TextChannel::Private::introspectMessageArchive(Tp::TextChannel::Private *self)
 {
     debug() << "Introspecting message archive";
-    self->readinessHelper->setIntrospectCompleted(FeatureMessageArchive, true);
+
+    TextChannel *parent = self->parent;
+
+    if (parent->hasArchiveInterface()) {
+        if (!self->gotArchiveProperties) {
+            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                    self->properties->GetAll(
+                        TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGE_ARCHIVE),
+                        parent);
+            parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotArchiveProperties(QDBusPendingCallWatcher*)));
+        } else {
+            self->updateArchiveCapabilities();
+        }
+    } else {
+        self->readinessHelper->setIntrospectCompleted(FeatureMessageArchive, true);
+    }
 }
 
 void TextChannel::Private::enableChatStateNotifications(
@@ -351,6 +374,17 @@ void TextChannel::Private::updateCapabilities()
     deliveryReportingSupport = DeliveryReportingSupportFlags(
             qdbus_cast<uint>(props[QLatin1String("DeliveryReportingSupport")]));
     readinessHelper->setIntrospectCompleted(FeatureMessageCapabilities, true);
+}
+
+void TextChannel::Private::updateArchiveCapabilities()
+{
+    if (!readinessHelper->requestedFeatures().contains(FeatureMessageArchive) ||
+        readinessHelper->isReady(Features() << FeatureMessageArchive)) {
+        return;
+    }
+
+    archiveFilterKeys = qdbus_cast<QStringList>(archiveProps[QLatin1String("AvailableFilterKeys")]);
+    readinessHelper->setIntrospectCompleted(FeatureMessageArchive, true);
 }
 
 void TextChannel::Private::processMessageQueue()
@@ -836,6 +870,11 @@ MessagePartSupportFlags TextChannel::messagePartSupport() const
 DeliveryReportingSupportFlags TextChannel::deliveryReportingSupport() const
 {
     return mPriv->deliveryReportingSupport;
+}
+
+QStringList TextChannel::archiveFilterKeys() const
+{
+    return mPriv->archiveFilterKeys;
 }
 
 /**
@@ -1328,6 +1367,30 @@ void TextChannel::gotProperties(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
+void TextChannel::gotArchiveProperties(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    if (reply.isError()) {
+        warning().nospace() << "Properties::GetAll(Channel.Interface.MessageArchive)"
+            " failed with " << reply.error().name() << ": " <<
+            reply.error().message();
+
+        ReadinessHelper *readinessHelper = mPriv->readinessHelper;
+        if (readinessHelper->requestedFeatures().contains(FeatureMessageArchive) &&
+            !readinessHelper->isReady(Features() << FeatureMessageArchive)) {
+            readinessHelper->setIntrospectCompleted(FeatureMessageArchive, false, reply.error());
+        }
+        return;
+    }
+
+    debug() << "Properties::GetAll(Channel.Interface.MessageArchive) returned";
+    mPriv->archiveProps = reply.value();
+
+    mPriv->updateArchiveCapabilities();
+
+    watcher->deleteLater();
+}
+
 void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
 {
     Q_ASSERT(!mPriv->initialMessagesReceived);
@@ -1335,7 +1398,7 @@ void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
 
     QDBusPendingReply<PendingTextMessageList> reply = *watcher;
     if (reply.isError()) {
-        warning().nospace() << "Properties::GetAll(Channel.Interface.Messages)"
+        warning().nospace() << "Properties::GetAll(Channel.Interface.MessageArchive)"
             " failed with " << reply.error().name() << ": " <<
             reply.error().message();
 
