@@ -160,13 +160,13 @@ public:
 class TP_QT_NO_EXPORT BaseChannelMessageArchiveInterface::Adaptee : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QStringList supportedFilterKeys READ supportedFilterKeys)
+    Q_PROPERTY(QStringList availableFilterKeys READ availableFilterKeys)
 
 public:
     Adaptee(BaseChannelMessageArchiveInterface *interface);
     ~Adaptee();
 
-    QStringList supportedFilterKeys() const;
+    QStringList availableFilterKeys() const;
 
 private Q_SLOTS:
     void getMessages(const QVariantMap &filter,

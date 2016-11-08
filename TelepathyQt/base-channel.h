@@ -223,29 +223,29 @@ class TP_QT_EXPORT BaseChannelMessageArchiveInterface : public AbstractChannelIn
     Q_DISABLE_COPY(BaseChannelMessageArchiveInterface)
 
 public:
-    static BaseChannelMessageArchiveInterfacePtr create(const QStringList &supportedFilterKeys)
+    static BaseChannelMessageArchiveInterfacePtr create(const QStringList &availableFilterKeys)
     {
-        return BaseChannelMessageArchiveInterfacePtr(new BaseChannelMessageArchiveInterface(supportedFilterKeys));
+        return BaseChannelMessageArchiveInterfacePtr(new BaseChannelMessageArchiveInterface(availableFilterKeys));
     }
     template<typename BaseChannelMessageArchiveInterfaceSubclass>
-    static SharedPtr<BaseChannelMessageArchiveInterfaceSubclass> create(const QStringList &supportedFilterKeys)
+    static SharedPtr<BaseChannelMessageArchiveInterfaceSubclass> create(const QStringList &availableFilterKeys)
     {
         return SharedPtr<BaseChannelMessageArchiveInterfaceSubclass>(
-                new BaseChannelMessageArchiveInterfaceSubclass(supportedFilterKeys));
+                new BaseChannelMessageArchiveInterfaceSubclass(availableFilterKeys));
     }
 
     virtual ~BaseChannelMessageArchiveInterface();
 
     QVariantMap immutableProperties() const;
 
-    QStringList supportedFilterKeys() const;
+    QStringList availableFilterKeys() const;
 
     typedef Callback2<void, const QVariantMap &, DBusError*> GetMessagesCallback;
     void setGetMessagesCallback(const GetMessagesCallback &cb);
     void getMessages(const QVariantMap &filter, DBusError *error);
 
 protected:
-    BaseChannelMessageArchiveInterface(const QStringList &supportedFilterKeys);
+    BaseChannelMessageArchiveInterface(const QStringList &availableFilterKeys);
 
 private:
     void createAdaptor();
