@@ -858,14 +858,11 @@ if(ENABLE_SERVICE_SUPPORT)
         dbus-error.cpp
         dbus-object.cpp
         dbus-service.cpp
-        io-device.cpp
-        abstract-adaptor.cpp)
+        io-device.cpp)
 
     set(telepathy_qt_service_HEADERS
-        AbstractAdaptor
-        abstract-adaptor.h
-        AbstractDBusServiceInterface
-        AbstractProtocolInterface
+        AbstractDBusInterfaceAdaptee
+        #AbstractProtocolInterface
         #BaseCall
         #base-call.h
         #BaseConnectionManager
@@ -901,7 +898,6 @@ if(ENABLE_SERVICE_SUPPORT)
 
     # Headers file moc will be run on
     set(telepathy_qt_service_MOC_SRCS
-        abstract-adaptor.h
         #base-call.h
         #base-call-internal.h
         #base-connection-manager.h
@@ -932,8 +928,10 @@ if(ENABLE_SERVICE_SUPPORT)
                          DEPENDS stable-typesgen)
         set(NEW_FILES
             ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.h
+            ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}_p.h
             ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.cpp
-            ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.moc.hpp)
+            ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.moc.hpp
+            ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}_p.moc.hpp)
         list(APPEND telepathy_qt_service_SRCS ${NEW_FILES})
         list(APPEND telepathy_qt_service_generated_specs_mocs "moc-${spec}.moc.hpp")
         set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)

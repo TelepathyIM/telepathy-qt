@@ -32,6 +32,7 @@
 namespace Tp
 {
 
+class AbstractDBusInterfaceAdaptee;
 class AbstractProtocolInterface;
 class AbstractCallContentInterface;
 class AbstractConnectionInterface;
@@ -75,10 +76,13 @@ class BaseChannelMergeableConferenceInterface;
 class BaseChannelSplittableInterface;
 class BaseChannelSMSInterface;
 class BaseChannelConferenceInterface;
+class DBusError;
+class DBusObject;
 class DBusService;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
+typedef SharedPtr<AbstractDBusInterfaceAdaptee> AbstractDBusInterfaceAdapteePtr;
 typedef SharedPtr<AbstractProtocolInterface> AbstractProtocolInterfacePtr;
 typedef SharedPtr<AbstractCallContentInterface> AbstractCallContentInterfacePtr;
 typedef SharedPtr<AbstractConnectionInterface> AbstractConnectionInterfacePtr;
@@ -122,6 +126,7 @@ typedef SharedPtr<BaseChannelMergeableConferenceInterface> BaseChannelMergeableC
 typedef SharedPtr<BaseChannelSplittableInterface> BaseChannelSplittableInterfacePtr;
 typedef SharedPtr<BaseChannelSMSInterface> BaseChannelSMSInterfacePtr;
 typedef SharedPtr<BaseChannelConferenceInterface> BaseChannelConferenceInterfacePtr;
+typedef SharedPtr<DBusObject> DBusObjectPtr;
 typedef SharedPtr<DBusService> DBusServicePtr;
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */

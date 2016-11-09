@@ -3,6 +3,7 @@
  *
  * @copyright Copyright (C) 2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2012 Nokia Corporation
+ * @copyright Copyright (C) 2016 George Kiagiadakis <gkiagia@tolabaki.gr>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -27,73 +28,33 @@
 #error IN_TP_QT_HEADER
 #endif
 
-#include <TelepathyQt/DBusError>
-#include <TelepathyQt/Global>
-#include <TelepathyQt/Object>
-#include <TelepathyQt/ServiceTypes>
-
-#include <QObject>
-#include <QVariantMap>
-
-class QDBusConnection;
-class QString;
+#include <TelepathyQt/DBusObject>
 
 namespace Tp
 {
 
-class DBusObject;
-
-class TP_QT_EXPORT DBusService : public Object
+class TP_QT_EXPORT DBusService : public DBusObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(DBusService)
 
 public:
-    DBusService(const QDBusConnection &dbusConnection);
+    static DBusServicePtr create(const QDBusConnection &dbusConnection =
+                                    QDBusConnection::sessionBus());
     virtual ~DBusService();
 
-    virtual QVariantMap immutableProperties() const = 0;
-
-    QDBusConnection dbusConnection() const;
     QString busName() const;
-    QString objectPath() const;
-    DBusObject *dbusObject() const;
-    bool isRegistered() const;
 
-protected:
-    virtual bool registerObject(const QString &busName, const QString &objectPath,
+    bool registerService(const QString &busName, const QString &objectPath,
             DBusError *error);
 
-private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-class TP_QT_EXPORT AbstractDBusServiceInterface : public Object
-{
-    Q_OBJECT
-    Q_DISABLE_COPY(AbstractDBusServiceInterface)
-
-public:
-    AbstractDBusServiceInterface(const QString &interfaceName);
-    virtual ~AbstractDBusServiceInterface();
-
-    QString interfaceName() const;
-
-    virtual QVariantMap immutableProperties() const = 0;
-
-    DBusObject *dbusObject() const;
-    bool isRegistered() const;
-
 protected:
-    virtual bool registerInterface(DBusObject *dbusObject);
-    virtual void createAdaptor() = 0;
-
-public:
-    bool notifyPropertyChanged(const QString &propertyName, const QVariant &propertyValue);
+    DBusService(const QDBusConnection &dbusConnection);
 
 private:
+    /* hide registerObject(); registerService() should be used on service objects */
+    using DBusObject::registerObject;
+
     struct Private;
     friend struct Private;
     Private *mPriv;

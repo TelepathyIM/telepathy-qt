@@ -285,18 +285,24 @@ function(tpqt_service_generator spec group pretty_include namespace)
             --namespace=${namespace}
             --typesnamespace=Tp
             --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h
+            --privheaderfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}_p.h
             --implfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp
             --realinclude=TelepathyQt/_gen/svc-${spec}.h
+            --privheaderinclude=TelepathyQt/_gen/svc-${spec}_p.h
             --mocinclude=TelepathyQt/_gen/svc-${spec}.moc.hpp
+            --privmocinclude=TelepathyQt/_gen/svc-${spec}_p.moc.hpp
             --specxml=${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml
             --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-svc-${spec}.xml
             --visibility=TP_QT_EXPORT
+            --no-visibility=TP_QT_NO_EXPORT
             ${service_generator_args})
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h
+               ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}_p.h
+               ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-
         DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqtcodegen.py
                 ${CMAKE_SOURCE_DIR}/tools/qt-svc-gen.py
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml
@@ -310,6 +316,9 @@ function(tpqt_service_generator spec group pretty_include namespace)
 
     tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.moc.hpp
+                       "generate_service-${spec}-body")
+    tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}_p.h
+                       ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}_p.moc.hpp
                        "generate_service-${spec}-body")
 endfunction()
 

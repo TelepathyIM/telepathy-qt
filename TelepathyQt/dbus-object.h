@@ -3,6 +3,7 @@
  *
  * @copyright Copyright (C) 2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2012 Nokia Corporation
+ * @copyright Copyright (C) 2016 George Kiagiadakis <gkiagia@tolabaki.gr>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -28,35 +29,68 @@
 #endif
 
 #include <TelepathyQt/Global>
+#include <TelepathyQt/Object>
+#include <TelepathyQt/ServiceTypes>
 
-#include <QObject>
-
-class QDBusConnection;
+#include <QDBusConnection>
 
 namespace Tp
 {
 
-class TP_QT_EXPORT DBusObject : public QObject
+class TP_QT_EXPORT DBusObject : public Object
 {
     Q_OBJECT
     Q_DISABLE_COPY(DBusObject)
 
 public:
-    DBusObject(const QDBusConnection &dbusConnection, QObject *parent = 0);
+    static DBusObjectPtr create(const QDBusConnection &dbusConnection =
+                                    QDBusConnection::sessionBus());
     virtual ~DBusObject();
 
     QString objectPath() const;
     QDBusConnection dbusConnection() const;
 
+    bool isRegistered() const;
+    bool registerObject(const QString &objectPath, DBusError *error);
+
+    QStringList interfaces() const;
+    AbstractDBusInterfaceAdapteePtr interfaceAdaptee(const QString &interfaceName) const;
+    bool plugInterfaceAdaptee(const AbstractDBusInterfaceAdapteePtr &adaptee);
+
 protected:
-    void setObjectPath(const QString &path);
+    DBusObject(const QDBusConnection &dbusConnection);
 
 private:
     struct Private;
     friend struct Private;
     Private *mPriv;
+};
 
-    friend class DBusService;
+
+class TP_QT_EXPORT AbstractDBusInterfaceAdaptee : public Object
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(AbstractDBusInterfaceAdaptee)
+
+public:
+    virtual ~AbstractDBusInterfaceAdaptee();
+
+    virtual QString interfaceName() const = 0;
+
+    DBusObjectPtr dbusObject() const;
+    bool isRegistered() const;
+
+protected:
+    AbstractDBusInterfaceAdaptee();
+    virtual void createAdaptor(QObject *parent) = 0;
+
+private:
+    TP_QT_NO_EXPORT void attachToDBusObject(DBusObject *dbusObject);
+    friend class DBusObject;
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
 };
 
 }
