@@ -35,6 +35,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_EXE_LINKER_FLAGS_PROFILE    "-pg -ggdb")
     set(CMAKE_SHARED_LINKER_FLAGS_PROFILE "-pg -ggdb")
 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
     set(DISABLE_WERROR 0 CACHE BOOL "compile without -Werror (normally enabled in development builds)")
 
     include(CompilerWarnings)
