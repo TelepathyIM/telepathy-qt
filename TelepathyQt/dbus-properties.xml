@@ -23,6 +23,13 @@
         <arg direction="out" type="a{sv}" name="Properties"/>
       </method>
 
+      <signal name="PropertiesChanged"
+              tp:name-for-bindings="Properties_Changed">
+        <arg type="s" name="Interface_Name"/>
+        <arg type="a{sv}" name="Changed_Properties"/>
+        <arg type="as" name="Invalidated_Properties"/>
+      </signal>
+
     </interface>
   </node>
 
