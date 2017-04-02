@@ -119,6 +119,7 @@ set(telepathy_qt_SRCS
     referenced-handles.cpp
     request-temporary-handler-internal.cpp
     request-temporary-handler-internal.h
+    room.cpp
     room-list-channel.cpp
     server-authentication-channel.cpp
     simple-call-observer.cpp
@@ -466,6 +467,8 @@ set(telepathy_qt_HEADERS
     requestable-channel-class-spec.h
     RequestableChannelClassSpec
     RequestableChannelClassSpecList
+    Room
+    room.h
     RoomListChannel
     room-list-channel.h
     ServerAuthenticationChannel
@@ -599,6 +602,7 @@ set(telepathy_qt_MOC_SRCS
     profile-manager.h
     readiness-helper.h
     request-temporary-handler-internal.h
+    room.h
     room-list-channel.h
     server-authentication-channel.h
     simple-call-observer.h
