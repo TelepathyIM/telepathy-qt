@@ -23,6 +23,7 @@
 <xi:include href="../spec/Connection_Interface_Mail_Notification.xml"/>
 <xi:include href="../spec/Connection_Interface_Power_Saving.xml"/>
 <xi:include href="../spec/Connection_Interface_Requests.xml"/>
+<xi:include href="../spec/Connection_Interface_Rooms.xml"/>
 <xi:include href="../spec/Connection_Interface_Service_Point.xml"/>
 <xi:include href="../spec/Connection_Interface_Simple_Presence.xml"/>
 

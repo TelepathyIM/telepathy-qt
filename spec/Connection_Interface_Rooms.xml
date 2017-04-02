@@ -1,0 +1,218 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Rooms" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> 2017 Alexandr Akulich </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or modify it
+      under the terms of the GNU Lesser General Public License as published by
+      the Free Software Foundation; either version 2.1 of the License, or (at
+      your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful, but
+      WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
+      General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public License
+      along with this library; if not, write to the Free Software Foundation,
+      Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.Rooms">
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+    <tp:added version="0.28.0"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface allows many attributes of many rooms to be
+        obtained in a single D-Bus round trip.</p>
+
+      <p>Each room attribute has an string identifier
+        (<tp:type>Room_Attribute</tp:type>), which is namespaced
+        by the D-Bus interface which defines it.</p>
+    </tp:docstring>
+
+    <tp:simple-type name="Room_Attribute" type="s">
+      <tp:docstring>
+        A <tp:type>DBus_Interface</tp:type>, followed by a slash '/' character
+        and an identifier for an attribute defined by that interface. The
+        attribute identifier SHOULD be in lower case.
+
+        <tp:rationale>
+          These aren't D-Bus core Properties, and we want them to look visibly
+          different.
+        </tp:rationale>
+      </tp:docstring>
+    </tp:simple-type>
+
+    <tp:mapping name="Single_Room_Attributes_Map">
+      <tp:docstring>
+        Some of the attributes of a single room.
+      </tp:docstring>
+
+      <tp:member type="s" tp:type="Room_Attribute" name="Attribute">
+        <tp:docstring>
+          The name of the attribute
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member type="v" name="Value">
+        <tp:docstring>
+          The value of the attribute
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <tp:mapping name="Room_Attributes_Map">
+      <tp:docstring>Mapping returned by
+        <tp:member-ref>GetRoomAttributes</tp:member-ref>, representing a
+        collection of Rooms and their requested attributes.</tp:docstring>
+
+      <tp:member type="u" tp:type="Room_Handle" name="Room">
+        <tp:docstring>
+          A room
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member type="a{sv}" tp:type="Single_Room_Attributes_Map"
+        name="Attributes">
+        <tp:docstring>
+          Attributes of that room
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <property name="RoomAttributeInterfaces" access="read" type="as"
+      tp:type="DBus_Interface[]"
+      tp:name-for-bindings="Room_Attribute_Interfaces">
+      <tp:docstring>
+        A list of D-Bus interfaces for which
+        <tp:member-ref>GetRoomAttributes</tp:member-ref> is expected to work.
+        This cannot change during the lifetime of the Connection.
+      </tp:docstring>
+    </property>
+
+    <method name="GetRoomAttributes"
+      tp:name-for-bindings="Get_Room_Attributes">
+      <tp:docstring>
+        Return any number of room attributes for the given handles.
+      </tp:docstring>
+
+      <arg direction="in" name="Handles" type="au" tp:type="Room_Handle[]">
+        <tp:docstring>
+          An array of handles representing rooms.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Interfaces" type="as"
+        tp:type="DBus_Interface[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A list of strings indicating which D-Bus interfaces the calling
+            process is interested in. All supported attributes from these
+            interfaces, whose values can be obtained without additional network
+            activity, will be in the reply.</p>
+
+          <p>Connection managers SHOULD ignore interfaces requested which they
+            do not support (i.e. those not mentioned in the
+            <tp:member-ref>RoomAttributeInterfaces</tp:member-ref>
+            property.)</p>
+
+          <tp:rationale>
+            <p>This simplifies client-side code. Clients which care may
+              distinguish between unsupported interfaces (e.g. this Connection
+              does not support RoomConfig), and interfaces on which no information
+              is known for these rooms (e.g. we don't know the avatar tokens
+              of any of the rooms, so we omitted them all) by inspecting
+              <tp:member-ref>RoomAttributeInterfaces</tp:member-ref>.</p>
+          </tp:rationale>
+
+          <p>Attributes from the interface
+            <tp:dbus-ref>org.freedesktop.Telepathy.Connection</tp:dbus-ref>
+            are always returned, and need not be requested explicitly.</p>
+
+          <p>As well as returning cached information immediately, the
+            connection MAY start asynchronous requests to obtain better
+            values for the room attributes. If better values are later
+            obtained by this process, they will be indicated with the usual
+            signals.</p>
+
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" type="a{ua{sv}}" name="Attributes"
+        tp:type="Room_Attributes_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A dictionary mapping the room handles to room attributes.
+            If any of the requested handles are in fact invalid, they are
+            simply omitted from this mapping. If room attributes are not
+            immediately known, the behaviour is defined by the interface;
+            the attribute should either be omitted from the result or
+            replaced with a default value.</p>
+
+          <p>Each room's attributes will always include at least the
+            identifier that would be obtained by inspecting the handle
+            (<code>org.freedesktop.Telepathy.Connection/room-id</code>).</p>
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetRoomByID"
+      tp:name-for-bindings="Get_Room_By_ID">
+      <tp:docstring>
+        Return any number of room attributes for the given identifier.
+        <tp:rationale>
+          This is for a single identifier to make it simpler to use for the most
+          common use case. For multiple rooms case,
+          <tp:member-ref>GetRoomAttributes</tp:member-ref> should be used.
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg direction="in" name="Identifier" type="s">
+        <tp:docstring>
+          An identifier representing a room.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Interfaces" type="as"
+        tp:type="DBus_Interface[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A list of strings indicating which D-Bus interfaces the calling
+            process is interested in. All supported attributes from these
+            interfaces, whose values can be obtained without additional network
+            activity, will be in the reply.</p>
+          <p>See <tp:member-ref>GetRoomAttributes</tp:member-ref> for
+            details.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" name="Handle" type="u" tp:type="Room_Handle">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The room's handle, as returned by <tp:dbus-ref
+          namespace="ofdT.Connection">RequestHandles</tp:dbus-ref></p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" type="a{sv}" name="Attributes"
+        tp:type="Single_Room_Attributes_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>All supported attributes of the room on
+            the given interfaces that can be returned without network
+            round-trips. If room attributes are not immediately known, the
+            behaviour is defined by the interface; the attribute should either
+            be omitted from the result or replaced with a default value.</p>
+
+          <p>The room's attributes will always include at least the
+            identifier that would be obtained by inspecting the handle
+            (<code>org.freedesktop.Telepathy.Connection/room-id</code>).</p>
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+      </tp:possible-errors>
+    </method>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->
