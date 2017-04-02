@@ -73,6 +73,7 @@ public:
     uint targetHandle() const;
     QString targetId() const;
     ContactPtr targetContact() const;
+    RoomPtr targetRoom() const;
 
     bool isRequested() const;
     ContactPtr initiatorContact() const;
@@ -235,6 +236,9 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onConferenceChannelRemoved(const QDBusObjectPath &channel, const QVariantMap &details);
     TP_QT_NO_EXPORT void onConferenceChannelRemoved(const QDBusObjectPath &channel);
     TP_QT_NO_EXPORT void gotConferenceChannelRemovedActorContact(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotRoomConfigProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onRoomConfigPropertiesChanged(const QVariantMap &changedProperties,
+                                                       const QStringList &invalidatedProperties);
 
 private:
     class PendingLeave;

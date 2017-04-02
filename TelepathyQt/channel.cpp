@@ -44,6 +44,7 @@
 #include <TelepathyQt/PendingSuccess>
 #include <TelepathyQt/StreamTubeChannel>
 #include <TelepathyQt/ReferencedHandles>
+#include <TelepathyQt/Room>
 #include <TelepathyQt/Constants>
 
 #include <QHash>
@@ -74,6 +75,7 @@ struct TP_QT_NO_EXPORT Channel::Private
     void introspectGroupFallbackLocalPendingWithInfo();
     void introspectGroupFallbackSelfHandle();
     void introspectConference();
+    void introspectRoomConfig();
 
     static void introspectConferenceInitialInviteeContacts(Private *self);
 
@@ -134,6 +136,7 @@ struct TP_QT_NO_EXPORT Channel::Private
     // Optional interface proxies
     Client::ChannelInterfaceGroupInterface *group;
     Client::ChannelInterfaceConferenceInterface *conference;
+    Client::ChannelInterfaceRoomConfigInterface *roomConfig;
 
     ReadinessHelper *readinessHelper;
 
@@ -148,6 +151,7 @@ struct TP_QT_NO_EXPORT Channel::Private
     uint targetHandle;
     QString targetId;
     ContactPtr targetContact;
+    RoomPtr targetRoom;
     bool requested;
     uint initiatorHandle;
     ContactPtr initiatorContact;
@@ -206,6 +210,9 @@ struct TP_QT_NO_EXPORT Channel::Private
     Contacts conferenceInitialInviteeContacts;
     QQueue<ConferenceChannelRemovedInfo *> conferenceChannelRemovedQueue;
     bool buildingConferenceChannelRemovedActorContact;
+
+    // RoomConfig
+    bool introspectingRoomConfig;
 
     static const QString keyActor;
 };
@@ -283,7 +290,8 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       groupIsSelfHandleTracked(false),
       groupSelfHandle(0),
       introspectingConference(false),
-      buildingConferenceChannelRemovedActorContact(false)
+      buildingConferenceChannelRemovedActorContact(false),
+      introspectingRoomConfig(false)
 {
     debug() << "Creating new Channel:" << parent->objectPath();
 
@@ -566,6 +574,30 @@ void Channel::Private::introspectConference()
             SLOT(gotConferenceProperties(QDBusPendingCallWatcher*)));
 }
 
+void Channel::Private::introspectRoomConfig()
+{
+    Q_ASSERT(properties != 0);
+    Q_ASSERT(roomConfig == 0);
+
+    debug() << "Introspecting RoomConfig interface";
+    roomConfig = parent->interface<Client::ChannelInterfaceRoomConfigInterface>();
+    roomConfig->setMonitorProperties(true);
+    Q_ASSERT(roomConfig != 0);
+
+    introspectingRoomConfig = true;
+
+    debug() << "Calling Properties::GetAll(Channel.Interface.RoomConfig)";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            properties->GetAll(TP_QT_IFACE_CHANNEL_INTERFACE_ROOM_CONFIG),
+            parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotRoomConfigProperties(QDBusPendingCallWatcher*)));
+
+    parent->connect(roomConfig, SIGNAL(propertiesChanged(QVariantMap,QStringList)),
+                    parent, SLOT(onRoomConfigPropertiesChanged(QVariantMap,QStringList)));
+}
+
 void Channel::Private::introspectConferenceInitialInviteeContacts(Private *self)
 {
     if (!self->conferenceInitialInviteeHandles.isEmpty()) {
@@ -586,8 +618,9 @@ void Channel::Private::continueIntrospection()
     if (introspectQueue.isEmpty()) {
         // this should always be true, but let's make sure
         if (!parent->isReady(Channel::FeatureCore)) {
-            if (groupMembersChangedQueue.isEmpty() && !buildingContacts &&
-                !introspectingConference) {
+            if (groupMembersChangedQueue.isEmpty() && !buildingContacts
+                    && !introspectingRoomConfig
+                    && !introspectingConference) {
                 debug() << "Both the IS and the MCD queue empty for the first time. Ready.";
                 setReady();
             } else {
@@ -660,6 +693,11 @@ void Channel::Private::extractMainProps(const QVariantMap &props)
             // TODO: needs testing. I would imagine some of the elaborate updateContacts logic
             // tripping over with just this.
             buildContacts();
+        }
+
+        if (targetHandleType == HandleTypeRoom) {
+            targetRoom = RoomPtr(new Room(connection, targetHandle));
+            introspectQueue.enqueue(&Private::introspectRoomConfig);
         }
 
         nowHaveInterfaces();
@@ -1772,6 +1810,17 @@ ContactPtr Channel::targetContact() const
     }
 
     return mPriv->targetContact;
+}
+
+RoomPtr Channel::targetRoom() const
+{
+    if (!isReady(Channel::FeatureCore)) {
+        warning() << "Channel::targetRoom() used, but the channel is not ready";
+    } else if (targetHandleType() != HandleTypeRoom) {
+        warning() << "Channel::targetRoom() used with targetHandleType() != Room";
+    }
+
+    return mPriv->targetRoom;
 }
 
 /**
@@ -3520,6 +3569,32 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
 
     mPriv->buildingConferenceChannelRemovedActorContact = false;
     mPriv->processConferenceChannelRemoved();
+}
+
+void Channel::gotRoomConfigProperties(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QVariantMap props;
+
+    mPriv->introspectingRoomConfig = false;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties::GetAll(Channel.Interface.RoomConfig)";
+        props = reply.value();
+        mPriv->targetRoom->receiveRoomConfig(props);
+    } else {
+        warning().nospace() << "Properties::GetAll(Channel.Interface.RoomConfig) "
+            "failed with " << reply.error().name() << ": " <<
+            reply.error().message();
+    }
+
+    mPriv->continueIntrospection();
+}
+
+void Channel::onRoomConfigPropertiesChanged(const QVariantMap &changedProperties, const QStringList &invalidatedProperties)
+{
+    // TODO: Request property values for invalidated list
+    mPriv->targetRoom->updateRoomConfigProperties(changedProperties);
 }
 
 /**
