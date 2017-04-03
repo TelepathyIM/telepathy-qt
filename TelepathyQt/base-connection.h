@@ -241,6 +241,50 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseConnectionRoomsInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionRoomsInterface)
+
+public:
+    static BaseConnectionRoomsInterfacePtr create()
+    {
+        return BaseConnectionRoomsInterfacePtr(new BaseConnectionRoomsInterface());
+    }
+    template<typename BaseConnectionRoomsInterfaceSubclass>
+    static SharedPtr<BaseConnectionRoomsInterfaceSubclass> create()
+    {
+        return SharedPtr<BaseConnectionRoomsInterfaceSubclass>(
+                new BaseConnectionRoomsInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionRoomsInterface();
+
+    QVariantMap immutableProperties() const;
+
+    QStringList roomAttributeInterfaces() const;
+    void setRoomAttributeInterfaces(const QStringList &roomAttributeInterfaces);
+
+    typedef Callback3<Tp::RoomAttributesMap, const Tp::UIntList &, const QStringList &, DBusError*> GetRoomAttributesCallback;
+    void setGetRoomAttributesCallback(const GetRoomAttributesCallback &cb);
+    Tp::RoomAttributesMap getRoomAttributes(const Tp::UIntList &handles, const QStringList &interfaces, DBusError *error);
+
+    void getRoomByID(const QString &identifier, const QStringList &interfaces, uint &handle, QVariantMap &attributes, DBusError *error);
+
+protected:
+    BaseConnectionRoomsInterface();
+    void setBaseConnection(BaseConnection *connection);
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 class TP_QT_EXPORT BaseConnectionSimplePresenceInterface : public AbstractConnectionInterface
 {
     Q_OBJECT

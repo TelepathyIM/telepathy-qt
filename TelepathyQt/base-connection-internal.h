@@ -137,6 +137,27 @@ public:
     BaseConnectionContactsInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseConnectionRoomsInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QStringList roomAttributeInterfaces READ roomAttributeInterfaces)
+
+public:
+    Adaptee(BaseConnectionRoomsInterface *interface);
+    ~Adaptee();
+
+    QStringList roomAttributeInterfaces() const;
+
+private Q_SLOTS:
+    void getRoomAttributes(const Tp::UIntList &handles, const QStringList &interfaces,
+                           const Tp::Service::ConnectionInterfaceRoomsAdaptor::GetRoomAttributesContextPtr &context);
+    void getRoomByID(const QString &identifier, const QStringList &interfaces,
+                     const Tp::Service::ConnectionInterfaceRoomsAdaptor::GetRoomByIDContextPtr &context);
+
+private:
+    BaseConnectionRoomsInterface *mInterface;
+};
+
 class TP_QT_NO_EXPORT BaseConnectionSimplePresenceInterface::Adaptee : public QObject
 {
     Q_OBJECT
