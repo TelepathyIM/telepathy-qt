@@ -560,15 +560,17 @@ public:
 
     QVariantMap immutableProperties() const;
 
-
-
     typedef Callback6 < void, const QString&, const QStringList&, const QStringList&,
             Tp::AddressingNormalizationMap&, Tp::ContactAttributesMap&, DBusError* > GetContactsByVCardFieldCallback;
     void setGetContactsByVCardFieldCallback(const GetContactsByVCardFieldCallback &cb);
+    void getContactsByVCardField(const QString &field, const QStringList &addresses, const QStringList &interfaces,
+                                 Tp::AddressingNormalizationMap &requested, Tp::ContactAttributesMap &attributes, DBusError *error);
 
     typedef Callback5 < void, const QStringList&, const QStringList&,
             Tp::AddressingNormalizationMap&, Tp::ContactAttributesMap&, DBusError* > GetContactsByURICallback;
     void setGetContactsByURICallback(const GetContactsByURICallback &cb);
+    void getContactsByUri(const QStringList &uris, const QStringList &interfaces,
+                          Tp::AddressingNormalizationMap &requested, Tp::ContactAttributesMap &attributes, DBusError *error);
 
 protected:
     BaseConnectionAddressingInterface();
