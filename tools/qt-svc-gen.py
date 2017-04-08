@@ -617,11 +617,13 @@ private:
 void %(adaptee_name)s::%(adaptee_setter)s(const %(type)s &newValue)
 {
     mPriv->%(adaptee_variable)s = newValue;
+    Q_EMIT %(adaptee_notifier)s();
 }
 """ % {'adaptee_name': adaptee_name,
        'adaptee_setter': adaptee_setter,
        'type': binding.val,
        'adaptee_variable': adaptee_variable,
+       'adaptee_notifier': adaptee_notifier,
        })
 
         if 'write' in access:
@@ -629,13 +631,11 @@ void %(adaptee_name)s::%(adaptee_setter)s(const %(type)s &newValue)
 void %(adaptor_name)s::%(adaptor_setter)s(const %(type)s &newValue)
 {
     mAdaptee->%(adaptee_setter)s(newValue);
-    Q_EMIT mAdaptee->%(adaptee_notifier)s();
 }
 """ % {'adaptor_name': adaptor_name,
        'adaptor_setter': adaptor_setter,
        'adaptee_setter': adaptee_setter,
        'type': binding.val,
-       'adaptee_notifier': adaptee_notifier,
        })
 
     def do_callback_variables(self, methods):
