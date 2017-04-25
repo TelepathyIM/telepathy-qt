@@ -777,6 +777,9 @@ QString BaseChannelMessagesInterface::sendMessage(const Tp::MessagePartList &mes
         timestamp = QDateTime::currentMSecsSinceEpoch() / 1000;
         header[QLatin1String("message-sent")] = QDBusVariant(timestamp);
     }
+    if (!header.contains(QLatin1String("message-token")) && !token.isEmpty()) {
+        header[QLatin1String("message-token")] = QDBusVariant(token);
+    }
 
     fixedMessage.replace(0, header);
 
