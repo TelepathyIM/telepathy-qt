@@ -1062,12 +1062,13 @@ PendingOperation *TextChannel::requestChatState(ChannelChatState state)
                 (uint) state), TextChannelPtr(this));
 }
 
-void TextChannel::onMessageSent(const MessagePartList &parts,
-        uint flags,
-        const QString &sentMessageToken)
+void TextChannel::onMessageSent(const MessagePartList &parts, uint flags, const QString &token)
 {
-    emit messageSent(Message(parts), MessageSendingFlag(flags),
-            sentMessageToken);
+    MessagePartList fixedParts = parts;
+    if (!fixedParts.constFirst().contains(QLatin1String("message-token")) && !token.isEmpty()) {
+        fixedParts[0][QLatin1String("message-token")] = QDBusVariant(token);
+    }
+    emit messageSent(Message(fixedParts), MessageSendingFlag(flags), token);
 }
 
 void TextChannel::onContactsFinished(PendingOperation *op)
