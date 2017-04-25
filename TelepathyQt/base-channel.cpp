@@ -771,7 +771,7 @@ QString BaseChannelMessagesInterface::sendMessage(const Tp::MessagePartList &mes
     MessagePart header = fixedMessage.front();
 
     uint timestamp = 0;
-    if (header.count(QLatin1String("message-sent"))) {
+    if (header.contains(QLatin1String("message-sent"))) {
         timestamp = header[QLatin1String("message-sent")].variant().toUInt();
     } else {
         timestamp = QDateTime::currentMSecsSinceEpoch() / 1000;
