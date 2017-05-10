@@ -492,10 +492,27 @@ private:
                 else:
                     var_name = to_lower_camel_case(bindings_name)
 
+                initializers = {
+                    'b' : 'false', # bool
+                    'y' : '0', # uchar
+                    'n' : '0', # short
+                    'q' : '0', # ushort
+                    'i' : '0', # int
+                    'u' : '0', # uint
+                    'x' : '0ll',  # qlonglong
+                    't' : '0ull', # qulonglong
+                    'd' : '0.0', # double
+                    }
+                if initializers.has_key(sig):
+                    initializer = ' = ' + initializers[sig]
+                else:
+                    initializer = ''
+
                 self.b("""\
-    %(type)s %(var_name)s;
+    %(type)s %(var_name)s%(initializer)s;
 """ % {'type': binding.val,
-       'var_name': var_name})
+       'var_name': var_name,
+       'initializer': initializer})
 
     def do_qprops(self, props):
         for prop in props:
