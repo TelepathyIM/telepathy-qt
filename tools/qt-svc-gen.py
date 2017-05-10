@@ -614,16 +614,17 @@ private:
        'name': name,
        })
 
-        if 'write' in access:
-            self.h("""
+        self.h("""
     /**
-     * Emitted when the exported D-Bus property \\c %(name)s was changed by a remote D-Bus call.
+     * Emitted when the exported D-Bus property \\c %(name)s was changed, either by
+     * a remote D-Bus call or locally.
      */
     Q_SIGNAL void %(adaptee_notifier)s();
 """ % {'adaptee_notifier': adaptee_notifier,
        'name': name,
        })
 
+        if 'write' in access:
             self.r("""\
     void %(adaptor_setter)s(const %(type)s &newValue);
 """ % {'adaptor_setter': adaptor_setter,
