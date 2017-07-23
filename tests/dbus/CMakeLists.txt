@@ -92,6 +92,7 @@ tpqt_add_dbus_unit_test(Types types)
 
 if(ENABLE_SERVICE_SUPPORT)
     tpqt_add_dbus_unit_test(SvcLowLevel svc-lowlevel telepathy-qt${QT_VERSION_MAJOR}-service)
+    tpqt_add_dbus_unit_test(BaseDebug base-debug telepathy-qt${QT_VERSION_MAJOR}-service)
     #tpqt_add_dbus_unit_test(BaseConnectionManager base-cm telepathy-qt${QT_VERSION_MAJOR}-service)
     #tpqt_add_dbus_unit_test(BaseProtocol base-protocol telepathy-qt${QT_VERSION_MAJOR}-service)
     #if (${QT_VERSION_MAJOR} EQUAL 5)
