@@ -35,7 +35,7 @@
 namespace Tp
 {
 
-class TP_QT_EXPORT BaseDebug : public DBusService
+class TP_QT_EXPORT BaseDebug : public DBusObject
 {
     Q_OBJECT
 public:
@@ -44,10 +44,11 @@ public:
     bool isEnabled() const;
     int getMessagesLimit() const;
 
-    typedef Callback1<DebugMessageList, DBusError*> GetMessagesCallback;
-    void setGetMessagesCallback(const GetMessagesCallback &cb);
+    typedef Tp::MethodInvocationContextPtr< Tp::DebugMessageList > GetMessagesContextPtr;
+    typedef Tp::Callback1<void, GetMessagesContextPtr> GetMessagesCallback;
 
-    DebugMessageList getMessages(DBusError *error) const;
+    void setGetMessagesCallback(const GetMessagesCallback &cb);
+    Tp::DebugMessageList getMessages(Tp::DBusError *error) const;
 
 public Q_SLOTS:
     void setEnabled(bool enabled);
@@ -57,13 +58,9 @@ public Q_SLOTS:
     void newDebugMessage(const QString &domain, DebugLevel level, const QString &message);
     void newDebugMessage(double time, const QString &domain, DebugLevel level, const QString &message);
 
-    QVariantMap immutableProperties() const;
-
-    bool registerObject(const QString &busName, DBusError *error = NULL);
+    bool registerObject(DBusError *error = nullptr);
 
 protected:
-    class Adaptee;
-    friend class Adaptee;
     struct Private;
     friend struct Private;
     Private *mPriv;

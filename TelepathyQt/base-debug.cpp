@@ -20,26 +20,30 @@
  */
 
 #include <TelepathyQt/BaseDebug>
-#include "TelepathyQt/base-debug-internal.h"
+#include "TelepathyQt/_gen/svc-debug.h"
 
 #include <TelepathyQt/DBusObject>
 
 #include "TelepathyQt/_gen/base-debug.moc.hpp"
-#include "TelepathyQt/_gen/base-debug-internal.moc.hpp"
+
+#include <TelepathyQt/DBusError>
 
 namespace Tp
 {
 
 struct TP_QT_NO_EXPORT BaseDebug::Private
 {
-    Private(BaseDebug *parent, const QDBusConnection &dbusConnection)
+    Private(BaseDebug *parent)
         : parent(parent),
           enabled(false),
           getMessagesLimit(0),
           lastMessageIndex(-1),
-          adaptee(new BaseDebug::Adaptee(dbusConnection, parent))
+          adaptee(Service::DebugAdaptee::create())
     {
+        adaptee->implementGetMessages(Tp::memFun(this, &Private::getMessages));
     }
+
+    void getMessages(const Service::DebugAdaptee::GetMessagesContextPtr &context);
 
     BaseDebug *parent;
     bool enabled;
@@ -47,49 +51,28 @@ struct TP_QT_NO_EXPORT BaseDebug::Private
     int lastMessageIndex;
 
     DebugMessageList messages;
-
-    GetMessagesCallback getMessageCB;
-    BaseDebug::Adaptee *adaptee;
+    Service::DebugAdapteePtr adaptee;
 };
 
-BaseDebug::Adaptee::Adaptee(const QDBusConnection &dbusConnection, BaseDebug *interface)
-    : QObject(interface),
-      mInterface(interface)
+void BaseDebug::Private::getMessages(const Service::DebugAdaptee::GetMessagesContextPtr &context)
 {
-    (void) new Service::DebugAdaptor(dbusConnection, this, interface->dbusObject());
-}
-
-bool BaseDebug::Adaptee::isEnabled()
-{
-    return mInterface->isEnabled();
-}
-
-void BaseDebug::Adaptee::setEnabled(bool enabled)
-{
-    mInterface->mPriv->enabled = enabled;
-}
-
-void BaseDebug::Adaptee::getMessages(const Service::DebugAdaptor::GetMessagesContextPtr &context)
-{
-    DBusError error;
-    DebugMessageList messages = mInterface->getMessages(&error);
-
-    if (error.isValid()) {
-        context->setFinishedWithError(error.name(), error.message());
-        return;
+    if (lastMessageIndex < 0) {
+        context->setFinished(messages);
+    } else {
+        context->setFinished(messages.mid(lastMessageIndex + 1) + messages.mid(0, lastMessageIndex + 1));
     }
-    context->setFinished(messages);
 }
 
 BaseDebug::BaseDebug(const QDBusConnection &dbusConnection) :
-    DBusService(dbusConnection),
-    mPriv(new Private(this, dbusConnection))
+    DBusObject(dbusConnection),
+    mPriv(new Private(this))
 {
+    plugInterfaceAdaptee(mPriv->adaptee);
 }
 
 bool BaseDebug::isEnabled() const
 {
-    return mPriv->enabled;
+    return mPriv->adaptee->isEnabled();
 }
 
 int BaseDebug::getMessagesLimit() const
@@ -97,26 +80,19 @@ int BaseDebug::getMessagesLimit() const
     return mPriv->getMessagesLimit;
 }
 
-void BaseDebug::setGetMessagesCallback(const BaseDebug::GetMessagesCallback &cb)
+Tp::DebugMessageList BaseDebug::getMessages(Tp::DBusError *error) const
 {
-    mPriv->getMessageCB = cb;
+    GetMessagesContextPtr context;
+    mPriv->adaptee->getMessages(context);
+    if (error && context->isError()) {
+        error->set(context->errorName(), context->errorMessage());
+    }
+    return context->argumentAt<0>();
 }
 
-DebugMessageList BaseDebug::getMessages(Tp::DBusError *error) const
+void BaseDebug::setGetMessagesCallback(const BaseDebug::GetMessagesCallback &cb)
 {
-    if (!mPriv->getMessageCB.isValid()) {
-        if (mPriv->getMessagesLimit) {
-            if (mPriv->lastMessageIndex < 0) {
-                return mPriv->messages;
-            } else {
-                return mPriv->messages.mid(mPriv->lastMessageIndex + 1) + mPriv->messages.mid(0, mPriv->lastMessageIndex + 1);
-            }
-        }
-        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-        return DebugMessageList();
-    }
-
-    return mPriv->getMessageCB(error);
+    mPriv->adaptee->implementGetMessages(cb);
 }
 
 void BaseDebug::setEnabled(bool enabled)
@@ -184,31 +160,16 @@ void BaseDebug::newDebugMessage(double time, const QString &domain, DebugLevel l
         return;
     }
 
-    QMetaObject::invokeMethod(mPriv->adaptee, "newDebugMessage",
-                              Q_ARG(double, time), Q_ARG(QString, domain),
-                              Q_ARG(uint, level), Q_ARG(QString, message)); //Can simply use emit in Qt5
+    mPriv->adaptee->emitNewDebugMessage(time, domain, level, message);
 }
 
-QVariantMap BaseDebug::immutableProperties() const
+bool BaseDebug::registerObject(DBusError *error)
 {
-    // There is no immutable properties.
-    return QVariantMap();
-}
-
-bool BaseDebug::registerObject(const QString &busName, DBusError *error)
-{
-    if (isRegistered()) {
-        return true;
-    }
-
     DBusError _error;
-    bool ret = DBusService::registerObject(busName, TP_QT_DEBUG_OBJECT_PATH, &_error);
-
-    if (!ret && error) {
-        error->set(_error.name(), _error.message());
+    if (!error) {
+        error = &_error;
     }
-
-    return ret;
+    return DBusObject::registerObject(TP_QT_DEBUG_OBJECT_PATH, error);
 }
 
-}
+} // namespace Tp

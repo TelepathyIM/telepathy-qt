@@ -853,7 +853,7 @@ if(ENABLE_SERVICE_SUPPORT)
         #base-connection-manager.cpp
         #base-connection.cpp
         #base-channel.cpp
-        #base-debug.cpp
+        base-debug.cpp
         #base-protocol.cpp
         dbus-error.cpp
         dbus-object.cpp
@@ -871,8 +871,8 @@ if(ENABLE_SERVICE_SUPPORT)
         #base-connection.h
         #BaseChannel
         #base-channel.h
-        #BaseDebug
-        #base-debug.h
+        BaseDebug
+        base-debug.h
         #BaseProtocol
         #BaseProtocolAddressingInterface
         #BaseProtocolAvatarsInterface
@@ -906,7 +906,7 @@ if(ENABLE_SERVICE_SUPPORT)
         #base-channel-internal.h
         #base-connection.h
         #base-connection-internal.h
-        #base-debug.h
+        base-debug.h
         #base-debug-internal.h
         #base-protocol.h
         #base-protocol-internal.h
