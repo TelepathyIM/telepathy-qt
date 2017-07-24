@@ -26,9 +26,8 @@
 #error IN_TP_QT_HEADER
 #endif
 
-#include <TelepathyQt/Callbacks>
 #include <TelepathyQt/Constants>
-#include <TelepathyQt/DBusService>
+#include <TelepathyQt/DBusObject>
 #include <TelepathyQt/Global>
 #include <TelepathyQt/Types>
 
@@ -44,11 +43,7 @@ public:
     bool isEnabled() const;
     int getMessagesLimit() const;
 
-    typedef Tp::MethodInvocationContextPtr< Tp::DebugMessageList > GetMessagesContextPtr;
-    typedef Tp::Callback1<void, GetMessagesContextPtr> GetMessagesCallback;
-
-    void setGetMessagesCallback(const GetMessagesCallback &cb);
-    Tp::DebugMessageList getMessages(Tp::DBusError *error) const;
+    Tp::DebugMessageList getMessages() const;
 
 public Q_SLOTS:
     void setEnabled(bool enabled);

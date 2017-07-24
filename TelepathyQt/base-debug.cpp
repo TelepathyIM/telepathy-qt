@@ -21,9 +21,6 @@
 
 #include <TelepathyQt/BaseDebug>
 #include "TelepathyQt/_gen/svc-debug.h"
-
-#include <TelepathyQt/DBusObject>
-
 #include "TelepathyQt/_gen/base-debug.moc.hpp"
 
 #include <TelepathyQt/DBusError>
@@ -36,14 +33,17 @@ struct TP_QT_NO_EXPORT BaseDebug::Private
     Private(BaseDebug *parent)
         : parent(parent),
           enabled(false),
-          getMessagesLimit(0),
+          getMessagesLimit(500),
           lastMessageIndex(-1),
           adaptee(Service::DebugAdaptee::create())
     {
-        adaptee->implementGetMessages(Tp::memFun(this, &Private::getMessages));
+        messages.reserve(getMessagesLimit);
+        adaptee->implementGetMessages([this](const Service::DebugAdaptee::GetMessagesContextPtr &context) {
+            context->setFinished(getMessages());
+        });
     }
 
-    void getMessages(const Service::DebugAdaptee::GetMessagesContextPtr &context);
+    DebugMessageList getMessages() const;
 
     BaseDebug *parent;
     bool enabled;
@@ -54,12 +54,12 @@ struct TP_QT_NO_EXPORT BaseDebug::Private
     Service::DebugAdapteePtr adaptee;
 };
 
-void BaseDebug::Private::getMessages(const Service::DebugAdaptee::GetMessagesContextPtr &context)
+DebugMessageList BaseDebug::Private::getMessages() const
 {
     if (lastMessageIndex < 0) {
-        context->setFinished(messages);
+        return messages;
     } else {
-        context->setFinished(messages.mid(lastMessageIndex + 1) + messages.mid(0, lastMessageIndex + 1));
+        return messages.mid(lastMessageIndex + 1) + messages.mid(0, lastMessageIndex + 1);
     }
 }
 
@@ -80,19 +80,9 @@ int BaseDebug::getMessagesLimit() const
     return mPriv->getMessagesLimit;
 }
 
-Tp::DebugMessageList BaseDebug::getMessages(Tp::DBusError *error) const
+Tp::DebugMessageList BaseDebug::getMessages() const
 {
-    GetMessagesContextPtr context;
-    mPriv->adaptee->getMessages(context);
-    if (error && context->isError()) {
-        error->set(context->errorName(), context->errorMessage());
-    }
-    return context->argumentAt<0>();
-}
-
-void BaseDebug::setGetMessagesCallback(const BaseDebug::GetMessagesCallback &cb)
-{
-    mPriv->adaptee->implementGetMessages(cb);
+    return mPriv->getMessages();
 }
 
 void BaseDebug::setEnabled(bool enabled)
@@ -118,6 +108,7 @@ void BaseDebug::setGetMessagesLimit(int limit)
     } else {
         mPriv->messages = messages.mid(messages.count() - limit, limit);
     }
+    messages.reserve(limit);
 }
 
 void BaseDebug::clear()
@@ -128,9 +119,8 @@ void BaseDebug::clear()
 
 void BaseDebug::newDebugMessage(const QString &domain, DebugLevel level, const QString &message)
 {
-    qint64 msec = QDateTime::currentMSecsSinceEpoch();
-    double time = msec / 1000 + (msec % 1000 / 1000.0);
-
+    const qint64 msec = QDateTime::currentMSecsSinceEpoch();
+    const double time = msec / 1000 + (msec % 1000 / 1000.0);
     newDebugMessage(time, domain, level, message);
 }
 
@@ -151,7 +141,7 @@ void BaseDebug::newDebugMessage(double time, const QString &domain, DebugLevel l
             }
 
             mPriv->messages[mPriv->lastMessageIndex] = newMessage;
-        } else { // This works when the limit is not hitted yet, or when there is no limit at all (negative limit number)
+        } else { // The limit is not hitted yet or there is no limit at all (negative limit)
             mPriv->messages << newMessage;
         }
     }
