@@ -517,7 +517,7 @@ set(telepathy_qt_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-manager.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-dbus.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-debug-receiver.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-debug.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-session-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-stream-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-properties.h
@@ -677,7 +677,7 @@ set(SPECS
     connection
     connection-manager
     dbus
-    debug-receiver
+    debug
     media-session-handler
     media-stream-handler
     properties
@@ -731,7 +731,7 @@ tpqt_client_generator(client clientclient Client Tp::Client --mainiface=Tp::Clie
 tpqt_client_generator(connection clientconn Connection Tp::Client --mainiface=Tp::Client::ConnectionInterface DEPENDS connection-spec-xincludator)
 tpqt_client_generator(connection-manager clientcm ConnectionManager Tp::Client --mainiface=Tp::Client::ConnectionManagerInterface DEPENDS connection-manager-spec-xincludator)
 tpqt_client_generator(dbus clientdbus DBus Tp::Client::DBus DEPENDS dbus-spec-xincludator)
-tpqt_client_generator(debug-receiver clientdebug DebugReceiver Tp::Client --mainiface=Tp::Client::DebugInterface DEPENDS debug-receiver-spec-xincludator)
+tpqt_client_generator(debug clientdebug DebugReceiver Tp::Client --mainiface=Tp::Client::DebugInterface DEPENDS debug-spec-xincludator)
 tpqt_client_generator(media-session-handler clientmsesh MediaSessionHandler Tp::Client --mainiface=Tp::Client::MediaSessionHandlerInterface DEPENDS media-session-handler-spec-xincludator)
 tpqt_client_generator(media-stream-handler clientmstrh MediaStreamHandler Tp::Client --mainiface=Tp::Client::MediaStreamHandlerInterface DEPENDS media-stream-handler-spec-xincludator)
 tpqt_client_generator(properties clientprops Properties Tp::Client DEPENDS properties-spec-xincludator)

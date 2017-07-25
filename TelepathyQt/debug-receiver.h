@@ -25,7 +25,7 @@
 #error IN_TP_QT_HEADER
 #endif
 
-#include <TelepathyQt/_gen/cli-debug-receiver.h>
+#include <TelepathyQt/_gen/cli-debug.h>
 
 #include <TelepathyQt/Global>
 #include <TelepathyQt/Types>

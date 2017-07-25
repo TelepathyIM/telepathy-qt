@@ -21,8 +21,8 @@
 #include <TelepathyQt/DebugReceiver>
 
 #include "TelepathyQt/_gen/debug-receiver.moc.hpp"
-#include "TelepathyQt/_gen/cli-debug-receiver-body.hpp"
-#include "TelepathyQt/_gen/cli-debug-receiver.moc.hpp"
+#include "TelepathyQt/_gen/cli-debug-body.hpp"
+#include "TelepathyQt/_gen/cli-debug.moc.hpp"
 
 #include "TelepathyQt/debug-internal.h"
 

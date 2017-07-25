@@ -2,7 +2,7 @@
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
-<tp:title>Debug interface</tp:title>
+<tp:title>Debug interfaces</tp:title>
 
 <xi:include href="../spec/Debug.xml"/>
 
