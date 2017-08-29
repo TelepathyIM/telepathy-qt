@@ -6,6 +6,7 @@
 <tp:version>0.17.7</tp:version>
 
 <xi:include href="connection-manager.xml"/>
+<xi:include href="protocol.xml"/>
 <xi:include href="connection.xml"/>
 <xi:include href="channel.xml"/>
 <xi:include href="channel-dispatcher.xml"/>

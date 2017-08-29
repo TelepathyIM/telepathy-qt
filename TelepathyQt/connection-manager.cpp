@@ -22,10 +22,12 @@
 
 #include <TelepathyQt/ConnectionManager>
 #include <TelepathyQt/ConnectionManagerLowlevel>
-#include "TelepathyQt/connection-manager-internal.h"
 
 #include "TelepathyQt/_gen/cli-connection-manager-body.hpp"
 #include "TelepathyQt/_gen/cli-connection-manager.moc.hpp"
+#include "TelepathyQt/_gen/cli-protocol-body.hpp"
+#include "TelepathyQt/_gen/cli-protocol.moc.hpp"
+#include "TelepathyQt/connection-manager-internal.h"
 #include "TelepathyQt/_gen/connection-manager.moc.hpp"
 #include "TelepathyQt/_gen/connection-manager-internal.moc.hpp"
 #include "TelepathyQt/_gen/connection-manager-lowlevel.moc.hpp"

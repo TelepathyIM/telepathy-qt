@@ -12,6 +12,7 @@
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingConnection>
 #include <TelepathyQt/PendingString>
+#include <TelepathyQt/Protocol>
 
 using namespace Tp;
 

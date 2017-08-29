@@ -27,6 +27,8 @@
 #include <TelepathyQt/PendingFailure>
 #include <TelepathyQt/PendingString>
 
+#include "TelepathyQt/Protocol"
+
 namespace Tp
 {
 

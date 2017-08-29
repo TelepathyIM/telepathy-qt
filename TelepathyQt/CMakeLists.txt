@@ -680,6 +680,7 @@ set(SPECS
     debug
     media-session-handler
     media-stream-handler
+    protocol
     properties
     tls-certificate)
 foreach(spec ${SPECS})
@@ -735,6 +736,7 @@ tpqt_client_generator(debug clientdebug DebugReceiver Tp::Client --mainiface=Tp:
 tpqt_client_generator(media-session-handler clientmsesh MediaSessionHandler Tp::Client --mainiface=Tp::Client::MediaSessionHandlerInterface DEPENDS media-session-handler-spec-xincludator)
 tpqt_client_generator(media-stream-handler clientmstrh MediaStreamHandler Tp::Client --mainiface=Tp::Client::MediaStreamHandlerInterface DEPENDS media-stream-handler-spec-xincludator)
 tpqt_client_generator(properties clientprops Properties Tp::Client DEPENDS properties-spec-xincludator)
+tpqt_client_generator(protocol clientcm Protocol Tp::Client DEPENDS protocol-spec-xincludator)
 tpqt_client_generator(tls-certificate clienttls TLSCertificate Tp::Client DEPENDS tls-certificate-spec-xincludator)
 
 tpqt_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-future-xincludator)
