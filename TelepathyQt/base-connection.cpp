@@ -2261,9 +2261,29 @@ void BaseConnectionAddressingInterface::setGetContactsByVCardFieldCallback(const
     mPriv->getContactsByVCardFieldCB = cb;
 }
 
+void BaseConnectionAddressingInterface::getContactsByVCardField(const QString &field, const QStringList &addresses, const QStringList &interfaces,
+                                                                AddressingNormalizationMap &requested, ContactAttributesMap &attributes, DBusError *error)
+{
+    if (!mPriv->getContactsByVCardFieldCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    mPriv->getContactsByVCardFieldCB(field, addresses, interfaces, requested, attributes, error);
+}
+
 void BaseConnectionAddressingInterface::setGetContactsByURICallback(const GetContactsByURICallback &cb)
 {
     mPriv->getContactsByUriCB = cb;
+}
+
+void BaseConnectionAddressingInterface::getContactsByUri(const QStringList &uris, const QStringList &interfaces,
+                                                         AddressingNormalizationMap &requested, ContactAttributesMap &attributes, DBusError *error)
+{
+    if (!mPriv->getContactsByUriCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    mPriv->getContactsByUriCB(uris, interfaces, requested, attributes, error);
 }
 
 void BaseConnectionAddressingInterface::Adaptee::getContactsByVCardField(const QString &field,
