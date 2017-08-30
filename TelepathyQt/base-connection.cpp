@@ -2207,7 +2207,7 @@ struct TP_QT_NO_EXPORT BaseConnectionAddressingInterface::Private {
         : adaptee(new BaseConnectionAddressingInterface::Adaptee(parent)) {
     }
     GetContactsByVCardFieldCallback getContactsByVCardFieldCB;
-    GetContactsByURICallback getContactsByURICB;
+    GetContactsByURICallback getContactsByUriCB;
     BaseConnectionAddressingInterface::Adaptee *adaptee;
 };
 
@@ -2263,7 +2263,7 @@ void BaseConnectionAddressingInterface::setGetContactsByVCardFieldCallback(const
 
 void BaseConnectionAddressingInterface::setGetContactsByURICallback(const GetContactsByURICallback &cb)
 {
-    mPriv->getContactsByURICB = cb;
+    mPriv->getContactsByUriCB = cb;
 }
 
 void BaseConnectionAddressingInterface::Adaptee::getContactsByVCardField(const QString &field,
@@ -2293,7 +2293,7 @@ void BaseConnectionAddressingInterface::Adaptee::getContactsByURI(const QStringL
         const QStringList &interfaces,
         const Tp::Service::ConnectionInterfaceAddressingAdaptor::GetContactsByURIContextPtr &context)
 {
-    if (!mInterface->mPriv->getContactsByURICB.isValid()) {
+    if (!mInterface->mPriv->getContactsByUriCB.isValid()) {
         context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
         return;
     }
@@ -2301,7 +2301,7 @@ void BaseConnectionAddressingInterface::Adaptee::getContactsByURI(const QStringL
     Tp::ContactAttributesMap contactAttributesMap;
 
     DBusError error;
-    mInterface->mPriv->getContactsByURICB(URIs, interfaces,
+    mInterface->mPriv->getContactsByUriCB(URIs, interfaces,
                                           addressingNormalizationMap, contactAttributesMap,
                                           &error);
     if (error.isValid()) {
