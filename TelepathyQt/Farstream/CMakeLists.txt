@@ -5,6 +5,7 @@ if(FARSTREAM_COMPONENTS_FOUND)
                         ${GSTREAMER_INCLUDE_DIRS}
                         ${GLIB2_INCLUDE_DIR}
                         ${LIBXML2_INCLUDE_DIR}
+                        ${DBUS_GLIB_INCLUDE_DIR}
                         ${DBUS_INCLUDE_DIR})
 
     set(telepathy_qt_farstream_SRCS
