@@ -29,7 +29,7 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 find_path(DBUS_GLIB_INCLUDE_DIR
-          NAMES dbus-1.0/dbus/dbus-glib.h
+          NAMES dbus/dbus-glib.h
           HINTS
           ${PC_DBUS_GLIB_INCLUDEDIR}
           ${PC_DBUS_GLIB_INCLUDE_DIRS}
@@ -42,9 +42,8 @@ find_path(DBUS_GLIB_LOWLEVEL_INCLUDE_DIR
           ${PC_DBUS_GLIB_INCLUDE_DIRS}
 )
 
-# HACK! Workaround appending "/dbus-1.0" to the HINTS above not working for some reason.
 set(DBUS_GLIB_INCLUDE_DIRS
-    "${DBUS_GLIB_INCLUDE_DIR}/dbus-1.0" "${DBUS_GLIB_LOWLEVEL_INCLUDE_DIR}"
+    "${DBUS_GLIB_INCLUDE_DIR}" "${DBUS_GLIB_LOWLEVEL_INCLUDE_DIR}"
 )
 
 find_library(DBUS_GLIB_LIBRARIES
