@@ -80,7 +80,7 @@ private:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::AvatarData);
-Q_DECLARE_METATYPE(Tp::AvatarSpec);
+Q_DECLARE_METATYPE(Tp::AvatarData)
+Q_DECLARE_METATYPE(Tp::AvatarSpec)
 
 #endif

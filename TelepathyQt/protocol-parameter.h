@@ -88,7 +88,7 @@ uint qHash(const ProtocolParameter &parameter);
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::ProtocolParameter);
-Q_DECLARE_METATYPE(Tp::ProtocolParameterList);
+Q_DECLARE_METATYPE(Tp::ProtocolParameter)
+Q_DECLARE_METATYPE(Tp::ProtocolParameterList)
 
 #endif

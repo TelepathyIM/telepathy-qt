@@ -83,7 +83,7 @@ public:
         CanHaveStatusMessage = 0x2,
         AllFlags = MaySetOnSelf | CanHaveStatusMessage
     };
-    Q_DECLARE_FLAGS(SimpleStatusFlags, SimpleStatusFlag);
+    Q_DECLARE_FLAGS(SimpleStatusFlags, SimpleStatusFlag)
 
     PresenceSpec();
     PresenceSpec(const QString &status, const SimpleStatusSpec &spec);
@@ -164,8 +164,8 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(PresenceSpec::SimpleStatusFlags)
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::Presence);
-Q_DECLARE_METATYPE(Tp::PresenceSpec);
-Q_DECLARE_METATYPE(Tp::PresenceSpecList);
+Q_DECLARE_METATYPE(Tp::Presence)
+Q_DECLARE_METATYPE(Tp::PresenceSpec)
+Q_DECLARE_METATYPE(Tp::PresenceSpecList)
 
 #endif
