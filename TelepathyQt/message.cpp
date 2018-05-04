@@ -379,6 +379,10 @@ QString Message::text() const
         const QString contentType = stringOrEmptyFromPart(mPriv->parts, i, "content-type");
 
         if (contentType == QLatin1String("text/plain")) {
+            const QString interface = valueFromPart(mPriv->parts, i, "interface").toString();
+            if (!interface.isEmpty()) {
+                continue;
+            }
             const QString altGroup = stringOrEmptyFromPart(mPriv->parts, i, "alternative");
             if (!altGroup.isEmpty()) {
                 if (altGroupsUsed.contains(altGroup)) {
