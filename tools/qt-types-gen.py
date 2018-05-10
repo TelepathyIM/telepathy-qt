@@ -288,7 +288,8 @@ TP_QT_NO_EXPORT void _registerTypes()
     def provide_all(self):
         self.required_arrays.sort()
         for (val, array_of) in self.required_arrays:
-            real = 'QList<%s>' % array_of
+            init_list_type = array_of
+            real = 'QList<%s>' % init_list_type
             self.decl("""\
 /**
  * \\struct %s
@@ -299,7 +300,7 @@ TP_QT_NO_EXPORT void _registerTypes()
  * %s, but needed to have a discrete type in the Qt type system.
  */
 """ % (val, get_headerfile_cmd(self.realinclude, self.prettyinclude), array_of, real))
-            self.decl(self.faketype(val, real))
+            self.decl(self.faketype(val, real, init_list_type))
             self.to_declare.append(self.namespace + '::' + val)
 
             self.both('%s QDBusArgument& operator<<(QDBusArgument& arg, const %s &list)' %
@@ -508,7 +509,9 @@ struct %(visibility)s %(name)s
             if members != 2:
                 raise MalformedMapping(depinfo.binding.val, members)
 
-            realtype = 'QMap<%s, %s>' % (bindings[0].val, (bindings[1].val.endswith('>') and bindings[1].val + ' ') or bindings[1].val)
+            templateArgs = '%s, %s' % (bindings[0].val, (bindings[1].val.endswith('>') and bindings[1].val + ' ') or bindings[1].val)
+            init_list_type = 'std::pair<%s>' % templateArgs
+            realtype = 'QMap<%s>' % templateArgs
             self.decl("""\
 /**
  * \\struct %s
@@ -520,7 +523,7 @@ struct %(visibility)s %(name)s
 %s\
  */
 """ % (depinfo.binding.val, get_headerfile_cmd(self.realinclude, self.prettyinclude), realtype, format_docstring(depinfo.el, self.refs)))
-            self.decl(self.faketype(depinfo.binding.val, realtype))
+            self.decl(self.faketype(depinfo.binding.val, realtype, init_list_type))
         else:
             raise WTF(depinfo.el.localName)
 
@@ -555,12 +558,13 @@ typedef QList<%s> %sList;
 
 """ % (get_headerfile_cmd(self.realinclude, self.prettyinclude), list_of, list_of, list_of))
 
-    def faketype(self, fake, real):
+    def faketype(self, fake, real, init_list_type):
         return """\
 struct %(visibility)s %(fake)s : public %(real)s
 {
     %(fake)s() : %(real)s() {}
     %(fake)s(const %(real)s& a) : %(real)s(a) {}
+    %(fake)s(std::initializer_list<%(init_list_type)s> list) : %(real)s(list) {}
 
     %(fake)s& operator=(const %(real)s& a)
     {
@@ -569,7 +573,7 @@ struct %(visibility)s %(fake)s : public %(real)s
     }
 };
 
-""" % {'fake' : fake, 'real' : real, 'visibility': self.visibility}
+""" % {'fake' : fake, 'real' : real, 'init_list_type' : init_list_type, 'visibility': self.visibility}
 
 if __name__ == '__main__':
     options, argv = gnu_getopt(sys.argv[1:], '',
