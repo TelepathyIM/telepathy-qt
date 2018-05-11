@@ -342,6 +342,7 @@ void BaseConnection::setSelfID(const QString &selfID)
 
 void BaseConnection::setSelfContact(uint selfHandle, const QString &selfID)
 {
+    qDebug() << Q_FUNC_INFO << selfHandle << selfID;
     if ((selfHandle == mPriv->selfHandle) && (selfID == mPriv->selfID)) {
         return;
     }

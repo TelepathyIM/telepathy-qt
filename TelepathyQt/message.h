@@ -75,6 +75,7 @@ public:
     // Direct access to the whole message (header and body)
 
     MessagePart header() const;
+    MessagePart forwardedHeader() const;
 
     int size() const;
     MessagePart part(uint index) const;

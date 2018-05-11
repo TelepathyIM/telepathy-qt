@@ -120,6 +120,7 @@ void setDebugCallback(DebugCallback cb)
 
 Debug enabledDebug()
 {
+    return Debug(QtDebugMsg);
     if (debugEnabled) {
         return Debug(QtDebugMsg);
     } else {

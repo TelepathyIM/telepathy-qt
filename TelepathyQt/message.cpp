@@ -418,6 +418,16 @@ MessagePart Message::header() const
     return part(0);
 }
 
+MessagePart Message::forwardedHeader() const
+{
+    for (const MessagePart &part : mPriv->parts) {
+        if (part.value(QLatin1String("interface")).variant().toString() == TP_QT_IFACE_CHANNEL + QLatin1String(".Interface.Forwarding")) {
+            return part;
+        }
+    }
+    return {};
+}
+
 /**
  * Return the number of parts in this message.
  *
