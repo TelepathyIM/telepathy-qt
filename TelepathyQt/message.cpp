@@ -224,6 +224,11 @@ bool Message::operator==(const Message &other) const
     return this->mPriv == other.mPriv;
 }
 
+uint Message::sentTimestamp() const
+{
+    return valueFromPart(mPriv->parts, 0, "message-sent").toUInt();
+}
+
 /**
  * Class destructor.
  */
@@ -240,7 +245,7 @@ Message::~Message()
 QDateTime Message::sent() const
 {
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
-    uint stamp = valueFromPart(mPriv->parts, 0, "message-sent").toUInt();
+    uint stamp = sentTimestamp();
     if (stamp != 0) {
         return QDateTime::fromTime_t(stamp);
     } else {
@@ -771,6 +776,11 @@ ReceivedMessage::~ReceivedMessage()
 {
 }
 
+uint ReceivedMessage::receivedTimestamp() const
+{
+    return valueFromPart(mPriv->parts, 0, "message-received").toUInt();
+}
+
 /**
  * Return the time the message was received.
  *
@@ -779,7 +789,7 @@ ReceivedMessage::~ReceivedMessage()
 QDateTime ReceivedMessage::received() const
 {
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
-    uint stamp = valueFromPart(mPriv->parts, 0, "message-received").toUInt();
+    uint stamp = receivedTimestamp();
     if (stamp != 0) {
         return QDateTime::fromTime_t(stamp);
     } else {

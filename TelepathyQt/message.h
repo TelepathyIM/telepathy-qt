@@ -57,6 +57,7 @@ public:
 
     // Convenient access to headers
 
+    uint sentTimestamp() const;
     QDateTime sent() const;
 
     ChannelTextMessageType messageType() const;
@@ -139,6 +140,7 @@ public:
     ReceivedMessage &operator=(const ReceivedMessage &other);
     ~ReceivedMessage();
 
+    uint receivedTimestamp() const;
     QDateTime received() const;
     ContactPtr sender() const;
     QString senderNickname() const;
