@@ -89,6 +89,7 @@ public:
 
     QString cmName() const;
     QString protocolName() const;
+    QString accountUniqueIdentifier() const;
 
     ConnectionStatus status() const;
     ConnectionStatusReason statusReason() const;

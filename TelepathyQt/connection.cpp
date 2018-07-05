@@ -1115,6 +1115,11 @@ ConnectionStatusReason Connection::statusReason() const
     return (ConnectionStatusReason) mPriv->statusReason;
 }
 
+QString Connection::accountUniqueIdentifier() const
+{
+    return property("accountUID").toString();
+}
+
 struct TP_QT_NO_EXPORT Connection::ErrorDetails::Private : public QSharedData
 {
     Private(const QVariantMap &details)

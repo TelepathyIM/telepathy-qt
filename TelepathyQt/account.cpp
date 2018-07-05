@@ -4748,6 +4748,8 @@ void Account::onConnectionBuilt(PendingOperation *op)
         mPriv->connection = ConnectionPtr::qObjectCast(readyOp->proxy());
         Q_ASSERT(mPriv->connection);
 
+        mPriv->connection->setProperty("accountUID", uniqueIdentifier());
+
         debug() << "Connection" << mPriv->connectionObjectPath() << "built for" << objectPath();
 
         if (prevConn != mPriv->connection) {
