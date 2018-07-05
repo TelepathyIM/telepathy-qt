@@ -35,8 +35,6 @@
 #include <TelepathyQt/DBusProxy>
 #include <TelepathyQt/OptionalInterfaceFactory>
 #include <TelepathyQt/ReadinessHelper>
-#include <TelepathyQt/Types>
-#include <TelepathyQt/SharedPtr>
 
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/Types>
