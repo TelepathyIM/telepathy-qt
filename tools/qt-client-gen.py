@@ -21,6 +21,7 @@ from sys import argv
 import xml.dom.minidom
 import codecs
 from getopt import gnu_getopt
+import functools
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
 from libqtcodegen import binding_from_usage, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_headerfile_cmd, get_qt_name, qt_identifier_escape, RefRegistry
@@ -43,7 +44,7 @@ class Generator(object):
             self.visibility = opts.get('--visibility', '')
             ifacedom = xml.dom.minidom.parse(opts['--ifacexml'])
             specdom = xml.dom.minidom.parse(opts['--specxml'])
-        except KeyError, k:
+        except KeyError as k:
             assert False, 'Missing required parameter %s' % k.args[0]
 
         self.hs = []
@@ -114,16 +115,16 @@ namespace %s
 
         # Output interface proxies
         def ifacenodecmp(x, y):
-            xname, yname = [self.namespace + '::' + node.getAttribute('name').replace('/', '').replace('_', '') + 'Interface' for node in x, y]
+            xname, yname = [self.namespace + '::' + node.getAttribute('name').replace('/', '').replace('_', '') + 'Interface' for node in (x, y)]
 
             if xname == self.mainiface:
                 return -1
             elif yname == self.mainiface:
                 return 1
             else:
-                return cmp(xname, yname)
+                return (xname > yname) - (xname < yname)
 
-        self.ifacenodes.sort(cmp=ifacenodecmp)
+        self.ifacenodes.sort(key=functools.cmp_to_key(ifacenodecmp))
         for ifacenode in self.ifacenodes:
             self.do_ifacenode(ifacenode)
 
@@ -136,8 +137,8 @@ namespace %s
             self.h("Q_DECLARE_METATYPE(" + self.namespace + "::" + classname + "*)\n")
 
         # Write output to files
-        (codecs.getwriter('utf-8')(open(self.headerfile, 'w'))).write(''.join(self.hs))
-        (codecs.getwriter('utf-8')(open(self.implfile, 'w'))).write(''.join(self.bs))
+        (codecs.getwriter('utf-8')(open(self.headerfile, 'wb'))).write(''.join(self.hs))
+        (codecs.getwriter('utf-8')(open(self.implfile, 'wb'))).write(''.join(self.bs))
 
     def do_ifacenode(self, ifacenode):
         # Extract info
@@ -408,7 +409,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         inargs = []
         outargs = []
 
-        for i in xrange(len(args)):
+        for i in range(len(args)):
             if args[i].getAttribute('direction') == 'out':
                 outargs.append(i)
             else:
@@ -493,7 +494,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
 %s\
 """ % (name, format_docstring(signal, self.refs, '     * ')))
 
-        for i in xrange(len(argnames)):
+        for i in range(len(argnames)):
             assert argnames[i] != None, 'Name missing from argument at index %d for signal %s' % (i, name)
             if argdocstrings[i]:
                 self.h("""\

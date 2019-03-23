@@ -155,7 +155,7 @@ class _SignatureIter:
     def __init__(self, string):
         self.remaining = string
 
-    def next(self):
+    def __next__(self):
         if self.remaining == '':
             raise StopIteration
 

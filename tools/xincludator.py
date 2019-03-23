@@ -11,7 +11,7 @@ NS_XI = 'http://www.w3.org/2001/XInclude'
 
 def xincludate(dom, base, dropns = []):
     remove_attrs = []
-    for i in xrange(dom.documentElement.attributes.length):
+    for i in range(dom.documentElement.attributes.length):
         attr = dom.documentElement.attributes.item(i)
         if attr.prefix == 'xmlns':
             if attr.localName in dropns:
@@ -34,6 +34,6 @@ if __name__ == '__main__':
     argv = argv[1:]
     dom = xml.dom.minidom.parse(argv[0])
     xincludate(dom, argv[0])
-    xml = dom.toxml()
-    stdout.write(xml)
-    stdout.write('\n')
+    xml = dom.toxml('utf-8')
+    stdout.buffer.write(xml)
+    stdout.buffer.write(b'\n')

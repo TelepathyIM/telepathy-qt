@@ -31,7 +31,7 @@ class Generator(object):
             self.namespace = opts['--namespace']
             self.must_define = opts.get('--must-define', None)
             dom = xml.dom.minidom.parse(opts['--specxml'])
-        except KeyError, k:
+        except KeyError as k:
             assert False, 'Missing required parameter %s' % k.args[0]
 
         self.define_prefix = None
@@ -47,7 +47,10 @@ class Generator(object):
         self.refs = RefRegistry(self.spec)
 
     def h(self, code):
-        self.out.write(code)
+        if isinstance(code, str):
+            self.out.buffer.write(code.encode('utf8'))
+        else:
+            self.out.buffer.write(code)
 
     def __call__(self):
         # Header

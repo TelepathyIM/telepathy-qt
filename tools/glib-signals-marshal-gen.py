@@ -41,12 +41,12 @@ class Generator(object):
         for signal in signals:
             self.do_signal(signal)
 
-        all = self.marshallers.keys()
+        all = list(self.marshallers.keys())
         all.sort()
         for marshaller in all:
             rhs = self.marshallers[marshaller]
             if not marshaller.startswith('g_cclosure'):
-                print 'VOID:' + ','.join(rhs)
+                print('VOID:' + ','.join(rhs))
 
 if __name__ == '__main__':
     argv = sys.argv[1:]

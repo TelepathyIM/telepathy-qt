@@ -59,9 +59,9 @@ class AccountManager(Object):
     def _am_props(self):
         return dbus.Dictionary({
             'Interfaces': dbus.Array([], signature='s'),
-            'ValidAccounts': dbus.Array(self._valid_accounts.keys(),
+            'ValidAccounts': dbus.Array(list(self._valid_accounts.keys()),
                 signature='o'),
-            'InvalidAccounts': dbus.Array(self._invalid_accounts.keys(),
+            'InvalidAccounts': dbus.Array(list(self._invalid_accounts.keys()),
                 signature='o'),
             'SupportedAccountProperties': dbus.Array([ACCOUNT_IFACE + '.Enabled'], signature='s'),
         }, signature='sv')
@@ -104,14 +104,14 @@ class AccountManager(Object):
             assert path in self._valid_accounts
             assert path not in self._invalid_accounts
             self._invalid_accounts[path] = self._valid_accounts.pop(path)
-        print "Emitting AccountValidityChanged(%s, %s)" % (path, valid)
+        print("Emitting AccountValidityChanged(%s, %s)" % (path, valid))
 
     @signal(AM_IFACE, signature='o')
     def AccountRemoved(self, path):
         assert path in self._valid_accounts or path in self._invalid_accounts
         self._valid_accounts.pop(path, None)
         self._invalid_accounts.pop(path, None)
-        print "Emitting AccountRemoved(%s)" % path
+        print("Emitting AccountRemoved(%s)" % path)
 
     @method(AM_IFACE, in_signature='sssa{sv}a{sv}', out_signature='o')
     def CreateAccount(self, cm, protocol, display_name, parameters,
@@ -167,17 +167,17 @@ class Account(Object):
         self._connection = dbus.ObjectPath('/')
         self._connection_status = Connection_Status_Disconnected
         self._connection_status_reason = Connection_Status_Reason_None_Specified
-        self._connection_error = u''
+        self._connection_error = ''
         self._connection_error_details = dbus.Dictionary({}, signature='sv')
-        self._service = u''
+        self._service = ''
         self._display_name = display_name
-        self._icon = u'bob.png'
+        self._icon = 'bob.png'
         self._enabled = True
-        self._nickname = u'Bob'
+        self._nickname = 'Bob'
         self._parameters = parameters
         self._has_been_online = False
         self._connect_automatically = False
-        self._normalized_name = u'bob'
+        self._normalized_name = 'bob'
         self._automatic_presence = dbus.Struct(
                 (Connection_Presence_Type_Available, 'available', ''),
                 signature='uss')
@@ -199,7 +199,7 @@ class Account(Object):
     def UpdateParameters(self, set_, unset):
         print ("%s: entering UpdateParameters(\n    %r,\n    %r    \n)"
             % (self.__dbus_object_path__, set_, unset))
-        for (key, value) in set_.iteritems():
+        for (key, value) in set_.items():
             self._parameters[key] = value
         for key in unset:
             self._parameters.pop(key, None)
@@ -222,15 +222,15 @@ class Account(Object):
 
     @method(ACCOUNT_IFACE, in_signature='', out_signature='')
     def Remove(self):
-        print "%s: entering Remove()" % self.__dbus_object_path__
+        print("%s: entering Remove()" % self.__dbus_object_path__)
         self.Removed()
         self.remove_from_connection()
-        print "%s: Remove() -> success" % self.__dbus_object_path__
+        print("%s: Remove() -> success" % self.__dbus_object_path__)
 
     @signal(ACCOUNT_IFACE, signature='')
     def Removed(self):
         self._am.AccountRemoved(self.__dbus_object_path__)
-        print "%s: Emitting Removed()" % self.__dbus_object_path__
+        print("%s: Emitting Removed()" % self.__dbus_object_path__)
 
     def _account_props(self):
         return dbus.Dictionary({
@@ -293,24 +293,24 @@ class Account(Object):
         if iface == ACCOUNT_IFACE:
             props = {}
             if prop == 'Service':
-                self._service = unicode(value)
+                self._service = str(value)
             elif prop == 'DisplayName':
-                self._display_name = unicode(value)
+                self._display_name = str(value)
             elif prop == 'Icon':
-                self._icon = unicode(value)
+                self._icon = str(value)
             elif prop == 'Enabled':
                 self._enabled = bool(value)
             elif prop == 'Nickname':
-                self._nickname = unicode(value)
+                self._nickname = str(value)
             elif prop == 'AutomaticPresence':
                 self._automatic_presence = dbus.Struct(
-                        (dbus.UInt32(value[0]), unicode(value[1]),
-                            unicode(value[2])),
+                        (dbus.UInt32(value[0]), str(value[1]),
+                            str(value[2])),
                         signature='uss')
             elif prop == 'RequestedPresence':
                 self._requested_presence = dbus.Struct(
-                        (dbus.UInt32(value[0]), unicode(value[1]),
-                            unicode(value[2])),
+                        (dbus.UInt32(value[0]), str(value[1]),
+                            str(value[2])),
                         signature='uss')
                 # pretend to put the account online, if the presence != offline
                 if value[0] != Connection_Presence_Type_Offline:
@@ -330,7 +330,7 @@ class Account(Object):
                         self._connection_status_reason = Connection_Status_Reason_Network_Error
                         self._connection_error = TELEPATHY_ERROR_NETWORK_ERROR
                         self._connection_error_details = dbus.Dictionary(
-                                {'debug-message': u'You asked for it'},
+                                {'debug-message': 'You asked for it'},
                                 signature='sv')
                         self._current_presence = dbus.Struct(
                                 (Connection_Presence_Type_Offline, 'offline', ''),
@@ -338,7 +338,7 @@ class Account(Object):
                     else:
                         self._connection_status = Connection_Status_Connected
                         self._connection_status_reason = Connection_Status_Reason_None_Specified
-                        self._connection_error = u''
+                        self._connection_error = ''
                         self._connection_error_details = dbus.Dictionary({}, signature='sv')
                         self._current_presence = self._requested_presence
                         if self._has_been_online == False:
@@ -349,7 +349,7 @@ class Account(Object):
                     self._connection_status_reason = Connection_Status_Reason_Requested
                     self._connection_error = TELEPATHY_ERROR_CANCELLED
                     self._connection_error_details = dbus.Dictionary(
-                                {'debug-message': u'You asked for it'},
+                                {'debug-message': 'You asked for it'},
                                 signature='sv')
                     self._current_presence = dbus.Struct(
                             (Connection_Presence_Type_Offline, 'offline', ''),
@@ -372,7 +372,7 @@ class Account(Object):
         elif iface == ACCOUNT_IFACE_AVATAR_IFACE:
             if prop == 'Avatar':
                 self._avatar = dbus.Struct(
-                        (dbus.ByteArray(value[0]), unicode(value[1])),
+                        (dbus.ByteArray(value[0]), str(value[1])),
                         signature='ays')
                 self.AvatarChanged()
             else:
@@ -386,9 +386,9 @@ if __name__ == '__main__':
     try:
         am = AccountManager()
     except dbus.NameExistsException:
-        print >> sys.stderr, 'AccountManager already running'
+        print('AccountManager already running', file=sys.stderr)
         sys.exit(1)
 
-    print "AccountManager running..."
+    print("AccountManager running...")
     mainloop = MainLoop()
     mainloop.run()

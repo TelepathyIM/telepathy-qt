@@ -21,6 +21,7 @@ from sys import argv
 import xml.dom.minidom
 import codecs
 from getopt import gnu_getopt
+import functools
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
 from libqtcodegen import binding_from_usage, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_headerfile_cmd, get_qt_name, qt_identifier_escape, RefRegistry
@@ -61,7 +62,7 @@ class Generator(object):
             self.visibility = opts.get('--visibility', '')
             ifacedom = xml.dom.minidom.parse(opts['--ifacexml'])
             specdom = xml.dom.minidom.parse(opts['--specxml'])
-        except KeyError, k:
+        except KeyError as k:
             assert False, 'Missing required parameter %s' % k.args[0]
 
         if not self.realinclude:
@@ -135,11 +136,11 @@ namespace %s
 
         # Output interface proxies
         def ifacenodecmp(x, y):
-            xname, yname = [self.namespace + '::' + node.getAttribute('name').replace('/', '').replace('_', '') + 'Adaptor' for node in x, y]
+            xname, yname = [self.namespace + '::' + node.getAttribute('name').replace('/', '').replace('_', '') + 'Adaptor' for node in (x, y)]
 
-            return cmp(xname, yname)
+            return (xname > yname) - (xname < yname)
 
-        self.ifacenodes.sort(cmp=ifacenodecmp)
+        self.ifacenodes.sort(key=functools.cmp_to_key(ifacenodecmp))
         for ifacenode in self.ifacenodes:
             self.do_ifacenode(ifacenode)
 
@@ -147,8 +148,8 @@ namespace %s
         self.hb(''.join(['\n}' for ns in self.namespace.split('::')]))
 
         # Write output to files
-        (codecs.getwriter('utf-8')(open(self.headerfile, 'w'))).write(''.join(self.hs))
-        (codecs.getwriter('utf-8')(open(self.implfile, 'w'))).write(''.join(self.bs))
+        (codecs.getwriter('utf-8')(open(self.headerfile, 'wb'))).write(''.join(self.hs))
+        (codecs.getwriter('utf-8')(open(self.implfile, 'wb'))).write(''.join(self.bs))
 
     def do_ifacenode(self, ifacenode):
         # Extract info
@@ -303,7 +304,7 @@ Q_SIGNALS: // SIGNALS
 
                 outindex = 0
                 inindex = 0
-                for i in xrange(len(argnames)):
+                for i in range(len(argnames)):
                     assert argnames[i] != None, 'Name missing from argument at index %d for signal %s' % (i, name)
 
                     argbinding = argbindings[i]
@@ -358,7 +359,7 @@ Q_SIGNALS: // SIGNALS
 "    <signal name=\\"%(name)s\\">\\n"
 """ % {'name': name})
 
-                for i in xrange(len(argnames)):
+                for i in range(len(argnames)):
                     assert argnames[i] != None, 'Name missing from argument at index %d for signal %s' % (i, name)
 
                     argbinding = argbindings[i]
@@ -393,7 +394,7 @@ Q_SIGNALS: // SIGNALS
                     self.externals, self.typesnamespace, self.refs, '     *     ')
 
             outargs = []
-            for i in xrange(len(args)):
+            for i in range(len(args)):
                 if args[i].getAttribute('direction') == 'out':
                     outargs.append(i)
 
@@ -519,7 +520,7 @@ void %(ifacename)s::%(settername)s(const %(type)s &newValue)
         inargs = []
         outargs = []
 
-        for i in xrange(len(args)):
+        for i in range(len(args)):
             if args[i].getAttribute('direction') == 'out':
                 outargs.append(i)
             else:
@@ -666,7 +667,7 @@ void %(ifacename)s::%(settername)s(const %(type)s &newValue)
             'arg'), self.custom_lists, self.externals, self.typesnamespace, self.refs, '     *     ')
         params = ', '.join(['%s %s' % (binding.inarg, param_name) for binding, param_name in zip(argbindings, argnames)])
 
-        for i in xrange(len(argnames)):
+        for i in range(len(argnames)):
             assert argnames[i] != None, 'Name missing from argument at index %d for signal %s' % (i, name)
 
         self.h("""\
@@ -683,7 +684,7 @@ void %(ifacename)s::%(settername)s(const %(type)s &newValue)
        'params': params
        })
 
-        for i in xrange(len(argnames)):
+        for i in range(len(argnames)):
             assert argnames[i] != None, 'Name missing from argument at index %d for signal %s' % (i, name)
             if argdocstrings[i]:
                 self.h("""\
