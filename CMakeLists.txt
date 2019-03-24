@@ -136,14 +136,10 @@ macro_log_feature(QT_GLIB_SUPPORT "Qt Glib Support"
 # reset flags
 set(CMAKE_REQUIRED_FLAGS "")
 
-# Find python version >= 2.7
-set(REQUIRED_PY 2.7)
-find_package(PythonLibrary ${REQUIRED_PY} REQUIRED)
-if(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERSION} VERSION_EQUAL ${REQUIRED_PY})
-    message(STATUS "Python ${PYTHON_SHORT_VERSION} found")
-else()
-    message(SEND_ERROR "Python >= ${REQUIRED_PY} is required")
-endif()
+# Find python version >= 3
+find_package(Python3 REQUIRED)
+
+set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
 
 # Check for dbus-python
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import dbus.mainloop.glib"
