@@ -29,7 +29,7 @@ if(ENABLE_TP_GLIB_TESTS)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${CMAKE_SOURCE_DIR}/tools/c-constants-gen.py
              Future ${CMAKE_CURRENT_BINARY_DIR}/_gen/all.xml
-             > _gen/enums.h
+             > _gen/enums.h _gen/enums
         DEPENDS ${gen_all_xml}
                 ${CMAKE_SOURCE_DIR}/tools/c-constants-gen.py)
 
