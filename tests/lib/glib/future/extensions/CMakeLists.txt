@@ -25,29 +25,6 @@ if(ENABLE_TP_GLIB_TESTS)
         DEPENDS ${gen_all_xml}
                 ${CMAKE_SOURCE_DIR}/tools/glib-gtypes-generator.py)
 
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.list
-        COMMAND ${PYTHON_EXECUTABLE}
-        ARGS ${CMAKE_SOURCE_DIR}/tools/glib-signals-marshal-gen.py
-             ${CMAKE_CURRENT_BINARY_DIR}/_gen/all.xml
-             > _gen/signals-marshal.list
-        DEPENDS ${gen_all_xml})
-
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.h
-        COMMAND ${GLIB_GENMARSHAL} --header --prefix=_future_ext_marshal
-             ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.list
-             > _gen/signals-marshal.h
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.list)
-
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gen-signals-marshal-c.sh "
-         echo '#include \"_gen/signals-marshal.h\"' > _gen/signals-marshal.c
-         ${GLIB_GENMARSHAL} --body --prefix=_future_ext_marshal ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.list >> _gen/signals-marshal.c
-    ")
-    set(gen_signals_marshal_c ${SH} ${CMAKE_CURRENT_BINARY_DIR}/gen-signals-marshal-c.sh)
-
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.c
-        COMMAND ${gen_signals_marshal_c}
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.list)
-
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/enums.h
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${CMAKE_SOURCE_DIR}/tools/c-constants-gen.py
@@ -84,7 +61,6 @@ if(ENABLE_TP_GLIB_TESTS)
                 --filename=${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}
                 --signal-marshal-prefix=_future_ext
                 --include='<telepathy-glib/dbus.h>'
-                --include='_gen/signals-marshal.h'
                 --not-implemented-func='tp_dbus_g_method_return_not_implemented'
                 --allow-unstable
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.xml Future_Svc_)
@@ -106,9 +82,6 @@ if(ENABLE_TP_GLIB_TESTS)
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/gtypes-body.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/interfaces.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/interfaces-body.h
-        ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.c
-        ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.h
-        ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.list
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-channel.c
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-channel.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection.c

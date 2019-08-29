@@ -81,7 +81,6 @@ set(toolchain_files
     glib-ginterface-gen.py
     glib-gtypes-generator.py
     glib-interfaces-gen.py
-    glib-signals-marshal-gen.py
     libtpcodegen.py
     libglibcodegen.py
     libqtcodegen.py
