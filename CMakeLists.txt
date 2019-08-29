@@ -252,7 +252,9 @@ add_custom_target(uninstall
     "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
 # Display the feature log
-feature_summary(WHAT ALL)
+feature_summary(
+    FATAL_ON_MISSING_REQUIRED_PACKAGES
+    WHAT ALL)
 
 # Always keep it last: CPack definitions file
 include(TelepathyDist)
