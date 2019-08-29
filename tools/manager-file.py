@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 
 # manager-file.py: generate .manager files and TpCMParamSpec arrays from the
 # same data (should be suitable for all connection managers that don't have
@@ -164,13 +164,25 @@ if __name__ == '__main__':
     environment = {}
     exec(compile(open(sys.argv[1], "rb").read(), sys.argv[1], 'exec'), environment)
 
-    f = open('%s/%s.manager' % (sys.argv[2], environment['MANAGER']), 'w')
+    filename = '%s/%s.manager' % (sys.argv[2], environment['MANAGER'])
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+    f = open(filename + '.tmp', 'w')
     write_manager(f, environment['MANAGER'], environment['PARAMS'])
     f.close()
+    os.rename(filename + '.tmp', filename)
 
-    f = open('%s/param-spec-struct.h' % sys.argv[2], 'w')
+    filename = '%s/param-spec-struct.h' % sys.argv[2]
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+    f = open(filename + '.tmp', 'w')
     for protocol in environment['PARAMS']:
         write_c_params(f, environment['MANAGER'], protocol,
                 environment['STRUCTS'][protocol],
                 environment['PARAMS'][protocol])
     f.close()
+    os.rename(filename + '.tmp', filename)

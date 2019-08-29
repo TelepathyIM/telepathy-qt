@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 
 # glib-ginterface-gen.py: service-side interface generator
 #
@@ -26,12 +26,22 @@ import sys
 import os.path
 import xml.dom.minidom
 
-from libglibcodegen import Signature, type_to_gtype, cmp_by_name, \
-        NS_TP, dbus_gutils_wincaps_to_uscore, \
-        signal_to_marshal_name, method_to_glue_marshal_name
+from libtpcodegen import file_set_contents, key_by_name, u
+from libglibcodegen import Signature, type_to_gtype, \
+        NS_TP, dbus_gutils_wincaps_to_uscore
 
 
 NS_TP = "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+
+def get_emits_changed(node):
+    try:
+        return [
+            annotation.getAttribute('value')
+            for annotation in node.getElementsByTagName('annotation')
+            if annotation.getAttribute('name') == 'org.freedesktop.DBus.Property.EmitsChangedSignal'
+            ][0]
+    except IndexError:
+        return None
 
 class Generator(object):
 
@@ -41,6 +51,7 @@ class Generator(object):
         self.dom = dom
         self.__header = []
         self.__body = []
+        self.__docs = []
 
         assert prefix.endswith('_')
         assert not signal_marshal_prefix.endswith('_')
@@ -79,6 +90,9 @@ class Generator(object):
     def b(self, s):
         self.__body.append(s)
 
+    def d(self, s):
+        self.__docs.append(s)
+
     def do_node(self, node):
         node_name = node.getAttribute('name').replace('/', '')
         node_name_mixed = self.node_name_mixed = node_name.replace('_', '')
@@ -97,6 +111,8 @@ class Generator(object):
         tmp = interface.getAttribute('tp:causes-havoc')
         if tmp and not self.allow_havoc:
             raise AssertionError('%s is %s' % (self.iface_name, tmp))
+
+        iface_emits_changed = get_emits_changed(interface)
 
         self.b('static const DBusGObjectInfo _%s%s_object_info;'
                % (self.prefix_, node_name_lc))
@@ -158,54 +174,54 @@ class Generator(object):
         self.b('}')
         self.b('')
 
-        self.h('/**')
-        self.h(' * %s%s:' % (self.Prefix, node_name_mixed))
-        self.h(' *')
-        self.h(' * Dummy typedef representing any implementation of this '
+        self.d('/**')
+        self.d(' * %s%s:' % (self.Prefix, node_name_mixed))
+        self.d(' *')
+        self.d(' * Dummy typedef representing any implementation of this '
                'interface.')
-        self.h(' */')
+        self.d(' */')
+
         self.h('typedef struct _%s%s %s%s;'
                % (self.Prefix, node_name_mixed, self.Prefix, node_name_mixed))
         self.h('')
-        self.h('/**')
-        self.h(' * %s%sClass:' % (self.Prefix, node_name_mixed))
-        self.h(' *')
-        self.h(' * The class of %s%s.' % (self.Prefix, node_name_mixed))
+
+        self.d('/**')
+        self.d(' * %s%sClass:' % (self.Prefix, node_name_mixed))
+        self.d(' *')
+        self.d(' * The class of %s%s.' % (self.Prefix, node_name_mixed))
 
         if methods:
-            self.h(' *')
-            self.h(' * In a full implementation of this interface (i.e. all')
-            self.h(' * methods implemented), the interface initialization')
-            self.h(' * function used in G_IMPLEMENT_INTERFACE() would')
-            self.h(' * typically look like this:')
-            self.h(' *')
-            self.h(' * <programlisting>')
-            self.h(' * static void')
-            self.h(' * implement_%s (gpointer klass,' % self.node_name_lc)
-            self.h(' *     gpointer unused G_GNUC_UNUSED)')
-            self.h(' * {')
-            # "#" is special to gtkdoc under some circumstances; it appears
-            # that escaping "##" as "#<!---->#" or "&#35;&#35;" doesn't work,
-            # but adding an extra hash symbol does. Thanks, gtkdoc :-(
-            self.h(' * #define IMPLEMENT(x) %s%s_implement_###x (\\'
+            self.d(' *')
+            self.d(' * In a full implementation of this interface (i.e. all')
+            self.d(' * methods implemented), the interface initialization')
+            self.d(' * function used in G_IMPLEMENT_INTERFACE() would')
+            self.d(' * typically look like this:')
+            self.d(' *')
+            self.d(' * <programlisting>')
+            self.d(' * static void')
+            self.d(' * implement_%s (gpointer klass,' % self.node_name_lc)
+            self.d(' *     gpointer unused G_GNUC_UNUSED)')
+            self.d(' * {')
+            self.d(' * #define IMPLEMENT(x) %s%s_implement_&num;&num;x (\\'
                    % (self.prefix_, self.node_name_lc))
-            self.h(' *   klass, my_object_###x)')
+            self.d(' *   klass, my_object_&num;&num;x)')
 
             for method in methods:
                 class_member_name = method.getAttribute('tp:name-for-bindings')
                 class_member_name = class_member_name.lower()
-                self.h(' *   IMPLEMENT (%s);' % class_member_name)
+                self.d(' *   IMPLEMENT (%s);' % class_member_name)
 
-            self.h(' * #undef IMPLEMENT')
-            self.h(' * }')
-            self.h(' * </programlisting>')
+            self.d(' * #undef IMPLEMENT')
+            self.d(' * }')
+            self.d(' * </programlisting>')
         else:
-            self.h(' * This interface has no D-Bus methods, so an')
-            self.h(' * implementation can typically pass %NULL to')
-            self.h(' * G_IMPLEMENT_INTERFACE() as the interface')
-            self.h(' * initialization function.')
+            self.d(' * This interface has no D-Bus methods, so an')
+            self.d(' * implementation can typically pass %NULL to')
+            self.d(' * G_IMPLEMENT_INTERFACE() as the interface')
+            self.d(' * initialization function.')
 
-        self.h(' */')
+        self.d(' */')
+        self.d('')
 
         self.h('typedef struct _%s%sClass %s%sClass;'
                % (self.Prefix, node_name_mixed, self.Prefix, node_name_mixed))
@@ -259,6 +275,16 @@ class Generator(object):
                 else:
                     flags = ('TP_DBUS_PROPERTIES_MIXIN_FLAG_READ | '
                              'TP_DBUS_PROPERTIES_MIXIN_FLAG_WRITE')
+
+                prop_emits_changed = get_emits_changed(m)
+
+                if prop_emits_changed is None:
+                    prop_emits_changed = iface_emits_changed
+
+                if prop_emits_changed == 'true':
+                    flags += ' | TP_DBUS_PROPERTIES_MIXIN_FLAG_EMITS_CHANGED'
+                elif prop_emits_changed == 'invalidates':
+                    flags += ' | TP_DBUS_PROPERTIES_MIXIN_FLAG_EMITS_INVALIDATED'
 
                 self.b('      { 0, %s, "%s", 0, NULL, NULL }, /* %s */'
                        % (flags, m.getAttribute('type'), m.getAttribute('name')))
@@ -389,8 +415,7 @@ class Generator(object):
                     'not match' % (method.getAttribute('name'), lc_name))
         lc_name = lc_name.lower()
 
-        marshaller = method_to_glue_marshal_name(method,
-                self.signal_marshal_prefix)
+        marshaller = 'g_cclosure_marshal_generic'
         wrapper = self.prefix_ + self.node_name_lc + '_' + lc_name
 
         self.b("  { (GCallback) %s, %s, %d }," % (wrapper, marshaller, offset))
@@ -418,7 +443,7 @@ class Generator(object):
 
         stub_name = (self.prefix_ + self.node_name_lc + '_' +
                      class_member_name)
-        return (stub_name + '_impl', class_member_name)
+        return (stub_name + '_impl', class_member_name + '_cb')
 
     def do_method(self, method):
         assert self.node_name_mixed is not None
@@ -477,18 +502,19 @@ class Generator(object):
             else:
                 out_args.append(struct)
 
-        # Implementation type declaration (in header, docs in body)
-        self.b('/**')
-        self.b(' * %s:' % impl_name)
-        self.b(' * @self: The object implementing this interface')
+        # Implementation type declaration (in header, docs separated)
+        self.d('/**')
+        self.d(' * %s:' % impl_name)
+        self.d(' * @self: The object implementing this interface')
         for (ctype, name) in in_args:
-            self.b(' * @%s: %s (FIXME, generate documentation)'
+            self.d(' * @%s: %s (FIXME, generate documentation)'
                    % (name, ctype))
-        self.b(' * @context: Used to return values or throw an error')
-        self.b(' *')
-        self.b(' * The signature of an implementation of the D-Bus method')
-        self.b(' * %s on interface %s.' % (dbus_method_name, self.iface_name))
-        self.b(' */')
+        self.d(' * @context: Used to return values or throw an error')
+        self.d(' *')
+        self.d(' * The signature of an implementation of the D-Bus method')
+        self.d(' * %s on interface %s.' % (dbus_method_name, self.iface_name))
+        self.d(' */')
+
         self.h('typedef void (*%s) (%s%s *self,'
           % (impl_name, self.Prefix, self.node_name_mixed))
         for (ctype, name) in in_args:
@@ -506,7 +532,7 @@ class Generator(object):
             self.b('    %s%s,' % (ctype, name))
         self.b('    DBusGMethodInvocation *context)')
         self.b('{')
-        self.b('  %s impl = (%s%s_GET_CLASS (self)->%s);'
+        self.b('  %s impl = (%s%s_GET_CLASS (self)->%s_cb);'
           % (impl_name, self.PREFIX_, self.node_name_uc, class_member_name))
         self.b('')
         self.b('  if (impl != NULL)')
@@ -533,38 +559,41 @@ class Generator(object):
                % (self.prefix_, self.node_name_lc, class_member_name,
                   self.Prefix, self.node_name_mixed, impl_name))
 
-        self.b('/**')
-        self.b(' * %s%s_implement_%s:'
+        self.d('/**')
+        self.d(' * %s%s_implement_%s:'
                % (self.prefix_, self.node_name_lc, class_member_name))
-        self.b(' * @klass: A class whose instances implement this interface')
-        self.b(' * @impl: A callback used to implement the %s D-Bus method'
+        self.d(' * @klass: A class whose instances implement this interface')
+        self.d(' * @impl: A callback used to implement the %s D-Bus method'
                % dbus_method_name)
-        self.b(' *')
-        self.b(' * Register an implementation for the %s method in the vtable'
+        self.d(' *')
+        self.d(' * Register an implementation for the %s method in the vtable'
                % dbus_method_name)
-        self.b(' * of an implementation of this interface. To be called from')
-        self.b(' * the interface init function.')
-        self.b(' */')
+        self.d(' * of an implementation of this interface. To be called from')
+        self.d(' * the interface init function.')
+        self.d(' */')
+
         self.b('void')
         self.b('%s%s_implement_%s (%s%sClass *klass, %s impl)'
                % (self.prefix_, self.node_name_lc, class_member_name,
                   self.Prefix, self.node_name_mixed, impl_name))
         self.b('{')
-        self.b('  klass->%s = impl;' % class_member_name)
+        self.b('  klass->%s_cb = impl;' % class_member_name)
         self.b('}')
         self.b('')
 
         # Return convenience function (static inline, in header)
-        self.h('/**')
-        self.h(' * %s:' % ret_name)
-        self.h(' * @context: The D-Bus method invocation context')
+        self.d('/**')
+        self.d(' * %s:' % ret_name)
+        self.d(' * @context: The D-Bus method invocation context')
         for (ctype, name) in out_args:
-            self.h(' * @%s: %s (FIXME, generate documentation)'
+            self.d(' * @%s: %s (FIXME, generate documentation)'
                    % (name, ctype))
-        self.h(' *')
-        self.h(' * Return successfully by calling dbus_g_method_return().')
-        self.h(' * This inline function exists only to provide type-safety.')
-        self.h(' */')
+        self.d(' *')
+        self.d(' * Return successfully by calling dbus_g_method_return().')
+        self.d(' * This inline function exists only to provide type-safety.')
+        self.d(' */')
+        self.d('')
+
         tmp = (['DBusGMethodInvocation *context'] +
                [ctype + name for (ctype, name) in out_args])
         self.h('static inline')
@@ -634,17 +663,17 @@ class Generator(object):
 
         # FIXME: emit docs
 
-        self.b('/**')
-        self.b(' * %s:' % stub_name)
-        self.b(' * @instance: The object implementing this interface')
+        self.d('/**')
+        self.d(' * %s:' % stub_name)
+        self.d(' * @instance: The object implementing this interface')
         for (ctype, name, gtype) in args:
-            self.b(' * @%s: %s (FIXME, generate documentation)'
+            self.d(' * @%s: %s (FIXME, generate documentation)'
                    % (name, ctype))
-        self.b(' *')
-        self.b(' * Type-safe wrapper around g_signal_emit to emit the')
-        self.b(' * %s signal on interface %s.'
+        self.d(' *')
+        self.d(' * Type-safe wrapper around g_signal_emit to emit the')
+        self.d(' * %s signal on interface %s.'
                % (dbus_name, self.iface_name))
-        self.b(' */')
+        self.d(' */')
 
         self.b('void')
         self.b(('%s (' % stub_name) + (',\n    '.join(tmp)) + ')')
@@ -660,16 +689,20 @@ class Generator(object):
 
         signal_name = dbus_gutils_wincaps_to_uscore(dbus_name).replace('_',
                 '-')
-        in_base_init.append('  /**')
-        in_base_init.append('   * %s%s::%s:'
+
+        self.d('/**')
+        self.d(' * %s%s::%s:'
                 % (self.Prefix, self.node_name_mixed, signal_name))
+        self.d(' * @self: an object')
         for (ctype, name, gtype) in args:
-            in_base_init.append('   * @%s: %s (FIXME, generate documentation)'
+            self.d(' * @%s: %s (FIXME, generate documentation)'
                    % (name, ctype))
-        in_base_init.append('   *')
-        in_base_init.append('   * The %s D-Bus signal is emitted whenever '
+        self.d(' *')
+        self.d(' * The %s D-Bus signal is emitted whenever '
                 'this GObject signal is.' % dbus_name)
-        in_base_init.append('   */')
+        self.d(' */')
+        self.d('')
+
         in_base_init.append('  %s_signals[%s] ='
                             % (self.node_name_lc, const_name))
         in_base_init.append('  g_signal_new ("%s",' % signal_name)
@@ -677,8 +710,7 @@ class Generator(object):
         in_base_init.append('      G_SIGNAL_RUN_LAST|G_SIGNAL_DETAILED,')
         in_base_init.append('      0,')
         in_base_init.append('      NULL, NULL,')
-        in_base_init.append('      %s,'
-                % signal_to_marshal_name(signal, self.signal_marshal_prefix))
+        in_base_init.append('      g_cclosure_marshal_generic,')
         in_base_init.append('      G_TYPE_NONE,')
         tmp = ['%d' % len(args)] + [gtype for (ctype, name, gtype) in args]
         in_base_init.append('      %s);' % ',\n      '.join(tmp))
@@ -695,22 +727,20 @@ class Generator(object):
 
     def __call__(self):
         nodes = self.dom.getElementsByTagName('node')
-        nodes.sort(cmp_by_name)
+        nodes.sort(key=key_by_name)
 
         self.h('#include <glib-object.h>')
         self.h('#include <dbus/dbus-glib.h>')
 
-        if self.have_properties(nodes):
-            self.h('#include <telepathy-glib/dbus-properties-mixin.h>')
+        for header in self.headers:
+            self.h('#include %s' % header)
+        self.h('')
 
         self.h('')
         self.h('G_BEGIN_DECLS')
         self.h('')
 
         self.b('#include "%s.h"' % self.basename)
-        self.b('')
-        for header in self.headers:
-            self.b('#include %s' % header)
         self.b('')
 
         for node in nodes:
@@ -725,9 +755,9 @@ class Generator(object):
 
         self.h('')
         self.b('')
-        open(self.basename + '.h', 'w').write('\n'.join(self.__header))
-        open(self.basename + '.c', 'w').write('\n'.join(self.__body))
-
+        file_set_contents(self.basename + '.h', u('\n').join(self.__header).encode('utf-8'))
+        file_set_contents(self.basename + '.c', u('\n').join(self.__body).encode('utf-8'))
+        file_set_contents(self.basename + '-gtk-doc.h', u('\n').join(self.__docs).encode('utf-8'))
 
 def cmdline_error():
     print("""\

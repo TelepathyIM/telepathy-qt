@@ -1,11 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 
+import sys
 from sys import argv, stdout, stderr
 import codecs, locale
 import os
 import xml.dom.minidom
 
-stdout = codecs.getwriter('utf-8')(stdout)
+if sys.version_info[0] < 3:
+    stdout = codecs.getwriter('utf-8')(stdout)
 
 NS_XI = 'http://www.w3.org/2001/XInclude'
 
@@ -34,6 +36,11 @@ if __name__ == '__main__':
     argv = argv[1:]
     dom = xml.dom.minidom.parse(argv[0])
     xincludate(dom, argv[0])
-    xml = dom.toxml('utf-8')
-    stdout.buffer.write(xml)
-    stdout.buffer.write(b'\n')
+
+    if sys.version_info[0] >= 3:
+        xml = dom.toxml(encoding=None)
+    else:
+        xml = dom.toxml()
+
+    stdout.write(xml)
+    stdout.write('\n')

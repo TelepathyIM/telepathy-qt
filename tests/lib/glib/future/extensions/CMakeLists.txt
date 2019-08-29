@@ -59,8 +59,8 @@ if(ENABLE_TP_GLIB_TESTS)
         set(ARGS
             ${CMAKE_SOURCE_DIR}/tools/glib-ginterface-gen.py
                 --filename=${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}
-                --signal-marshal-prefix=_future_ext
-                --include='<telepathy-glib/dbus.h>'
+                --signal-marshal-prefix=NOT_NEEDED
+                --include='<telepathy-glib/dbus-properties-mixin.h>'
                 --not-implemented-func='tp_dbus_g_method_return_not_implemented'
                 --allow-unstable
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.xml Future_Svc_)
