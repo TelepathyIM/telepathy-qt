@@ -117,6 +117,7 @@ set(CMAKE_REQUIRED_DEFINITIONS "")
 # set the flags (-fPIE) here so that CHECK_CXX_SOURCE_COMPILES works properly if qt5 was built with
 # -reduce-locations
 set(CMAKE_REQUIRED_FLAGS "${TP_QT_EXECUTABLE_LINKER_FLAGS}")
+set(CMAKE_REQUIRED_LIBRARIES ${QT_QTCORE_LIBRARY})
 
 CHECK_CXX_SOURCE_COMPILES("
 #include <QtCore/QtGlobal>
