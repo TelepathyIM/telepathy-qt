@@ -136,9 +136,22 @@ add_feature_info("Qt GLib support" QT_GLIB_SUPPORT
 set(CMAKE_REQUIRED_FLAGS "")
 
 # Find python version >= 3
-find_package(Python3 REQUIRED)
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+    find_package(PythonInterp 3 REQUIRED)
+    set_package_properties(PythonInterp PROPERTIES
+                           DESCRIPTION "Python Interpreter"
+                           URL "http://www.python.org"
+                           TYPE REQUIRED)
 
-set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+    # PythonInterp exposes PYTHON_EXECUTABLE on its own
+else()
+    find_package(Python3 REQUIRED)
+    set_package_properties(Python3 PROPERTIES
+                           DESCRIPTION "Python Interpreter"
+                           URL "http://www.python.org"
+                           TYPE REQUIRED)
+    set(PYTHON_EXECUTABLE "${Python3_EXECUTABLE}")
+endif()
 
 # Check for dbus-python
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import dbus.mainloop.glib"
