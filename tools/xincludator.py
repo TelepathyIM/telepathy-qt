@@ -38,9 +38,10 @@ if __name__ == '__main__':
     xincludate(dom, argv[0])
 
     if sys.version_info[0] >= 3:
-        xml = dom.toxml(encoding=None)
+        xml = dom.toxml('utf-8')
+        stdout.buffer.write(xml)
+        stdout.buffer.write(b'\n')
     else:
         xml = dom.toxml()
-
-    stdout.write(xml)
-    stdout.write('\n')
+        stdout.write(xml)
+        stdout.write('\n')
