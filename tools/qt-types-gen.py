@@ -299,7 +299,7 @@ TP_QT_NO_EXPORT void _registerTypes()
  * %s, but needed to have a discrete type in the Qt type system.
  */
 """ % (val, get_headerfile_cmd(self.realinclude, self.prettyinclude), array_of, real))
-            self.decl(self.faketype(val, real))
+            self.decl(self.faketype(val, real, array_of))
             self.to_declare.append(self.namespace + '::' + val)
 
             self.both('%s QDBusArgument& operator<<(QDBusArgument& arg, const %s &list)' %
@@ -520,7 +520,7 @@ struct %(visibility)s %(name)s
 %s\
  */
 """ % (depinfo.binding.val, get_headerfile_cmd(self.realinclude, self.prettyinclude), realtype, format_docstring(depinfo.el, self.refs)))
-            self.decl(self.faketype(depinfo.binding.val, realtype))
+            self.decl(self.faketype(depinfo.binding.val, realtype,  "std::pair<" + bindings[0].val + ", " + bindings[1].val + "> "))
         else:
             raise WTF(depinfo.el.localName)
 
@@ -555,12 +555,13 @@ typedef QList<%s> %sList;
 
 """ % (get_headerfile_cmd(self.realinclude, self.prettyinclude), list_of, list_of, list_of))
 
-    def faketype(self, fake, real):
+    def faketype(self, fake, real, stdtype):
         return """\
 struct %(visibility)s %(fake)s : public %(real)s
 {
     %(fake)s() : %(real)s() {}
     %(fake)s(const %(real)s& a) : %(real)s(a) {}
+    %(fake)s(std::initializer_list<%(stdtype)s> a) : %(real)s(a) {}
 
     %(fake)s& operator=(const %(real)s& a)
     {
@@ -569,7 +570,7 @@ struct %(visibility)s %(fake)s : public %(real)s
     }
 };
 
-""" % {'fake' : fake, 'real' : real, 'visibility': self.visibility}
+""" % {'fake' : fake, 'real' : real, 'stdtype' : stdtype, 'visibility': self.visibility}
 
 if __name__ == '__main__':
     options, argv = gnu_getopt(sys.argv[1:], '',
