@@ -188,7 +188,7 @@ class Account(Object):
                 (Connection_Presence_Type_Offline, 'offline', ''),
                 signature='uss')
         self._avatar = dbus.Struct(
-                (dbus.ByteArray(''), 'image/png'),
+                (dbus.ByteArray(bytes()), 'image/png'),
                 signature='ays')
         self._interfaces = [ACCOUNT_IFACE_AVATAR_IFACE,]
 
