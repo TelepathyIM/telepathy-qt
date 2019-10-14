@@ -176,18 +176,21 @@ QList<Tp::ContactPtr> TestConnHelper::contacts(const QStringList &ids,
 {
     mLoop->processEvents();
 
-    QList<Tp::ContactPtr> ret;
+    qWarning() << "BEGIN TO HOLD contacts" << ids;
+
     Tp::PendingContacts *pc = mClient->contactManager()->contactsForIdentifiers(ids, features);
-    mContactFeatures = features;
-    QObject::connect(pc,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(expectContactsForIdentifiersFinished(Tp::PendingOperation*)));
-    if (mLoop->exec() == 0) {
-        ret = mContacts;
+    QSignalSpy spy(pc, &Tp::PendingOperation::finished);
+    if (!spy.wait()) {
+        qWarning() << "Unable to wait!";
+        return { };
     }
-    mContactFeatures.clear();
-    mContacts.clear();
-    return ret;
+    if (pc->isError()) {
+        qWarning() << "Unable to get contacts:" << pc->errorName() << '/' << pc->errorMessage();
+        return { };
+    }
+    checkFinishedContactsForIdentifiers(pc, features);
+
+    return pc->contacts();
 }
 
 QList<Tp::ContactPtr> TestConnHelper::contacts(const Tp::UIntList &handles,
@@ -341,14 +344,17 @@ void TestConnHelper::expectConnInvalidated()
     mLoop->exit(0);
 }
 
-void TestConnHelper::expectContactsForIdentifiersFinished(Tp::PendingOperation *op)
+void TestConnHelper::checkFinishedContactsForIdentifiers(Tp::PendingContacts *pc,
+                                                         const Tp::Features &features)
 {
-    Tp::PendingContacts *pc = qobject_cast<Tp::PendingContacts *>(op);
     QCOMPARE(pc->isForHandles(), false);
     QCOMPARE(pc->isForIdentifiers(), true);
     QCOMPARE(pc->isUpgrade(), false);
+    for (const Tp::Feature &feature : features) {
+        QVERIFY(pc->features().contains(feature));
+    }
 
-    expectPendingContactsFinished(pc);
+    expectPendingContactsFinished(pc, features);
 }
 
 void TestConnHelper::expectContactsForHandlesFinished(Tp::PendingOperation *op)
@@ -383,6 +389,25 @@ void TestConnHelper::expectPendingContactsFinished(Tp::PendingContacts *pc)
             QVERIFY(contact->requestedFeatures().contains(mContactFeatures));
         }
         mLoop->exit(0);
+    }
+}
+
+void TestConnHelper::expectPendingContactsFinished(Tp::PendingContacts *pc,
+                                                   const Tp::Features &features)
+{
+    QCOMPARE(pc->manager(), mClient->contactManager());
+    if (pc->isError()) {
+        qWarning().nospace() << pc->errorName() << ": " << pc->errorMessage();
+    } else {
+        for (const Tp::Feature &feature : features) {
+            if (!pc->features().contains(feature)) {
+                qWarning() << Q_FUNC_INFO << "The result has no requested feature" << feature;
+            }
+        }
+        const QList<Tp::ContactPtr> contacts = pc->contacts();
+        for (const Tp::ContactPtr &contact : contacts) {
+            QVERIFY(contact->requestedFeatures().contains(features));
+        }
     }
 }
 

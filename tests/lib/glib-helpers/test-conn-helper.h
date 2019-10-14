@@ -68,7 +68,8 @@ public:
 
 private Q_SLOTS:
     void expectConnInvalidated();
-    void expectContactsForIdentifiersFinished(Tp::PendingOperation *op);
+    void checkFinishedContactsForIdentifiers(Tp::PendingContacts *pc,
+                                             const Tp::Features &features);
     void expectContactsForHandlesFinished(Tp::PendingOperation *op);
     void expectUpgradeContactsFinished(Tp::PendingOperation *op);
     void expectCreateChannelFinished(Tp::PendingOperation *op);
@@ -85,6 +86,7 @@ private:
             GType gType, const char *firstPropertyName, va_list varArgs);
 
     void expectPendingContactsFinished(Tp::PendingContacts *pc);
+    void expectPendingContactsFinished(Tp::PendingContacts *pc, const Tp::Features &features);
 
     Test *mParent;
     QEventLoop *mLoop;
