@@ -542,7 +542,11 @@ void TestClientFactories::initTestCase()
 
     QObject *request = new QObject(this);
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
     mUserActionTime = QDateTime::currentDateTime().toTime_t();
+#else
+    mUserActionTime = QDateTime::currentDateTime().toSecsSinceEpoch();
+#endif
     new ChannelRequestAdaptor(QDBusObjectPath(mAccount->objectPath()),
             mUserActionTime,
             QString(),
@@ -886,7 +890,11 @@ void TestClientFactories::testHandleChannels()
     QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->account().data(),
              mAccount.data());
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
     QCOMPARE(client1->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
+#else
+    QCOMPARE(client1->mHandleChannelsUserActionTime.toSecsSinceEpoch(), mUserActionTime);
+#endif
 
     Tp::ObjectPathList handledChannels;
     QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
@@ -926,7 +934,11 @@ void TestClientFactories::testHandleChannels()
     QCOMPARE(client2->mHandleChannelsRequestsSatisfied.first()->account().data(),
              mAccount.data());
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
     QCOMPARE(client2->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
+#else
+    QCOMPARE(client2->mHandleChannelsUserActionTime.toSecsSinceEpoch(), mUserActionTime);
+#endif
 
     QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText1ChanPath)));

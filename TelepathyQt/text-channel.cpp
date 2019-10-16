@@ -1140,7 +1140,11 @@ void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
     MessagePart header;
 
     if (timestamp == 0) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
         timestamp = QDateTime::currentDateTime().toTime_t();
+#else
+        timestamp = QDateTime::currentDateTime().toSecsSinceEpoch();
+#endif
     }
     header.insert(QLatin1String("message-received"),
             QDBusVariant(static_cast<qlonglong>(timestamp)));
@@ -1192,7 +1196,11 @@ void TextChannel::onTextSendError(uint error, uint timestamp, uint type,
 
     header.insert(QLatin1String("message-received"),
             QDBusVariant(static_cast<qlonglong>(
+#if QT_VERSION_CHECK(5, 8, 0)
                     QDateTime::currentDateTime().toTime_t())));
+#else
+                    QDateTime::currentDateTime().toSecsSinceEpoch())));
+#endif
     header.insert(QLatin1String("message-type"),
             QDBusVariant(static_cast<uint>(
                     ChannelTextMessageTypeDeliveryReport)));

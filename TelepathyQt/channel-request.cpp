@@ -225,7 +225,11 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
     uint stamp = (uint) qdbus_cast<qlonglong>(props.value(QLatin1String("UserActionTime")));
     if (stamp != 0) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
         userActionTime = QDateTime::fromTime_t(stamp);
+#else
+        userActionTime = QDateTime::fromSecsSinceEpoch(stamp);
+#endif
     }
 
     preferredHandler = qdbus_cast<QString>(props.value(QLatin1String("PreferredHandler")));
@@ -505,7 +509,11 @@ QVariantMap ChannelRequest::immutableProperties() const
 
     if (userActionTime().isValid()) {
         props.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".UserActionTime"),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             QVariant::fromValue(userActionTime().toTime_t()));
+#else
+            QVariant::fromValue(userActionTime().toSecsSinceEpoch()));
+#endif
     }
 
     if (!preferredHandler().isNull()) {

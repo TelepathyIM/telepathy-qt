@@ -383,14 +383,14 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
     QDBusVariant accessControlParam;
     uchar credentialByte = 0;
     if (accessControl == SocketAccessControlLocalhost) {
-        accessControlParam.setVariant(qVariantFromValue(static_cast<uint>(0)));
+        accessControlParam.setVariant(QVariant::fromValue(static_cast<uint>(0)));
     } else if (accessControl == SocketAccessControlCredentials) {
         if (mPriv->initRandom) {
             qsrand(QTime::currentTime().msec());
             mPriv->initRandom = false;
         }
         credentialByte = static_cast<uchar>(qrand());
-        accessControlParam.setVariant(qVariantFromValue(credentialByte));
+        accessControlParam.setVariant(QVariant::fromValue(credentialByte));
     } else {
         Q_ASSERT(false);
     }

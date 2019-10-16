@@ -902,7 +902,11 @@ void TestStreamTubeHandlers::testBasicTcpExport()
 
     QDBusConnection bus = server->registrar()->dbusConnection();
     new ChannelRequestAdaptor(QDBusObjectPath(mAcc->objectPath()),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             userActionTime.toTime_t(),
+#else
+            userActionTime.toSecsSinceEpoch(),
+#endif
             QString(),
             QualifiedPropertyValueMapList(),
             QStringList(),
@@ -921,7 +925,11 @@ void TestStreamTubeHandlers::testBasicTcpExport()
             QDBusObjectPath(mConn->objectPath()),
             ChannelDetailsList() << details,
             ObjectPathList() << QDBusObjectPath(requestPath),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             userActionTime.toTime_t(),
+#else
+            userActionTime.toSecsSinceEpoch(),
+#endif
             QVariantMap());
 
     QCOMPARE(mLoop->exec(), 0);
@@ -1009,7 +1017,11 @@ void TestStreamTubeHandlers::testFailedExport()
             QDBusObjectPath(mConn->objectPath()),
             ChannelDetailsList() << details,
             ObjectPathList(),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             QDateTime::currentDateTime().toTime_t(),
+#else
+            QDateTime::currentDateTime().toSecsSinceEpoch(),
+#endif
             QVariantMap());
 
     QCOMPARE(mLoop->exec(), 0);
@@ -1056,7 +1068,11 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
             QDBusObjectPath(mConn->objectPath()),
             ChannelDetailsList() << details,
             ObjectPathList(),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             QDateTime::currentDateTime().toTime_t(),
+#else
+            QDateTime::currentDateTime().toSecsSinceEpoch(),
+#endif
             QVariantMap());
 
     QCOMPARE(mLoop->exec(), 0);
@@ -1229,7 +1245,11 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
             QDBusObjectPath(mConn->objectPath()),
             ChannelDetailsList() << details,
             ObjectPathList(),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             QDateTime::currentDateTime().toTime_t(),
+#else
+            QDateTime::currentDateTime().toSecsSinceEpoch(),
+#endif
             QVariantMap());
     processDBusQueue(mConn->client().data());
 
@@ -1245,7 +1265,11 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
             QDBusObjectPath(mConn->objectPath()),
             ChannelDetailsList() << details,
             ObjectPathList(),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             QDateTime::currentDateTime().toTime_t(),
+#else
+            QDateTime::currentDateTime().toSecsSinceEpoch(),
+#endif
             QVariantMap());
     processDBusQueue(mConn->client().data());
 
@@ -1260,7 +1284,11 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
             QDBusObjectPath(mConn->objectPath()),
             ChannelDetailsList() << details,
             ObjectPathList(),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             QDateTime::currentDateTime().toTime_t(),
+#else
+            QDateTime::currentDateTime().toSecsSinceEpoch(),
+#endif
             QVariantMap());
     processDBusQueue(mConn->client().data());
 
@@ -1280,7 +1308,11 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
             QDBusObjectPath(mConn->objectPath()),
             ChannelDetailsList() << details,
             ObjectPathList(),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             QDateTime::currentDateTime().toTime_t(),
+#else
+            QDateTime::currentDateTime().toSecsSinceEpoch(),
+#endif
             QVariantMap());
     processDBusQueue(mConn->client().data());
 
@@ -1747,7 +1779,11 @@ void TestStreamTubeHandlers::testClientConnMonitoring()
             QDBusObjectPath(mConn->objectPath()),
             ChannelDetailsList() << details,
             ObjectPathList(),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             QDateTime::currentDateTime().toTime_t(),
+#else
+            QDateTime::currentDateTime().toSecsSinceEpoch(),
+#endif
             QVariantMap());
 
     QCOMPARE(mLoop->exec(), 0);

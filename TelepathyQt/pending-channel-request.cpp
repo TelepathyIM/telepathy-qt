@@ -104,7 +104,11 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
                     channelDispatcherInterface->CreateChannelWithHints(
                         QDBusObjectPath(account->objectPath()),
                         requestedProperties,
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
                         userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+#else
+                        userActionTime.isNull() ? 0 : userActionTime.toSecsSinceEpoch(),
+#endif
                         preferredHandler, hints.allHints()), this);
             } else {
                 warning() << "Hints passed to channel request won't have an effect"
@@ -117,7 +121,11 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
                     channelDispatcherInterface->CreateChannel(
                         QDBusObjectPath(account->objectPath()),
                         requestedProperties,
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
                         userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+#else
+                        userActionTime.isNull() ? 0 : userActionTime.toSecsSinceEpoch(),
+#endif
                         preferredHandler), this);
         }
     } else {
@@ -127,7 +135,11 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
                     channelDispatcherInterface->EnsureChannelWithHints(
                         QDBusObjectPath(account->objectPath()),
                         requestedProperties,
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
                         userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+#else
+                        userActionTime.isNull() ? 0 : userActionTime.toSecsSinceEpoch(),
+#endif
                         preferredHandler, hints.allHints()), this);
             } else {
                 warning() << "Hints passed to channel request won't have an effect"
@@ -140,7 +152,11 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
                     channelDispatcherInterface->EnsureChannel(
                         QDBusObjectPath(account->objectPath()),
                         requestedProperties,
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
                         userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+#else
+                        userActionTime.isNull() ? 0 : userActionTime.toSecsSinceEpoch(),
+#endif
                         preferredHandler), this);
         }
     }

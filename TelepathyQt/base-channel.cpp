@@ -824,7 +824,11 @@ struct TP_QT_NO_EXPORT BaseChannelFileTransferType::Private {
         description = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Description")).toString();
         qint64 dbusDataValue = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Date")).value<qint64>();
         if (dbusDataValue != 0) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
             date.setTime_t(dbusDataValue);
+#else
+            date.setSecsSinceEpoch(dbusDataValue);
+#endif
         }
 
         if (request.contains(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".URI"))) {
@@ -909,7 +913,11 @@ QString BaseChannelFileTransferType::Adaptee::description() const
 
 qlonglong BaseChannelFileTransferType::Adaptee::date() const
 {
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
     return mInterface->date().toTime_t();
+#else
+    return mInterface->date().toSecsSinceEpoch();
+#endif
 }
 
 Tp::SupportedSocketMap BaseChannelFileTransferType::Adaptee::availableSocketTypes() const
@@ -1272,7 +1280,11 @@ QVariantMap BaseChannelFileTransferType::immutableProperties() const
     map.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Description"),
                QVariant::fromValue(description()));
     map.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Date"),
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
                QVariant::fromValue(date().toTime_t()));
+#else
+               QVariant::fromValue(date().toSecsSinceEpoch()));
+#endif
     map.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".AvailableSocketTypes"),
                QVariant::fromValue(availableSocketTypes()));
 
@@ -3359,7 +3371,11 @@ uint BaseChannelRoomInterface::Adaptee::creatorHandle() const
 
 qlonglong BaseChannelRoomInterface::Adaptee::creationTimestamp() const
 {
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
     return mInterface->creationTimestamp().toTime_t();
+#else
+    return mInterface->creationTimestamp().toSecsSinceEpoch();
+#endif
 }
 
 /**

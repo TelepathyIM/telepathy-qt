@@ -134,7 +134,11 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
     uri = qdbus_cast<QString>(props[QLatin1String("URI")]);
     contentHash = qdbus_cast<QString>(props[QLatin1String("ContentHash")]);
     description = qdbus_cast<QString>(props[QLatin1String("Description")]);
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
     lastModificationTime.setTime_t((uint) qdbus_cast<qulonglong>(props[QLatin1String("Date")]));
+#else
+    lastModificationTime.setSecsSinceEpoch((uint) qdbus_cast<qulonglong>(props[QLatin1String("Date")]));
+#endif
     contentHashType = (FileHashType) qdbus_cast<uint>(props[QLatin1String("ContentHashType")]);
     initialOffset = qdbus_cast<qulonglong>(props[QLatin1String("InitialOffset")]);
     size = qdbus_cast<qulonglong>(props[QLatin1String("Size")]);

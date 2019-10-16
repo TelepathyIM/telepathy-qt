@@ -480,7 +480,11 @@ void TestClient::initTestCase()
 
     QObject *request = new QObject(this);
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
     mUserActionTime = QDateTime::currentDateTime().toTime_t();
+#else
+    mUserActionTime = QDateTime::currentDateTime().toSecsSinceEpoch();
+#endif
     ChannelRequestAdaptor *channelRequest  = new ChannelRequestAdaptor(QDBusObjectPath(mAccount->objectPath()),
             mUserActionTime,
             QString(),
@@ -675,9 +679,9 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     channelReqImmutableProps.insert(
                 TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Interface.DomainSpecific.IntegerProp"), 3);
     channelReqImmutableProps.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Account"),
-            qVariantFromValue(QDBusObjectPath(mAccount->objectPath())));
+            QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
     reqPropsMap.insert(QDBusObjectPath(mChannelRequestPath), channelReqImmutableProps);
-    observerInfo.insert(QLatin1String("request-properties"), qVariantFromValue(reqPropsMap));
+    observerInfo.insert(QLatin1String("request-properties"), QVariant::fromValue(reqPropsMap));
     observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
             channelDetailsList,
@@ -753,12 +757,12 @@ void TestClient::testAddDispatchOperation()
     handledChannels.clear();
     QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(!handledChannels.isEmpty());
-    qSort(handledChannels);
+    std::sort(handledChannels.begin(), handledChannels.end());
     Tp::ObjectPathList expectedHandledChannels;
     Q_FOREACH (const ChannelDetails &details, mCDO->Channels()) {
         expectedHandledChannels << details.channel;
     }
-    qSort(expectedHandledChannels);
+    std::sort(expectedHandledChannels.begin(), expectedHandledChannels.end());
     QCOMPARE(handledChannels, expectedHandledChannels);
 }
 
@@ -789,7 +793,11 @@ void TestClient::testHandleChannels()
     QCOMPARE(client1->mHandleChannelsConnection->objectPath(), mConn->objectPath());
     QCOMPARE(client1->mHandleChannelsChannels.first()->objectPath(), mText1ChanPath);
     QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
     QCOMPARE(client1->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
+#else
+    QCOMPARE(client1->mHandleChannelsUserActionTime.toSecsSinceEpoch(), mUserActionTime);
+#endif
 
     Tp::ObjectPathList handledChannels;
     QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
@@ -817,7 +825,11 @@ void TestClient::testHandleChannels()
     QCOMPARE(client2->mHandleChannelsConnection->objectPath(), mConn->objectPath());
     QCOMPARE(client2->mHandleChannelsChannels.first()->objectPath(), mText2ChanPath);
     QCOMPARE(client2->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
     QCOMPARE(client2->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
+#else
+    QCOMPARE(client2->mHandleChannelsUserActionTime.toSecsSinceEpoch(), mUserActionTime);
+#endif
 
     QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText1ChanPath)));

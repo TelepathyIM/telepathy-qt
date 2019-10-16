@@ -126,11 +126,11 @@ public:
         ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces"),
                    mInterfaces);
         ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters"),
-                   qVariantFromValue(mParameters));
+                   QVariant::fromValue(mParameters));
         ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".ConnectionInterfaces"),
                    mConnInterfaces);
         ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses"),
-                   qVariantFromValue(mRCCs));
+                   QVariant::fromValue(mRCCs));
         ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".VCardField"),
                    mVCardField);
         ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".EnglishName"),
@@ -408,7 +408,7 @@ public:
     {
         QVariantMap ret;
         ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"),
-                   qVariantFromValue(mStatuses));
+                   QVariant::fromValue(mStatuses));
         return ret;
     }
 

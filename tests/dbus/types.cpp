@@ -39,9 +39,9 @@ public: // Properties
         SocketAddressIPv6 saIPv6;
         saIPv6.address = QLatin1String("3.3.3.3");
         saIPv6.port = 3333;
-        ret.insert(QLatin1String("SU"), qVariantFromValue(su));
-        ret.insert(QLatin1String("saIPv4"), qVariantFromValue(saIPv4));
-        ret.insert(QLatin1String("saIPv6"), qVariantFromValue(saIPv6));
+        ret.insert(QLatin1String("SU"), QVariant::fromValue(su));
+        ret.insert(QLatin1String("saIPv4"), QVariant::fromValue(saIPv4));
+        ret.insert(QLatin1String("saIPv6"), QVariant::fromValue(saIPv6));
 
         return ret;
     }

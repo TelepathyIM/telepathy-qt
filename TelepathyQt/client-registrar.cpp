@@ -455,7 +455,11 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
 
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
     if (userActionTime_t != 0) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
         invocation->time = QDateTime::fromTime_t((uint) userActionTime_t);
+#else
+        invocation->time = QDateTime::fromSecsSinceEpoch((uint) userActionTime_t);
+#endif
     }
 
     invocation->ctx = HandleChannelsInvocationContext::create(mBus, message,

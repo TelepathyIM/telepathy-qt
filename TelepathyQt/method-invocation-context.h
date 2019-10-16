@@ -119,14 +119,14 @@ public:
 
         mFinished = true;
 
-        setReplyValue(0, qVariantFromValue(t1));
-        setReplyValue(1, qVariantFromValue(t2));
-        setReplyValue(2, qVariantFromValue(t3));
-        setReplyValue(3, qVariantFromValue(t4));
-        setReplyValue(4, qVariantFromValue(t5));
-        setReplyValue(5, qVariantFromValue(t6));
-        setReplyValue(6, qVariantFromValue(t7));
-        setReplyValue(7, qVariantFromValue(t8));
+        setReplyValue(0, QVariant::fromValue(t1));
+        setReplyValue(1, QVariant::fromValue(t2));
+        setReplyValue(2, QVariant::fromValue(t3));
+        setReplyValue(3, QVariant::fromValue(t4));
+        setReplyValue(4, QVariant::fromValue(t5));
+        setReplyValue(5, QVariant::fromValue(t6));
+        setReplyValue(6, QVariant::fromValue(t7));
+        setReplyValue(7, QVariant::fromValue(t8));
 
         if (mReply.isEmpty()) {
             mBus.send(mMessage.createReply());

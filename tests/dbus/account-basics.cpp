@@ -103,7 +103,7 @@ private:
 #define TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(Type, PropertyName) \
 void TestAccountBasics::onAccount ## PropertyName ## Changed(Type value) \
 { \
-    mProps[QLatin1String(#PropertyName)] = qVariantFromValue(value); \
+    mProps[QLatin1String(#PropertyName)] = QVariant::fromValue(value); \
     mLoop->exit(0); \
 }
 
@@ -295,15 +295,15 @@ void TestAccountBasics::testBasics()
         SimpleStatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
         expectedPresences.append(PresenceSpec(QLatin1String("offline"), prSpec));
     }
-    qSort(expectedPresences);
+    std::sort(expectedPresences.begin(), expectedPresences.end());
 
     PresenceSpecList presences = acc->allowedPresenceStatuses(false);
-    qSort(presences);
+    std::sort(presences.begin(), presences.end());
     QCOMPARE(presences.size(), 2);
     QCOMPARE(presences, expectedPresences);
 
     presences = acc->allowedPresenceStatuses(true);
-    qSort(presences);
+    std::sort(presences.begin(), presences.end());
     QCOMPARE(presences.size(), 2);
     QCOMPARE(presences, expectedPresences);
 
@@ -491,10 +491,10 @@ void TestAccountBasics::testBasics()
         SimpleStatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
         expectedPresences.append(PresenceSpec(QLatin1String("offline"), prSpec));
     }
-    qSort(expectedPresences);
+    std::sort(expectedPresences.begin(), expectedPresences.end());
 
     presences = acc->allowedPresenceStatuses(false);
-    qSort(presences);
+    std::sort(presences.begin(), presences.end());
     QCOMPARE(presences.size(), 3);
     QCOMPARE(presences, expectedPresences);
 
@@ -502,10 +502,10 @@ void TestAccountBasics::testBasics()
         SimpleStatusSpec prSpec = { ConnectionPresenceTypeExtendedAway, false, false };
         expectedPresences.append(PresenceSpec(QLatin1String("xa"), prSpec));
     }
-    qSort(expectedPresences);
+    std::sort(expectedPresences.begin(), expectedPresences.end());
 
     presences = acc->allowedPresenceStatuses(true);
-    qSort(presences);
+    std::sort(presences.begin(), presences.end());
     QCOMPARE(presences.size(), 4);
     QCOMPARE(presences, expectedPresences);
 

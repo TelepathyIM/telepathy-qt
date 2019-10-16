@@ -199,7 +199,11 @@ QDateTime LocationInfo::timestamp() const
     qlonglong t = qdbus_cast<qlonglong>(mPriv->location.value(
                 QLatin1String("timestamp")));
     if (t != 0) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
         return QDateTime::fromTime_t((uint) t);
+#else
+        return QDateTime::fromSecsSinceEpoch((uint) t);
+#endif
     }
     return QDateTime();
 }

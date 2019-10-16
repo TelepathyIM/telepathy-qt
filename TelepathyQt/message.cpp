@@ -242,7 +242,11 @@ QDateTime Message::sent() const
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
     uint stamp = valueFromPart(mPriv->parts, 0, "message-sent").toUInt();
     if (stamp != 0) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
         return QDateTime::fromTime_t(stamp);
+#else
+        return QDateTime::fromSecsSinceEpoch(stamp);
+#endif
     } else {
         return QDateTime();
     }
@@ -729,7 +733,11 @@ ReceivedMessage::ReceivedMessage(const MessagePartList &parts,
     if (!mPriv->parts[0].contains(QLatin1String("message-received"))) {
         mPriv->parts[0].insert(QLatin1String("message-received"),
                 QDBusVariant(static_cast<qlonglong>(
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
                         QDateTime::currentDateTime().toTime_t())));
+#else
+                        QDateTime::currentDateTime().toSecsSinceEpoch())));
+#endif
     }
     mPriv->textChannel = channel;
 }
@@ -771,7 +779,11 @@ QDateTime ReceivedMessage::received() const
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
     uint stamp = valueFromPart(mPriv->parts, 0, "message-received").toUInt();
     if (stamp != 0) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
         return QDateTime::fromTime_t(stamp);
+#else
+        return QDateTime::fromSecsSinceEpoch(stamp);
+#endif
     } else {
         return QDateTime();
     }
