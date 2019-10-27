@@ -1929,8 +1929,10 @@ void TestStreamTubeHandlers::cleanupTestCase()
     mAM.reset();
     mAcc.reset();
 
-    QCOMPARE(mConn->disconnect(), true);
-    delete mConn;
+    if (mConn) {
+        QCOMPARE(mConn->disconnect(), true);
+        delete mConn;
+    }
 
     cleanupTestCaseImpl();
 }
