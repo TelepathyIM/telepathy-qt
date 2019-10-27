@@ -144,8 +144,8 @@ public:
         : Test(parent),
           mChannelsCount(0), mSMChannelsCount(0)
     {
-        std::memset(mMessagesChanServices, 0, sizeof(mMessagesChanServices) / sizeof(ExampleEcho2Channel*));
-        std::memset(mCallableChanServices, 0, sizeof(mCallableChanServices) / sizeof(ExampleCallableMediaChannel*));
+        std::memset(mMessagesChanServices, 0, sizeof(mMessagesChanServices));
+        std::memset(mCallableChanServices, 0, sizeof(mCallableChanServices));
     }
 
 protected Q_SLOTS:
