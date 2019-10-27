@@ -162,10 +162,10 @@ void TestConferenceChan::testConference()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
 
-    QStringList expectedObjectPaths;
+    QSet<QString> expectedObjectPaths;
     expectedObjectPaths << mTextChan1Path << mTextChan2Path;
 
-    QStringList objectPaths;
+    QSet<QString> objectPaths;
     Q_FOREACH (const ChannelPtr &channel, mChan->conferenceInitialChannels()) {
         objectPaths << channel->objectPath();
     }
