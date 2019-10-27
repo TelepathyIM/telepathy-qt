@@ -289,16 +289,21 @@ Tp::ChannelPtr TestConnHelper::ensureChannel(const QVariantMap &request)
 {
     mLoop->processEvents();
 
-    Tp::ChannelPtr ret;
     Tp::PendingChannel *pc = mClient->lowlevel()->ensureChannel(request);
-    QObject::connect(pc,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(expectEnsureChannelFinished(Tp::PendingOperation*)));
-    if (mLoop->exec() == 0) {
-        ret = mChannel;
+    QSignalSpy pcSpy(pc, &Tp::PendingOperation::finished);
+    if (!pcSpy.wait()) {
+        qWarning() << "Unable to wait!";
+        return Tp::ChannelPtr();
     }
-    mChannel.reset();
-    return ret;
+
+    if (pc->isError()) {
+        qWarning().nospace() << pc->errorName() << ": " << pc->errorMessage();
+        return Tp::ChannelPtr();
+    }
+    if (pc->yours()) {
+        qDebug() << "ensureChannel() created a new channel for this call!";
+    }
+    return pc->channel();
 }
 
 Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType, const Tp::ContactPtr &target)
