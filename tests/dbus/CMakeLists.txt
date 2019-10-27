@@ -52,7 +52,7 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt_add_dbus_unit_test(ConnectionRosterLegacy conn-roster-legacy tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ConnectionRoster conn-roster example-cm-contactlist2 tp-qt-tests-glib-helpers
         ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES} ${DBUS_GLIB_LIBRARIES} ${TELEPATHY_GLIB_LIBRARIES})
-    tpqt_add_dbus_unit_test(ConnectionRosterGroupsLegacy conn-roster-groups-legacy tp-glib-tests)
+    # tpqt_add_dbus_unit_test(ConnectionRosterGroupsLegacy conn-roster-groups-legacy tp-glib-tests)
     tpqt_add_dbus_unit_test(ConnectionRosterGroups conn-roster-groups example-cm-contactlist2
         ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES} ${DBUS_GLIB_LIBRARIES} ${TELEPATHY_GLIB_LIBRARIES})
     tpqt_add_dbus_unit_test(ContactFactory contact-factory tp-glib-tests tp-qt-tests-glib-helpers)
