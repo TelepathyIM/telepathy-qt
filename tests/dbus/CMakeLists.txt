@@ -33,7 +33,8 @@ if(ENABLE_TP_GLIB_TESTS)
         tpqt_add_dbus_unit_test(AccountSet account-set tp-glib-tests tp-qt-tests-glib-helpers)
         tpqt_add_dbus_unit_test(AccountChannelDispatcher account-channel-dispatcher tp-glib-tests tp-qt-tests-glib-helpers)
         tpqt_add_dbus_unit_test(Client client tp-glib-tests tp-qt-tests-glib-helpers)
-        tpqt_add_dbus_unit_test(ClientFactories client-factories tp-glib-tests)
+        # ClientFactories has no chance to work on modern Qt
+        # tpqt_add_dbus_unit_test(ClientFactories client-factories tp-glib-tests)
     endif()
 
     tpqt_add_dbus_unit_test(AccountConnectionFactory account-connection-factory tp-glib-tests tp-qt-tests-glib-helpers)
