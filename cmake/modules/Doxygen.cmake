@@ -14,7 +14,7 @@ if(DOXYGEN_FOUND)
     include(FindPackageHandleStandardArgs)
     find_package_handle_standard_args(QHELPGENERATOR DEFAULT_MSG QHELPGENERATOR_EXECUTABLE)
 
-    set(QT_TAGS_FILE     ${QT_DOC_DIR}/html/qt.tags)
+    set(QT_TAGS_FILE     ${QT_DOC_DIR}/qtcore/qtcore.tags)
     if(EXISTS ${QT_TAGS_FILE})
         find_package(Perl QUIET)
 

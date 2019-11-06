@@ -71,7 +71,6 @@ list(APPEND example_extensions_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connect
 add_library(example_extensions STATIC ${example_extensions_SRCS})
 add_dependencies(example_extensions example-extensions-connection-generation)
 target_link_libraries(example_extensions
-    ${QT_QTDBUS_LIBRARY}
-    ${QT_QTCORE_LIBRARY}
+    Qt5::Core
     telepathy-qt${QT_VERSION_MAJOR}
     ${TP_QT_LIBRARY_LINKER_FLAGS})

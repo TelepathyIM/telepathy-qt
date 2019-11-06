@@ -60,6 +60,7 @@ option(ENABLE_TESTS "Enable compilation of automated tests" TRUE)
 include(TelepathyDefaults)
 
 # This file contains all the tpqt macros used in the buildsystem
+include(QtMacros)
 include(TpQtMacros)
 
 include(FeatureSummary)
@@ -67,24 +68,20 @@ include(FeatureSummary)
 # external dependencies
 
 # Required dependencies
-# Find qt4 version >= 4.6 or qt5 >= 5.0.0
-set(QT4_MIN_VERSION "4.6.0")
-set(QT4_MAX_VERSION "5.0.0")
-set(QT5_MIN_VERSION "5.0.0")
-set(QT5_MAX_VERSION "6.0.0")
-find_package(Qt REQUIRED)
+set(QT_VERSION_MAJOR 5)
+SET(QT_VERSION_PC 5)
+set(QT_COMPONENTS Core DBus Network Xml)
 
-IF(QT_VERSION_MAJOR MATCHES 5)
-    # It is QtCore for Qt4 but Qt5Core for Qt5 in pkg-config
-    SET(QT_VERSION_PC 5)
-ENDIF()
+if(ENABLE_TESTS)
+    list(APPEND QT_COMPONENTS Test)
+endif()
 
-foreach(flag ${QT_CONFIG_FLAGS})
-    if (${flag} MATCHES "reduce_relocations")
-        set(TP_QT_EXECUTABLE_LINKER_FLAGS "-fPIE")
-        set(TP_QT_LIBRARY_LINKER_FLAGS "-fPIC")
-    endif ()
-endforeach()
+set(QT_MIN_VERSION "5.6.0")
+set(QT_MAX_VERSION "6.0.0")
+find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS ${QT_COMPONENTS})
+
+set(TP_QT_EXECUTABLE_LINKER_FLAGS "-fPIE")
+set(TP_QT_LIBRARY_LINKER_FLAGS "-fPIC")
 
 # This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
 # occurs, and will be used for the SOVERSION of the generated shared libraries.
@@ -108,8 +105,7 @@ endif ()
 include(Doxygen)
 
 include_directories(${CMAKE_SOURCE_DIR}
-                    ${CMAKE_BINARY_DIR}
-                    ${QT_INCLUDES})
+                    ${CMAKE_BINARY_DIR})
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII)
 
@@ -120,12 +116,12 @@ endif ()
 
 # Check for Qt Glib support
 include(CheckCXXSourceCompiles)
-set(CMAKE_REQUIRED_INCLUDES ${QT_INCLUDES})
+set(CMAKE_REQUIRED_INCLUDES "")
 set(CMAKE_REQUIRED_DEFINITIONS "")
 # set the flags (-fPIE) here so that CHECK_CXX_SOURCE_COMPILES works properly if qt5 was built with
 # -reduce-locations
 set(CMAKE_REQUIRED_FLAGS "${TP_QT_EXECUTABLE_LINKER_FLAGS}")
-set(CMAKE_REQUIRED_LIBRARIES ${QT_QTCORE_LIBRARY})
+set(CMAKE_REQUIRED_LIBRARIES Qt5::Core)
 
 CHECK_CXX_SOURCE_COMPILES("
 #include <QtCore/QtGlobal>
