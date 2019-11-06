@@ -144,7 +144,7 @@ add_feature_info("Qt GLib support" QT_GLIB_SUPPORT
 set(CMAKE_REQUIRED_FLAGS "")
 
 # Find python version >= 3
-if(${CMAKE_VERSION} VERSION_LESS 3.12)
+if(${CMAKE_VERSION} VERSION_LESS 3.15)
     find_package(PythonInterp 3 REQUIRED)
     set_package_properties(PythonInterp PROPERTIES
                            DESCRIPTION "Python Interpreter"
