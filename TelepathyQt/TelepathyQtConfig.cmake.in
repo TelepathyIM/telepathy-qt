@@ -12,6 +12,22 @@ if(NOT TelepathyQt@QT_VERSION_MAJOR@_FOUND)
     set(TELEPATHY_QT@QT_VERSION_MAJOR@_VERSION_NANO @TP_QT_NANO_VERSION@)
     set(TELEPATHY_QT@QT_VERSION_MAJOR@_VERSION @PACKAGE_VERSION@)
 
+    # Find the dependencies
+    include(CMakeFindDependencyMacro)
+
+    # Base Qt components set
+    set(_QT_COMPONENTS Core DBus Network)
+
+    if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.9)
+        find_dependency(Qt5 @QT_MINUMUM_VERSION@ COMPONENTS ${_QT_COMPONENTS})
+    else()
+        # Old CMake versions do not support COMPONENTS in find_dependency
+        foreach(_QT_MODULE ${_QT_COMPONENTS})
+            find_dependency(Qt5${_QT_MODULE} @QT_MINUMUM_VERSION@)
+        endforeach()
+    endif()
+    unset(_QT_COMPONENTS)
+
     # set the directories
     if(NOT TELEPATHY_QT@QT_VERSION_MAJOR@_INSTALL_DIR)
         set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_INSTALL_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@")
