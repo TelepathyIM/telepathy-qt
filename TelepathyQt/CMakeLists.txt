@@ -769,32 +769,35 @@ foreach(moc_src ${telepathy_qt_MOC_SRCS})
 endforeach()
 
 # Link
-target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} # PUBLIC
+target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} PUBLIC
     Qt5::Core
     Qt5::DBus
     Qt5::Network
+)
+
+target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} PRIVATE
     Qt5::Xml
 )
 
-target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}
+target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} PUBLIC
     ${TP_QT_LIBRARY_LINKER_FLAGS})
 
 target_include_directories(telepathy-qt${QT_VERSION_MAJOR} PUBLIC "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/>")
 
 # Link - Library used by tests to test some unexported functionality
-target_link_libraries(telepathy-qt-test-backdoors # PUBLIC
+target_link_libraries(telepathy-qt-test-backdoors PUBLIC
     Qt5::Core
     Qt5::DBus
     Qt5::Network
     Qt5::Xml
 )
 
-target_link_libraries(telepathy-qt-test-backdoors
+target_link_libraries(telepathy-qt-test-backdoors PUBLIC
     ${TP_QT_LIBRARY_LINKER_FLAGS})
 
 if (ENABLE_COMPILER_COVERAGE)
-    target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} gcov)
-    target_link_libraries(telepathy-qt-test-backdoors gcov)
+    target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} PRIVATE gcov)
+    target_link_libraries(telepathy-qt-test-backdoors PRIVATE gcov)
 endif ()
 
 # Set the correct version number
@@ -981,11 +984,10 @@ if(ENABLE_SERVICE_SUPPORT)
     endforeach()
 
     # Link
-    target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-service
+    target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-service PUBLIC
         Qt5::Core
         Qt5::DBus
-        telepathy-qt${QT_VERSION_MAJOR}
-        ${TP_QT_LIBRARY_LINKER_FLAGS})
+        telepathy-qt${QT_VERSION_MAJOR})
 
     # Set the correct version number
     set_target_properties(telepathy-qt${QT_VERSION_MAJOR}-service PROPERTIES
