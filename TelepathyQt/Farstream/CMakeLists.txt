@@ -79,11 +79,7 @@ if(FARSTREAM_COMPONENTS_FOUND)
                 DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
     endif ()
 
-    if(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
-        set(_TelepathyQtFarstreamConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR}Farstream)
-    else()
-        set(_TelepathyQtFarstreamConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farstream/cmake)
-    endif()
+    set(_TelepathyQtFarstreamConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR}Farstream)
 
     # Configure the actual Config file
     configure_package_config_file(TelepathyQtFarstreamConfig.cmake.in

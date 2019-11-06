@@ -815,11 +815,7 @@ if (NOT WIN32)
 endif ()
 
 # Find out the correct installation directory
-if (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
-    set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR})
-else ()
-    set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}/cmake)
-endif ()
+set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR})
 
 # CMake Version and config files
 include(CMakePackageConfigHelpers)
