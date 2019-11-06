@@ -45,6 +45,17 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Add an option for compiling tp-qt-service
+option(ENABLE_SERVICE_SUPPORT "Enable compilation of service side bindings for Telepathy-Qt" TRUE)
+# Add an option to select type of service library
+option(FORCE_STATIC_SERVICE_LIBRARY "Force Telepathy-Qt service to be a static library." FALSE)
+# Add an option for compiling examples
+option(ENABLE_EXAMPLES "Enable compilation of examples for Telepathy-Qt" TRUE)
+# Add an option for compiling Farstream
+option(ENABLE_FARSTREAM "Enable compilation of Farstream bindings" TRUE)
+# Add an option for building tests
+option(ENABLE_TESTS "Enable compilation of automated tests" TRUE)
+
 # This file contains all the needed initialization macros
 include(TelepathyDefaults)
 
@@ -92,17 +103,6 @@ if (${TP_QT_NANO_VERSION} EQUAL 0)
 else ()
     set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
 endif ()
-
-# Add an option for compiling tp-qt-service
-option(ENABLE_SERVICE_SUPPORT "Enable compilation of service side bindings for Telepathy-Qt" TRUE)
-# Add an option to select type of service library
-option(FORCE_STATIC_SERVICE_LIBRARY "Force Telepathy-Qt service to be a static library." FALSE)
-# Add an option for compiling examples
-option(ENABLE_EXAMPLES "Enable compilation of examples for Telepathy-Qt" TRUE)
-# Add an option for compiling Farstream
-option(ENABLE_FARSTREAM "Enable compilation of Farstream bindings" TRUE)
-# Add an option for building tests
-option(ENABLE_TESTS "Enable compilation of automated tests" TRUE)
 
 # The doxygen macro requires Qt to have been looked up to enable crosslinking
 include(Doxygen)
