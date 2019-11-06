@@ -4,9 +4,6 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIBILITY_HIDDEN_FLAGS} ${COMPILER_COVERAGE_FLAGS} ${DEPRECATED_DECLARATIONS_FLAGS}")
 set(LD_FLAGS "${LD_FLAGS} ${VISIBILITY_HIDDEN_FLAGS} ${COMPILER_COVERAGE_FLAGS} ${DEPRECATED_DECLARATIONS_FLAGS}")
 
-# We are building Telepathy-Qt
-add_definitions(-DBUILDING_TP_QT)
-
 configure_file(global.h.in ${CMAKE_CURRENT_BINARY_DIR}/global.h)
 
 # Sources for Tp-Qt
@@ -751,6 +748,9 @@ if (ENABLE_COMPILER_COVERAGE)
 else ()
     add_library(telepathy-qt${QT_VERSION_MAJOR} SHARED ${telepathy_qt_SRCS})
 endif ()
+
+# We are building Telepathy-Qt
+target_compile_definitions(telepathy-qt${QT_VERSION_MAJOR} PRIVATE BUILDING_TP_QT)
 
 # Library used by tests to test some unexported functionality
 add_library(telepathy-qt-test-backdoors STATIC ${telepathy_qt_test_backdoors_SRCS})

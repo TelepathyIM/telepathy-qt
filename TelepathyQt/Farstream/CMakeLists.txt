@@ -7,11 +7,6 @@ if(FARSTREAM_COMPONENTS_FOUND)
                         ${LIBXML2_INCLUDE_DIR}
                         ${DBUS_INCLUDE_DIR})
 
-    # It gets inherited from the previous directory, hence it has to be removed explicitely
-    remove_definitions(-DBUILDING_TP_QT)
-    # We are building Telepathy-Qt-Farstream
-    add_definitions(-DBUILDING_TP_QT_FARSTREAM -DQT_NO_KEYWORDS)
-
     set(telepathy_qt_farstream_SRCS
         channel.cpp)
 
@@ -36,6 +31,11 @@ if(FARSTREAM_COMPONENTS_FOUND)
         add_library(telepathy-qt${QT_VERSION_MAJOR}-farstream SHARED
                     ${telepathy_qt_farstream_SRCS} ${telepathy_qt_farstream_MOC_SRCS})
     endif ()
+
+    # We are building Telepathy-Qt-Farstream
+    target_compile_definitions(telepathy-qt${QT_VERSION_MAJOR}-farstream PRIVATE
+        BUILDING_TP_QT_FARSTREAM
+        QT_NO_KEYWORDS)
 
     # Link
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-farstream
