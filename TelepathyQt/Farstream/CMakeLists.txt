@@ -31,6 +31,7 @@ if(FARSTREAM_COMPONENTS_FOUND)
         add_library(telepathy-qt${QT_VERSION_MAJOR}-farstream SHARED
                     ${telepathy_qt_farstream_SRCS} ${telepathy_qt_farstream_MOC_SRCS})
     endif ()
+    add_library(TelepathyQt${QT_VERSION_MAJOR}::Farstream ALIAS telepathy-qt${QT_VERSION_MAJOR}-farstream)
 
     # We are building Telepathy-Qt-Farstream
     target_compile_definitions(telepathy-qt${QT_VERSION_MAJOR}-farstream PRIVATE
@@ -54,6 +55,7 @@ if(FARSTREAM_COMPONENTS_FOUND)
 
     # Set the correct version number
     set_target_properties(telepathy-qt${QT_VERSION_MAJOR}-farstream PROPERTIES
+                                                       EXPORT_NAME Farstream
                                                        SOVERSION ${TP_QT_ABI_VERSION}
                                                        VERSION ${TP_QT_LIBRARY_VERSION})
 

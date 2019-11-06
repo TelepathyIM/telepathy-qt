@@ -748,6 +748,7 @@ if (ENABLE_COMPILER_COVERAGE)
 else ()
     add_library(telepathy-qt${QT_VERSION_MAJOR} SHARED ${telepathy_qt_SRCS})
 endif ()
+add_library(TelepathyQt${QT_VERSION_MAJOR}::Core ALIAS telepathy-qt${QT_VERSION_MAJOR})
 
 # We are building Telepathy-Qt
 target_compile_definitions(telepathy-qt${QT_VERSION_MAJOR} PRIVATE BUILDING_TP_QT)
@@ -802,6 +803,7 @@ endif ()
 
 # Set the correct version number
 set_target_properties(telepathy-qt${QT_VERSION_MAJOR} PROPERTIES
+                                    EXPORT_NAME Core
                                     SOVERSION ${TP_QT_ABI_VERSION}
                                     VERSION ${TP_QT_LIBRARY_VERSION})
 
@@ -843,7 +845,9 @@ write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VER
 
 install(EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
         DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
+        NAMESPACE TelepathyQt${QT_VERSION_MAJOR}::
         COMPONENT headers)
+
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVersion.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Config.cmake
         DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
@@ -969,6 +973,7 @@ if(ENABLE_SERVICE_SUPPORT)
     endif()
 
     add_library(telepathy-qt${QT_VERSION_MAJOR}-service ${SERVICE_LIBRARY_TYPE} ${telepathy_qt_service_SRCS})
+    add_library(TelepathyQt${QT_VERSION_MAJOR}::Service ALIAS telepathy-qt${QT_VERSION_MAJOR}-service)
     add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service stable-typesgen future-typesgen)
 
     # generate service moc files
@@ -991,6 +996,7 @@ if(ENABLE_SERVICE_SUPPORT)
 
     # Set the correct version number
     set_target_properties(telepathy-qt${QT_VERSION_MAJOR}-service PROPERTIES
+                                                 EXPORT_NAME Service
                                                  SOVERSION ${TP_QT_SERVICE_ABI_VERSION}
                                                  VERSION ${TP_QT_LIBRARY_VERSION})
 
