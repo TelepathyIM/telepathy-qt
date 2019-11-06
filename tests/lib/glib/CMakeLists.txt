@@ -9,6 +9,15 @@ include_directories(
     ${DBUS_ARCH_INCLUDE_DIR})
 
 if(ENABLE_TP_GLIB_TESTS)
+    set(TPGLIB_LIBRARIES
+        ${TELEPATHY_GLIB_LIBRARIES}
+        ${GLIB2_LIBRARIES}
+        ${GOBJECT_LIBRARIES}
+        ${GIO_LIBRARIES}
+        ${DBUS_GLIB_LIBRARIES}
+        ${DBUS_LIBRARIES}
+    )
+
     add_subdirectory(call)
     add_subdirectory(callable)
     add_subdirectory(contactlist)
@@ -59,12 +68,7 @@ if(ENABLE_TP_GLIB_TESTS)
 
     add_library(tp-glib-tests SHARED ${tp_glib_tests_SRCS})
     target_link_libraries(tp-glib-tests
-        ${TELEPATHY_GLIB_LIBRARIES}
-        ${GLIB2_LIBRARIES}
-        ${GOBJECT_LIBRARIES}
-        ${GIO_LIBRARIES}
-        ${DBUS_GLIB_LIBRARIES}
-        ${DBUS_LIBRARIES}
+        ${TPGLIB_LIBRARIES}
         example-cm-call
         example-cm-callable
         example-cm-contactlist
