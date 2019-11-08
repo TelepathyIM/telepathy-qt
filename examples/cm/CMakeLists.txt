@@ -11,8 +11,8 @@ if(ENABLE_SERVICE_SUPPORT)
 
     add_executable(cm ${cm_SRCS} ${cm_MOC_SRCS})
     target_link_libraries(cm
-        Qt5::Core
-        telepathy-qt${QT_VERSION_MAJOR}
-        telepathy-qt${QT_VERSION_MAJOR}-service
-        ${TP_QT_EXECUTABLE_LINKER_FLAGS})
+        Qt${QT_VERSION_MAJOR}::Core
+        TelepathyQt${QT_VERSION_MAJOR}::Core
+        TelepathyQt${QT_VERSION_MAJOR}::Service
+    )
 endif()

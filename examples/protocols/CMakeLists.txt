@@ -11,6 +11,6 @@ tpqt_generate_mocs(${protocols_MOC_SRCS})
 
 add_executable(protocols ${protocols_SRCS} ${protocols_MOC_SRCS})
 target_link_libraries(protocols
-    Qt5::Core
-    telepathy-qt${QT_VERSION_MAJOR}
-    ${TP_QT_EXECUTABLE_LINKER_FLAGS})
+    Qt${QT_VERSION_MAJOR}::Core
+    TelepathyQt${QT_VERSION_MAJOR}::Core
+)

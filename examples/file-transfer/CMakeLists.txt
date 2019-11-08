@@ -14,9 +14,9 @@ tpqt_generate_mocs(${ft-receiver_MOC_SRCS})
 
 add_executable(ft-receiver ${ft-receiver_SRCS} ${ft-receiver_MOC_SRCS})
 target_link_libraries(ft-receiver
-    Qt5::Core
-    telepathy-qt${QT_VERSION_MAJOR}
-    ${TP_QT_EXECUTABLE_LINKER_FLAGS})
+    Qt${QT_VERSION_MAJOR}::Core
+    TelepathyQt${QT_VERSION_MAJOR}::Core
+)
 
 set(ft-sender_SRCS
     file-sender.cpp
@@ -32,6 +32,6 @@ tpqt_generate_mocs(${ft-sender_MOC_SRCS})
 
 add_executable(ft-sender ${ft-sender_SRCS} ${ft-sender_MOC_SRCS})
 target_link_libraries(ft-sender
-    Qt5::Core
-    telepathy-qt${QT_VERSION_MAJOR}
-    ${TP_QT_EXECUTABLE_LINKER_FLAGS})
+    Qt${QT_VERSION_MAJOR}::Core
+    TelepathyQt${QT_VERSION_MAJOR}::Core
+)
