@@ -10,7 +10,10 @@ set(TELEPATHY_QT@QT_VERSION_MAJOR@_SERVICE_VERSION_MICRO @TP_QT_MICRO_VERSION@)
 set(TELEPATHY_QT@QT_VERSION_MAJOR@_SERVICE_VERSION_NANO @TP_QT_NANO_VERSION@)
 set(TELEPATHY_QT@QT_VERSION_MAJOR@_SERVICE_VERSION @PACKAGE_VERSION@)
 
-find_package(TelepathyQt@QT_VERSION_MAJOR@)
+# Find the dependencies
+include(CMakeFindDependencyMacro)
+
+find_dependency(TelepathyQt@QT_VERSION_MAJOR@)
 
 # set the directories
 if(TARGET TelepathyQt@QT_VERSION_MAJOR@::Service)
