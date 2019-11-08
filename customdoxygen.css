@@ -5,3 +5,8 @@ body {
     width: 99%;
     max-width: 80em;
 }
+
+div.fragment {
+    padding: 16px;
+    margin: 0px 0px 0px 0px;
+}
