@@ -28,19 +28,38 @@ if(NOT TelepathyQt@QT_VERSION_MAJOR@_FOUND)
     endif()
     unset(_QT_COMPONENTS)
 
-    # set the directories
-    if(NOT TELEPATHY_QT@QT_VERSION_MAJOR@_INSTALL_DIR)
-        set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_INSTALL_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@")
-    endif()
-
-    set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_INCLUDE_DIR   "@PACKAGE_INCLUDE_INSTALL_DIR@/telepathy-qt@QT_VERSION_MAJOR@")
-    set_and_check(TELEPATHY_QT@QT_VERSION_MAJOR@_LIB_DIR       "@PACKAGE_LIB_INSTALL_DIR@")
-
     # attempt to find the generated TelepathyQt4Targets.cmake in the same directory
     get_filename_component(_TPQT@QT_VERSION_MAJOR@_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
     find_file(_TPQT@QT_VERSION_MAJOR@_TARGETS_FILE TelepathyQt@QT_VERSION_MAJOR@Targets.cmake PATHS ${_TPQT@QT_VERSION_MAJOR@_CONFIG_DIR} NO_DEFAULT_PATH)
 
-    # set the TELEPATHY_QT@QT_VERSION_MAJOR@_LIBRARIES variable
     include(${_TPQT@QT_VERSION_MAJOR@_TARGETS_FILE})
-    set(TELEPATHY_QT@QT_VERSION_MAJOR@_LIBRARIES telepathy-qt@QT_VERSION_MAJOR@)
+
+    # set the directories
+
+    # set the LIBRARIES variable
+    get_target_property(TELEPATHY_QT@QT_VERSION_MAJOR@_LIBRARIES
+        TelepathyQt@QT_VERSION_MAJOR@::Core
+        IMPORTED_LOCATION
+    )
+
+    if(NOT TELEPATHY_QT@QT_VERSION_MAJOR@_LIBRARIES)
+        # If there is no default IMPORTED_LOCATION then get all configurations...
+        get_target_property(_IMPORTED_CONFIGURATIONS
+            TelepathyQt@QT_VERSION_MAJOR@::Core
+            IMPORTED_CONFIGURATIONS
+        )
+        # ... and pick up the first one
+        list(GET _IMPORTED_CONFIGURATIONS 0 _SELECTED_CONFIGURATION)
+        get_target_property(TELEPATHY_QT@QT_VERSION_MAJOR@_LIBRARIES
+            TelepathyQt@QT_VERSION_MAJOR@::Core
+            IMPORTED_LOCATION_${_SELECTED_CONFIGURATION}
+        )
+        unset(_IMPORTED_CONFIGURATIONS)
+        unset(_SELECTED_CONFIGURATION)
+    endif()
+
+    get_target_property(TELEPATHY_QT@QT_VERSION_MAJOR@_INCLUDE_DIR
+        TelepathyQt@QT_VERSION_MAJOR@::Core
+        INTERFACE_INCLUDE_DIRECTORIES
+    )
 endif()
