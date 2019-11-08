@@ -106,7 +106,7 @@
  * Before reporting a bug, please check the
  * [GitHub issues](https://github.com/TelepathyIM/telepathy-qt/issues)
  * and
- * [Bug Tracker](https://bugs.freedesktop.org/query.cgi?product=Telepathy&component=telepathy-qt)
+ * [Bug Tracker](https://bugs.freedesktop.org/query.cgi?product=Telepathy&component=tp-qt)
  * to see if the issue is already known.
  *
  * Always include the following information in your bug report:
