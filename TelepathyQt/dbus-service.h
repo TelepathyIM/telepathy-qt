@@ -81,7 +81,7 @@ public:
 
     QString interfaceName() const;
 
-    virtual QVariantMap immutableProperties() const = 0;
+    virtual QVariantMap immutableProperties() const;
 
     DBusObject *dbusObject() const;
     bool isRegistered() const;

@@ -257,6 +257,11 @@ QString AbstractDBusServiceInterface::interfaceName() const
     return mPriv->interfaceName;
 }
 
+QVariantMap AbstractDBusServiceInterface::immutableProperties() const
+{
+    return QVariantMap();
+}
+
 /**
  * Return the DBusObject on which the adaptor of this interface is plugged.
  *
