@@ -321,20 +321,6 @@ BaseCallMuteInterface::~BaseCallMuteInterface()
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseCallMuteInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
-}
-
 void BaseCallMuteInterface::createAdaptor()
 {
     (void) new Service::CallInterfaceMuteAdaptor(dbusObject()->dbusConnection(),
@@ -476,20 +462,6 @@ void BaseCallContentDTMFInterface::setMultipleTonesCallback(const MultipleTonesC
 BaseCallContentDTMFInterface::~BaseCallContentDTMFInterface()
 {
     delete mPriv;
-}
-
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseCallContentDTMFInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
 }
 
 void BaseCallContentDTMFInterface::createAdaptor()

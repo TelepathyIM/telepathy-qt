@@ -166,8 +166,6 @@ public:
 
     virtual ~BaseProtocolAddressingInterface();
 
-    QVariantMap immutableProperties() const;
-
     QStringList addressableVCardFields() const;
     void setAddressableVCardFields(const QStringList &vcardFields);
 

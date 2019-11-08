@@ -133,8 +133,6 @@ public:
 
     virtual ~BaseChannelTextType();
 
-    QVariantMap immutableProperties() const;
-
     typedef Callback1<void, QString> MessageAcknowledgedCallback;
     void setMessageAcknowledgedCallback(const MessageAcknowledgedCallback &cb);
 
@@ -585,8 +583,6 @@ public:
 
     virtual ~BaseChannelChatStateInterface();
 
-    QVariantMap immutableProperties() const;
-
     Tp::ChatStateMap chatStates() const;
     void setChatStates(const Tp::ChatStateMap &chatStates);
 
@@ -627,8 +623,6 @@ public:
     }
 
     virtual ~BaseChannelGroupInterface();
-
-    QVariantMap immutableProperties() const;
 
     Tp::ChannelGroupFlags groupFlags() const;
     void setGroupFlags(const Tp::ChannelGroupFlags &flags);
@@ -751,8 +745,6 @@ public:
     }
 
     virtual ~BaseChannelRoomConfigInterface();
-
-    QVariantMap immutableProperties() const;
 
     bool anonymous() const;
     void setAnonymous(bool anonymous);
@@ -937,8 +929,6 @@ public:
     }
     virtual ~BaseChannelHoldInterface();
 
-    QVariantMap immutableProperties() const;
-
     Tp::LocalHoldState getHoldState() const;
     Tp::LocalHoldStateReason getHoldReason() const;
     void setHoldState(const Tp::LocalHoldState &state, const Tp::LocalHoldStateReason &reason);
@@ -974,8 +964,6 @@ public:
     }
     virtual ~BaseChannelMergeableConferenceInterface();
 
-    QVariantMap immutableProperties() const;
-
     void merge(const QDBusObjectPath &channel);
 
     typedef Callback2<void, const QDBusObjectPath&, DBusError*> MergeCallback;
@@ -1006,8 +994,6 @@ public:
                    new BaseChannelSplittableInterfaceSubclass());
     }
     virtual ~BaseChannelSplittableInterface();
-
-    QVariantMap immutableProperties() const;
 
     void split();
 

@@ -121,8 +121,6 @@ public:
     }
     virtual ~BaseCallMuteInterface();
 
-    QVariantMap immutableProperties() const;
-
     Tp::LocalMuteState localMuteState() const;
     void setMuteState(const Tp::LocalMuteState &state);
 
@@ -156,8 +154,6 @@ public:
                    new BaseCallContentDTMFInterfaceSubclass());
     }
     virtual ~BaseCallContentDTMFInterface();
-
-    QVariantMap immutableProperties() const;
 
     bool currentlySendingTones() const;
     void setCurrentlySendingTones(bool sendingTones);

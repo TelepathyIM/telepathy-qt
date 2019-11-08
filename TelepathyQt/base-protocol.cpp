@@ -814,20 +814,6 @@ BaseProtocolAddressingInterface::~BaseProtocolAddressingInterface()
 }
 
 /**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseProtocolAddressingInterface::immutableProperties() const
-{
-    // no immutable property
-    return QVariantMap();
-}
-
-/**
  * Return the list of addressable vcard fields that have been set with
  * setAddressableVCardFields().
  *

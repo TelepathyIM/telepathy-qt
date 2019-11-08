@@ -260,8 +260,6 @@ public:
 
     virtual ~BaseConnectionSimplePresenceInterface();
 
-    QVariantMap immutableProperties() const;
-
     Tp::SimpleStatusSpecMap statuses() const;
     void setStatuses(const Tp::SimpleStatusSpecMap &statuses);
 
@@ -306,8 +304,6 @@ public:
     }
 
     virtual ~BaseConnectionContactListInterface();
-
-    QVariantMap immutableProperties() const;
 
     uint contactListState() const;
     void setContactListState(uint contactListState);
@@ -386,8 +382,6 @@ public:
 
     virtual ~BaseConnectionContactGroupsInterface();
 
-    QVariantMap immutableProperties() const;
-
     bool disjointGroups() const;
     void setDisjointGroups(bool disjointGroups);
 
@@ -458,8 +452,6 @@ public:
 
     virtual ~BaseConnectionContactInfoInterface();
 
-    QVariantMap immutableProperties() const;
-
     Tp::ContactInfoFlags contactInfoFlags() const;
     void setContactInfoFlags(const Tp::ContactInfoFlags &contactInfoFlags);
 
@@ -514,10 +506,6 @@ public:
 
     virtual ~BaseConnectionAddressingInterface();
 
-    QVariantMap immutableProperties() const;
-
-
-
     typedef Callback6 < void, const QString&, const QStringList&, const QStringList&,
             Tp::AddressingNormalizationMap&, Tp::ContactAttributesMap&, DBusError* > GetContactsByVCardFieldCallback;
     void setGetContactsByVCardFieldCallback(const GetContactsByVCardFieldCallback &cb);
@@ -557,8 +545,6 @@ public:
     }
 
     virtual ~BaseConnectionAliasingInterface();
-
-    QVariantMap immutableProperties() const;
 
     typedef Callback1<Tp::ConnectionAliasFlags, DBusError*> GetAliasFlagsCallback;
     void setGetAliasFlagsCallback(const GetAliasFlagsCallback &cb);
@@ -609,8 +595,6 @@ public:
     }
 
     virtual ~BaseConnectionAvatarsInterface();
-
-    QVariantMap immutableProperties() const;
 
     AvatarSpec avatarDetails() const;
     void setAvatarDetails(const AvatarSpec &spec);
@@ -666,8 +650,6 @@ public:
 
     virtual ~BaseConnectionClientTypesInterface();
 
-    QVariantMap immutableProperties() const;
-
     typedef Callback2<Tp::ContactClientTypes, const Tp::UIntList &, DBusError*> GetClientTypesCallback;
     void setGetClientTypesCallback(const GetClientTypesCallback &cb);
     Tp::ContactClientTypes getClientTypes(const Tp::UIntList &contacts, DBusError *error);
@@ -709,8 +691,6 @@ public:
     }
 
     virtual ~BaseConnectionContactCapabilitiesInterface();
-
-    QVariantMap immutableProperties() const;
 
     typedef Callback2<void, const Tp::HandlerCapabilitiesList &, DBusError*> UpdateCapabilitiesCallback;
     void setUpdateCapabilitiesCallback(const UpdateCapabilitiesCallback &cb);

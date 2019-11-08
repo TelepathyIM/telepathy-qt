@@ -1175,21 +1175,6 @@ BaseConnectionSimplePresenceInterface::~BaseConnectionSimplePresenceInterface()
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseConnectionSimplePresenceInterface::immutableProperties() const
-{
-    QVariantMap map;
-    //FIXME
-    return map;
-}
-
 void BaseConnectionSimplePresenceInterface::createAdaptor()
 {
     (void) new Service::ConnectionInterfaceSimplePresenceAdaptor(dbusObject()->dbusConnection(),
@@ -1487,20 +1472,6 @@ BaseConnectionContactListInterface::BaseConnectionContactListInterface()
 BaseConnectionContactListInterface::~BaseConnectionContactListInterface()
 {
     delete mPriv;
-}
-
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseConnectionContactListInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
 }
 
 uint BaseConnectionContactListInterface::contactListState() const
@@ -1817,20 +1788,6 @@ BaseConnectionContactGroupsInterface::~BaseConnectionContactGroupsInterface()
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseConnectionContactGroupsInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
-}
-
 bool BaseConnectionContactGroupsInterface::disjointGroups() const
 {
     return mPriv->disjointGroups;
@@ -2090,20 +2047,6 @@ BaseConnectionContactInfoInterface::~BaseConnectionContactInfoInterface()
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseConnectionContactInfoInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
-}
-
 Tp::ContactInfoFlags BaseConnectionContactInfoInterface::contactInfoFlags() const
 {
     return mPriv->contactInfoFlags;
@@ -2234,20 +2177,6 @@ BaseConnectionAddressingInterface::BaseConnectionAddressingInterface()
 BaseConnectionAddressingInterface::~BaseConnectionAddressingInterface()
 {
     delete mPriv;
-}
-
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseConnectionAddressingInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
 }
 
 void BaseConnectionAddressingInterface::createAdaptor()
@@ -2410,20 +2339,6 @@ BaseConnectionAliasingInterface::BaseConnectionAliasingInterface()
 BaseConnectionAliasingInterface::~BaseConnectionAliasingInterface()
 {
     delete mPriv;
-}
-
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseConnectionAliasingInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
 }
 
 void BaseConnectionAliasingInterface::createAdaptor()
@@ -2637,20 +2552,6 @@ BaseConnectionAvatarsInterface::~BaseConnectionAvatarsInterface()
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseConnectionAvatarsInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
-}
-
 AvatarSpec BaseConnectionAvatarsInterface::avatarDetails() const
 {
     return mPriv->avatarDetails;
@@ -2807,20 +2708,6 @@ BaseConnectionClientTypesInterface::~BaseConnectionClientTypesInterface()
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseConnectionClientTypesInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
-}
-
 void BaseConnectionClientTypesInterface::createAdaptor()
 {
     (void) new Tp::Service::ConnectionInterfaceClientTypesAdaptor(dbusObject()->dbusConnection(),
@@ -2932,20 +2819,6 @@ BaseConnectionContactCapabilitiesInterface::BaseConnectionContactCapabilitiesInt
 BaseConnectionContactCapabilitiesInterface::~BaseConnectionContactCapabilitiesInterface()
 {
     delete mPriv;
-}
-
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseConnectionContactCapabilitiesInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
 }
 
 void BaseConnectionContactCapabilitiesInterface::createAdaptor()

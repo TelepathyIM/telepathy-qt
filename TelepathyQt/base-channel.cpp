@@ -451,19 +451,6 @@ BaseChannelTextType::~BaseChannelTextType()
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseChannelTextType::immutableProperties() const
-{
-    return QVariantMap();
-}
-
 void BaseChannelTextType::createAdaptor()
 {
     (void) new Service::ChannelTypeTextAdaptor(dbusObject()->dbusConnection(),
@@ -2549,20 +2536,6 @@ BaseChannelChatStateInterface::~BaseChannelChatStateInterface()
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseChannelChatStateInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
-}
-
 Tp::ChatStateMap BaseChannelChatStateInterface::chatStates() const
 {
     return mPriv->chatStates;
@@ -2866,19 +2839,6 @@ BaseChannelGroupInterface::~BaseChannelGroupInterface()
 void BaseChannelGroupInterface::setBaseChannel(BaseChannel *channel)
 {
     mPriv->connection = channel->connection();
-}
-
-/**
- * Return the immutable properties of this interface.
- *
- * There is no immutable properties presented on the interface.
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseChannelGroupInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
 }
 
 /**
@@ -3639,20 +3599,6 @@ BaseChannelRoomConfigInterface::~BaseChannelRoomConfigInterface()
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseChannelRoomConfigInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
-}
-
 bool BaseChannelRoomConfigInterface::anonymous() const
 {
     return mPriv->anonymous;
@@ -4246,20 +4192,6 @@ BaseChannelHoldInterface::~BaseChannelHoldInterface()
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseChannelHoldInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
-}
-
 void BaseChannelHoldInterface::createAdaptor()
 {
     (void) new Service::ChannelInterfaceHoldAdaptor(dbusObject()->dbusConnection(),
@@ -4334,20 +4266,6 @@ BaseChannelMergeableConferenceInterface::~BaseChannelMergeableConferenceInterfac
     delete mPriv;
 }
 
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseChannelMergeableConferenceInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
-}
-
 void BaseChannelMergeableConferenceInterface::createAdaptor()
 {
     (void) new Service::ChannelInterfaceMergeableConferenceAdaptor(dbusObject()->dbusConnection(),
@@ -4420,20 +4338,6 @@ void BaseChannelSplittableInterface::setSplitCallback(const SplitCallback &cb)
 BaseChannelSplittableInterface::~BaseChannelSplittableInterface()
 {
     delete mPriv;
-}
-
-/**
- * Return the immutable properties of this interface.
- *
- * Immutable properties cannot change after the interface has been registered
- * on a service on the bus with registerInterface().
- *
- * \return The immutable properties of this interface.
- */
-QVariantMap BaseChannelSplittableInterface::immutableProperties() const
-{
-    QVariantMap map;
-    return map;
 }
 
 void BaseChannelSplittableInterface::createAdaptor()
