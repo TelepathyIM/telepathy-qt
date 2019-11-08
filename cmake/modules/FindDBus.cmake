@@ -21,18 +21,20 @@ if (NOT WIN32)
 endif ()
 
 find_path(DBUS_INCLUDE_DIR dbus/dbus.h
-    PATHS ${PC_DBUS_INCLUDE_DIRS}
+    HINTS
+        ${PC_DBUS_INCLUDE_DIRS}
     PATH_SUFFIXES dbus-1.0
 )
 
 find_path(DBUS_ARCH_INCLUDE_DIR dbus/dbus-arch-deps.h
-    PATHS ${PC_DBUS_INCLUDE_DIRS}
-    HINTS ${CMAKE_LIBRARY_PATH}/dbus-1.0/include
-          ${CMAKE_SYSTEM_LIBRARY_PATH}/dbus-1.0/include
+    HINTS
+        ${PC_DBUS_INCLUDE_DIRS}
+        ${CMAKE_LIBRARY_PATH}/dbus-1.0/include
+        ${CMAKE_SYSTEM_LIBRARY_PATH}/dbus-1.0/include
 )
 
 find_library(DBUS_LIBRARIES NAMES dbus-1
-    PATHS ${PC_DBUS_LIBRARY_DIRS}
+    HINTS ${PC_DBUS_LIBRARY_DIRS}
 )
 
 include(FindPackageHandleStandardArgs)

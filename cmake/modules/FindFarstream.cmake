@@ -31,14 +31,14 @@ if (NOT WIN32)
 endif ()
 
 find_path(FARSTREAM_INCLUDE_DIR farstream/fs-conference.h
-   PATHS
+   HINTS
    ${PC_FARSTREAM_INCLUDEDIR}
    ${PC_FARSTREAM_INCLUDE_DIRS}
    PATH_SUFFIXES farstream-0.2
    )
 
 find_library(FARSTREAM_LIBRARIES NAMES farstream-0.2
-   PATHS
+   HINTS
    ${PC_FARSTREAM_LIBDIR}
    ${PC_FARSTREAM_LIBRARY_DIRS}
    )

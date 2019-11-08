@@ -33,14 +33,14 @@ if (TELEPATHY_GLIB_MIN_VERSION AND NOT PC_TELEPATHY_GLIB_FOUND)
     message(STATUS "Telepathy-glib not found or its version is < ${TELEPATHY_GLIB_MIN_VERSION}")
 else ()
     find_path(TELEPATHY_GLIB_INCLUDE_DIR telepathy-glib/client.h
-       PATHS
+       HINTS
        ${PC_TELEPATHY_GLIB_INCLUDEDIR}
        ${PC_TELEPATHY_GLIB_INCLUDE_DIRS}
        PATH_SUFFIXES telepathy-1.0
     )
 
     find_library(TELEPATHY_GLIB_LIBRARIES NAMES telepathy-glib
-       PATHS
+       HINTS
        ${PC_TELEPATHY_GLIB_LIBDIR}
        ${PC_TELEPATHY_GLIB_LIBRARY_DIRS}
     )
