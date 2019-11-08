@@ -38,7 +38,25 @@ point to its location to enable crosslinking.")
     set(GENERATE_XML     NO)
     set(GENERATE_QHP     ${QHELPGENERATOR_FOUND})
     configure_file(doxygen.cfg.in ${CMAKE_BINARY_DIR}/doxygen.cfg)
-    add_custom_target(doxygen-doc ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/doxygen.cfg)
+    add_custom_target(doxygen-doc
+        ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/doxygen.cfg
+        SOURCES
+            doxygen.cfg.in
+            TelepathyQt/account-capability-filter.dox
+            TelepathyQt/and-filter.dox
+            TelepathyQt/async-model.dox
+            TelepathyQt/callbacks.dox
+            TelepathyQt/examples.dox
+            TelepathyQt/filter.dox
+            TelepathyQt/generic-capability-filter.dox
+            TelepathyQt/generic-property-filter.dox
+            TelepathyQt/groups.dox
+            TelepathyQt/main.dox
+            TelepathyQt/method-invocation-context.dox
+            TelepathyQt/not-filter.dox
+            TelepathyQt/or-filter.dox
+            TelepathyQt/shared-ptr.dox
+    )
 else()
     # Suppress cmake policy CMP0046 warnings.
     # This target is being used as a dependency in other targets,
