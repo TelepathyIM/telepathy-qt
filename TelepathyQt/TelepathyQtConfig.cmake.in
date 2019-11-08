@@ -28,13 +28,35 @@ if(NOT TelepathyQt@QT_VERSION_MAJOR@_FOUND)
     endif()
     unset(_QT_COMPONENTS)
 
-    # attempt to find the generated TelepathyQt4Targets.cmake in the same directory
+    # attempt to find the generated Targets file in the same directory
     get_filename_component(_TPQT@QT_VERSION_MAJOR@_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
     find_file(_TPQT@QT_VERSION_MAJOR@_TARGETS_FILE TelepathyQt@QT_VERSION_MAJOR@Targets.cmake PATHS ${_TPQT@QT_VERSION_MAJOR@_CONFIG_DIR} NO_DEFAULT_PATH)
 
     include(${_TPQT@QT_VERSION_MAJOR@_TARGETS_FILE})
 
-    # set the directories
+    set(_TelepathyQt@QT_VERSION_MAJOR@_NOTFOUND_MESSAGE)
+    set(_WANTED_COMPONENTS "${TelepathyQt@QT_VERSION_MAJOR@_FIND_COMPONENTS}")
+    list (FIND _WANTED_COMPONENTS "Core" _CORE_INDEX)
+    if (${_CORE_INDEX} LESS 0)
+        list(APPEND _WANTED_COMPONENTS Core)
+    endif()
+    foreach(_MODULE ${_WANTED_COMPONENTS})
+        if(NOT TARGET TelepathyQt@QT_VERSION_MAJOR@::${_MODULE})
+            if (TelepathyQt@QT_VERSION_MAJOR@_FIND_REQUIRED_${_MODULE})
+                set(_TelepathyQt@QT_VERSION_MAJOR@_NOTFOUND_MESSAGE
+                    "${_TelepathyQt@QT_VERSION_MAJOR@_NOTFOUND_MESSAGE}Failed to find TelepathyQt@QT_VERSION_MAJOR@ component \"${_MODULE}\"\n")
+            elseif(NOT TelepathyQt@QT_VERSION_MAJOR@_FIND_QUIETLY)
+                message(WARNING "Failed to find TelepathyQt@QT_VERSION_MAJOR@ component \"${_MODULE}\"")
+            endif()
+        endif()
+    endforeach()
+
+    if (_TelepathyQt@QT_VERSION_MAJOR@_NOTFOUND_MESSAGE)
+        set(TelepathyQt@QT_VERSION_MAJOR@_NOT_FOUND_MESSAGE "${_TelepathyQt@QT_VERSION_MAJOR@_NOTFOUND_MESSAGE}")
+        set(TelepathyQt@QT_VERSION_MAJOR@_FOUND False)
+    endif()
+
+    # Legacy stuff for old-style import
 
     # set the LIBRARIES variable
     get_target_property(TELEPATHY_QT@QT_VERSION_MAJOR@_LIBRARIES
