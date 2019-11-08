@@ -1,7 +1,35 @@
 telepathy-qt 0.9.8 ()
 =================================
 
-The "..." release.
+The "Still moving" release.
+
+Dependencies:
+ * CMake 3.5
+ * Qt 5.6
+ * C++11 compatible compiler
+ * Python 3 (only for build)
+
+Enhancements:
+ * The project ported to Python 3
+ * Improved the documentation generation
+ * Reworked exported CMake targets
+ * GNUInstallDirs used to simplify packaging
+
+API changes:
+ * Added constructor from initializer_list to generated Telepathy types
+
+Service-side API changes:
+ * Adjusted BaseChannelTextType API
+ * Added BaseConnectionContactGroupsInterface
+ * Fixed BaseDebug API
+ * Added BaseConnection::getExistingChannel()
+
+Fixes:
+ * Fixed work with threaded QtDBus
+ * Omit parts with non-empty 'interface' key value for Message::text()
+ * A lot of fixes in tests
+ * fd.o #40008: Fix dependencies lookup (we used to prefer system-wide libs)
+
 
 telepathy-qt 0.9.7 (2016-06-12)
 =================================
