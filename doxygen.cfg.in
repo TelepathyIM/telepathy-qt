@@ -279,15 +279,15 @@ ALIASES                = "intern=\par<b>Internal use only.</b>" \
                          "short=@brief " \
                          "FIXME=\xrefitem fixme \"Fixme\" \"Fixme\"" \
                          "bc=\xrefitem bc \"Binary Compatible\" \"Binary Compatible\"" \
-                         "telepathy=<a href=\"http://telepathy.freedesktop.org\">Telepathy</a>" \
-                         "telepathy_spec=<a href=\"http://telepathy.freedesktop.org/spec/\">Telepathy specification</a>" \
-                         "dbus=<a href=\"http://dbus.freedesktop.org\">D-Bus</a>" \
-                         "artistic=<a href=\"http://www.opensource.org/licenses/artistic-license.php\">Artistic</a>" \
-                         "bsd=<a href=\"http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5\">BSD</a>" \
-                         "x11=<a href=\"http://www.xfree86.org/3.3.6/COPYRIGHT2.html#3\">X11</a>" \
-                         "gpl=<a href=\"http://www.fsf.org/licensing/licenses/gpl.html#SEC1\">GPL</a>" \
-                         "lgpl=<a href=\"http://www.fsf.org/licensing/licenses/lgpl.html#SEC1\">LGPL</a>" \
-                         "qpl=<a href=\"http://www.trolltech.com/products/qt/licenses\">QPL</a>"
+                         "telepathy=<a href=\"https://telepathy.freedesktop.org\">Telepathy</a>" \
+                         "telepathy_spec=<a href=\"https://telepathy.freedesktop.org/spec/\">Telepathy specification</a>" \
+                         "dbus=<a href=\"https://dbus.freedesktop.org\">D-Bus</a>" \
+                         "artistic=<a href=\"https://www.opensource.org/licenses/artistic-license.php\">Artistic</a>" \
+                         "bsd=<a href=\"https://www.xfree86.org/3.3.6/COPYRIGHT2.html#5\">BSD</a>" \
+                         "x11=<a href=\"https://www.xfree86.org/3.3.6/COPYRIGHT2.html#3\">X11</a>" \
+                         "gpl=<a href=\"https://www.fsf.org/licensing/licenses/gpl.html#SEC1\">GPL</a>" \
+                         "lgpl=<a href=\"https://www.fsf.org/licensing/licenses/lgpl.html#SEC1\">LGPL</a>" \
+                         "qpl=<a href=\"https://www.trolltech.com/products/qt/licenses\">QPL</a>"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
@@ -1613,7 +1613,7 @@ MATHJAX_FORMAT         = HTML-CSS
 # The default value is: https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/.
 # This tag requires that the tag USE_MATHJAX is set to YES.
 
-MATHJAX_RELPATH        = http://cdn.mathjax.org/mathjax/latest
+MATHJAX_RELPATH        = https://cdn.mathjax.org/mathjax/latest
 
 # The MATHJAX_EXTENSIONS tag can be used to specify one or more MathJax
 # extension names that should be enabled during MathJax rendering. For example

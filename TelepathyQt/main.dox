@@ -1,7 +1,7 @@
 /*
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008 Collabora Ltd. <https://www.collabora.co.uk/>
  * @copyright Copyright (C) 2008 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
@@ -30,8 +30,8 @@
  * messaging, voice calls and video calls. It abstracts differences between protocols to
  * provide a unified interface for applications.
  *
- * [Releases](http://telepathy.freedesktop.org/releases/telepathy-qt) -
- * [Git repository](http://cgit.freedesktop.org/telepathy/telepathy-qt/)
+ * [Releases](https://telepathy.freedesktop.org/releases/telepathy-qt) -
+ * [Git repository](https://cgit.freedesktop.org/telepathy/telepathy-qt/)
  *
  * \section documentation Documentation
  * Getting started:
@@ -72,20 +72,20 @@
  * \subsection installation_from_source_requirements Requirements
  *
  * Building TelepathyQt requires:
- * - Qt, including QtDBus <http://www.qt.io/>
- * - GNU make <http://www.gnu.org/software/make/>
- * - pkg-config <http://ftp.gnome.org/pub/GNOME/sources/pkg-config/>
- * - libxslt, xsltproc <http://xmlsoft.org/XSLT/>
- * - Python <http://www.python.org/>
+ * - Qt, including QtDBus <https://www.qt.io/>
+ * - GNU make <https://www.gnu.org/software/make/>
+ * - pkg-config <https://ftp.gnome.org/pub/GNOME/sources/pkg-config/>
+ * - libxslt, xsltproc <https://xmlsoft.org/XSLT/>
+ * - Python <https://www.python.org/>
  *
  * For the full set of regression tests to run, you'll also need:
- * - telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
+ * - telepathy-glib <https://telepathy.freedesktop.org/releases/telepathy-glib/>
  *
  * and to build the example VoIP call UI (examples/call), you'll need:
- * - telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
+ * - telepathy-glib <https://telepathy.freedesktop.org/releases/telepathy-glib/>
  * - telepathy-farstream
- *  <http://telepathy.freedesktop.org/releases/telepathy-farstream/>
- * - GStreamer <http://gstreamer.freedesktop.org/>
+ *  <https://telepathy.freedesktop.org/releases/telepathy-farstream/>
+ * - GStreamer <https://gstreamer.freedesktop.org/>
  *
  * Building also requires the cmake build system.
  *
@@ -117,16 +117,16 @@
 /**
  * \page mailing_lists Mailing Lists
  *
- * [General discussion list](http://lists.freedesktop.org/mailman/listinfo/telepathy)
+ * [General discussion list](https://lists.freedesktop.org/mailman/listinfo/telepathy)
  * \n
  * This list should be used for general discussion about \telepathy usage,
  * development.
  *
- * [Commits list](http://lists.freedesktop.org/mailman/listinfo/telepathy-commits)
+ * [Commits list](https://lists.freedesktop.org/mailman/listinfo/telepathy-commits)
  * \n
  * Subscribe to this list to follow the commits.
  *
- * [Bugs list](http://lists.freedesktop.org/mailman/listinfo/telepathy-bugs)
+ * [Bugs list](https://lists.freedesktop.org/mailman/listinfo/telepathy-bugs)
  * \n
  * Subscribe to this list to follow the bug reports.
  */
