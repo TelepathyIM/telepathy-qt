@@ -4473,6 +4473,14 @@ BaseChannelConferenceInterface::~BaseChannelConferenceInterface()
 QVariantMap BaseChannelConferenceInterface::immutableProperties() const
 {
     QVariantMap map;
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"),
+               QVariant::fromValue(initialChannels()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles"),
+               QVariant::fromValue(initialInviteeHandles()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeIDs"),
+               QVariant::fromValue(initialInviteeIDs()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InvitationMessage"),
+               QVariant::fromValue(invitationMessage()));
     return map;
 }
 
