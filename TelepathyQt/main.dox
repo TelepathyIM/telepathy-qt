@@ -31,7 +31,7 @@
  * provide a unified interface for applications.
  *
  * [Releases](https://telepathy.freedesktop.org/releases/telepathy-qt) -
- * [Git repository](https://cgit.freedesktop.org/telepathy/telepathy-qt/)
+ * [Git repository](https://github.com/TelepathyIM/telepathy-qt)
  *
  * \section documentation Documentation
  * Getting started:
@@ -104,6 +104,8 @@
  * \page bugreport How to report a bug
  *
  * Before reporting a bug, please check the
+ * [GitHub issues](https://github.com/TelepathyIM/telepathy-qt/issues)
+ * and
  * [Bug Tracker](https://bugs.freedesktop.org/query.cgi?product=Telepathy&component=telepathy-qt)
  * to see if the issue is already known.
  *
@@ -111,7 +113,7 @@
  * - The version of TelepathyQt you are using
  *
  * Please submit the bug report, feature request or "to-do" item
- * [here](https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=telepathy-qt).
+ * [here](https://github.com/TelepathyIM/telepathy-qt/issues).
  */
 
 /**
