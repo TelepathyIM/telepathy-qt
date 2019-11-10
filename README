@@ -2,7 +2,7 @@
 telepathy-qt
 =============
 
-This is a library for Qt-based Telepathy clients.
+This is a library for Qt-based Telepathy clients and services.
 
 Telepathy is a D-Bus framework for unifying real time communication,
 including instant messaging, voice calls and video calls. It abstracts
@@ -23,46 +23,28 @@ Requirements
 ============
 
 Building telepathy-qt requires:
-  Qt, QtDBus, QtNetwork and QtXml (QtGui and QtWidgets are required for some examples) <http://www.qt-project.org/>
+  Qt (DBus, Network and Xml for the library; Gui and Widgets are required for some examples) <https://www.qt.io>
 
-  GNU make <http://www.gnu.org/software/make/>
-  pkg-config <http://ftp.gnome.org/pub/GNOME/sources/pkg-config/>
-  libxslt, xsltproc <http://xmlsoft.org/XSLT/>
-  Python <http://www.python.org/>
+  CMake <https://cmake.org/>
+  pkg-config <https://pkg-config.freedesktop.org/>
+  Python 3 <https://www.python.org/>
 
 For the full set of regression tests to run, you'll also need:
-  telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
+  telepathy-glib <https://telepathy.freedesktop.org/releases/telepathy-glib/>
 
 For building the Farsight convenience library, you'll need:
-  telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
-  telepathy-farsight <http://telepathy.freedesktop.org/releases/telepathy-farsight/>
-  GStreamer <http://gstreamer.freedesktop.org/>
+  telepathy-glib <https://telepathy.freedesktop.org/releases/telepathy-glib/>
+  telepathy-farsight <https://telepathy.freedesktop.org/releases/telepathy-farsight/>
+  GStreamer <https://gstreamer.freedesktop.org/>
 
 and to build the Farstream convenience library, you'll need:
-  telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
-  telepathy-farstream <http://telepathy.freedesktop.org/releases/telepathy-farstream/>
-  farstream <http://freedesktop.org/software/farstream/releases/>
-  GStreamer <http://gstreamer.freedesktop.org/>
+  telepathy-glib <https://telepathy.freedesktop.org/releases/telepathy-glib/>
+  telepathy-farstream <https://telepathy.freedesktop.org/releases/telepathy-farstream/>
+  farstream <https://freedesktop.org/software/farstream/releases/>
+  GStreamer <https://gstreamer.freedesktop.org/>
 
 See CMakeLists.txt for full details, including versions required.
 Of the packages listed above, only Qt libraries are required at runtime.
-
-Building also requires the cmake build system.
-
-Qt 5 alpha release contains some build issues that should be addressed in order to build
-telepathy-qt against it:
-
-  - When running 'configure' in Qt 5 alpha, the pkg-config files are properly generated, but when
-    'make' is executed, these files are replaced with empty ones. So, to build telepathy-qt against
-    it one must either backup the pkg-config files generated during the 'configure' phase before
-    running 'make' and replace them afterwards, or re-run 'configure' with the same parameters
-    after building it.
-
-  - If Qt 5 alpha is built with -reduce-relocations enabled, one must add the keyword
-    "reduce_relocations" to qtbase/lib/pkgconfig/QtCore.pc in the qt_config section, so that
-    telepathy-qt knows when to use -fPIC/PIE at linking stage accordingly.
-
-Both issues were reported and should be fixed when beta is out.
 
 Bugs, feature requests and to-do list
 =====================================
@@ -104,11 +86,12 @@ Contact info
 ============
 
 This library is maintained by the Telepathy project:
-  <http://telepathy.freedesktop.org/>
+  <https://github.com/TelepathyIM>
+  <https://telepathy.freedesktop.org>
   <mailto:telepathy@lists.freedesktop.org>
   <irc://irc.freenode.net/telepathy>
 
-Telepathy development is supported by Collabora Ltd.
+Telepathy development was supported by Collabora Ltd.
   <http://www.collabora.co.uk/>.
 
 Hacking
