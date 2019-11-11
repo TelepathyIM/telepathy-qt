@@ -523,6 +523,9 @@ USA.</p>
         respecified <tt>message-token</tt> not to have unimplementable
         uniqueness guarantees.
       </tp:changed>
+      <tp:changed version="0.27.4">
+        Added <tt>silent</tt> message flag.
+      </tp:changed>
 
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Well-known keys for the first <tp:type>Message_Part</tp:type> of a
@@ -679,6 +682,10 @@ USA.</p>
               <tp:type>Channel_Text_Message_Flags</tp:type>). This flag
               does not make sense on outgoing messages and SHOULD NOT
               appear there.</dd>
+
+            <dt>silent (b)</dt>
+            <dd>If present and true, the incoming message should not trigger
+              a user notification.</dd>
 
             <dt>rescued (b)</dt>
             <dd>If present and true, the incoming message has been seen in

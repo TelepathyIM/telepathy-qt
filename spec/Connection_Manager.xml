@@ -453,6 +453,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
               allowed; new connection managers SHOULD implement it in
               preference to this one.</p>
           </dd>
+
+          <dt>account-path-suffix (s)</dt>
+          <dd>The suffix of the Connection's Account object-path such as
+          "gabble/jabber/chris_40example_2ecom0" for the account whose
+          object path is "/org/freedesktop/Telepathy/Account/gabble/jabber/chris_40example_2ecom0".
+          This parameter should be set by the AccountManager on CMs supporting
+          this parameter.</dd>
         </dl>
 
         <p>The following well-known parameter names correspond to D-Bus
