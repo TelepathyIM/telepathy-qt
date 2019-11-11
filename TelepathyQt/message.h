@@ -146,6 +146,7 @@ public:
 
     bool isScrollback() const;
     bool isRescued() const;
+    bool isSilent() const;
 
     bool isDeliveryReport() const;
     DeliveryDetails deliveryDetails() const;

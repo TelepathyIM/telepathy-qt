@@ -848,6 +848,18 @@ bool ReceivedMessage::isRescued() const
 }
 
 /**
+ * Return whether the incoming message should trigger a user notification.
+ *
+ * If \c true, UI should not notify the user about this message.
+ *
+ * \return \c true if the silent flag is set, \c false otherwise.
+ */
+bool ReceivedMessage::isSilent() const
+{
+    return booleanFromPart(mPriv->parts, 0, "silent", false);
+}
+
+/**
  * Return whether the incoming message is a delivery report.
  *
  * \return \c true if a delivery report, \c false otherwise.
