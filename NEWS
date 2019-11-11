@@ -1,4 +1,4 @@
-telepathy-qt 0.9.8 ()
+telepathy-qt 0.9.8 (2019-11-11)
 =================================
 
 The "Still moving" release.
@@ -17,6 +17,7 @@ Enhancements:
 
 API changes:
  * Added constructor from initializer_list to generated Telepathy types
+ * Added a getter for 'silent' Message flag
 
 Service-side API changes:
  * Adjusted BaseChannelTextType API
