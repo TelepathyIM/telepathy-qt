@@ -104,9 +104,6 @@ endif ()
 # The doxygen macro requires Qt to have been looked up to enable crosslinking
 include(Doxygen)
 
-include_directories(${CMAKE_SOURCE_DIR}
-                    ${CMAKE_BINARY_DIR})
-
 add_definitions(-DQT_NO_CAST_FROM_ASCII)
 
 set(ENABLE_DEBUG_OUTPUT ON CACHE BOOL "If activated, compiles support for printing debug output to stderr")

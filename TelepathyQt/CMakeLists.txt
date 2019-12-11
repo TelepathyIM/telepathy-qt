@@ -755,6 +755,13 @@ target_compile_definitions(telepathy-qt${QT_VERSION_MAJOR} PRIVATE BUILDING_TP_Q
 
 # Library used by tests to test some unexported functionality
 add_library(telepathy-qt-test-backdoors STATIC ${telepathy_qt_test_backdoors_SRCS})
+target_include_directories(telepathy-qt-test-backdoors PUBLIC
+    $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+)
+
 add_dependencies(telepathy-qt-test-backdoors stable-constants)
 add_dependencies(telepathy-qt-test-backdoors stable-typesgen)
 
@@ -783,7 +790,12 @@ target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} PRIVATE
 target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} PUBLIC
     ${TP_QT_LIBRARY_LINKER_FLAGS})
 
-target_include_directories(telepathy-qt${QT_VERSION_MAJOR} PUBLIC "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/>")
+target_include_directories(telepathy-qt${QT_VERSION_MAJOR} PUBLIC
+    $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+)
 
 # Link - Library used by tests to test some unexported functionality
 target_link_libraries(telepathy-qt-test-backdoors PUBLIC
