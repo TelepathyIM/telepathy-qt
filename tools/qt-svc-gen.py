@@ -501,7 +501,7 @@ Q_SIGNALS: // SIGNALS
             self.b("""
 void %(ifacename)s::%(settername)s(const %(type)s &newValue)
 {
-    adaptee()->setProperty("%(adaptee_name)s", qVariantFromValue(newValue));
+    adaptee()->setProperty("%(adaptee_name)s", QVariant::fromValue(newValue));
 }
 """ % {'ifacename': ifacename,
        'settername': settername,
