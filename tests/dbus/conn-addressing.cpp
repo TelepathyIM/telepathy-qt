@@ -22,7 +22,7 @@ class TestConnAddressing : public Test
     Q_OBJECT
 
 public:
-    TestConnAddressing(QObject *parent = 0)
+    TestConnAddressing(QObject *parent = nullptr)
         : Test(parent)
     {
     }
@@ -80,7 +80,7 @@ void TestConnAddressing::initTestCase()
     g_type_init();
     g_set_prgname("conn-addressing");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_ADDRESSING_CONNECTION,

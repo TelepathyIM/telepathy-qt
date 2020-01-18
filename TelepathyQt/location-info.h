@@ -45,7 +45,7 @@ public:
     LocationInfo(const LocationInfo &other);
     virtual ~LocationInfo();
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     LocationInfo &operator=(const LocationInfo &other);
 

@@ -229,7 +229,7 @@ void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
             continue;
         }
 
-        (*i)->readyOp = 0;
+        (*i)->readyOp = nullptr;
 
         if (op->isError()) {
             warning() << "Preparing proxies for ObserveChannels failed with" << op->errorName()
@@ -332,7 +332,7 @@ void ClientApproverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
             continue;
         }
 
-        (*i)->readyOp = 0;
+        (*i)->readyOp = nullptr;
 
         if (op->isError()) {
             warning() << "Preparing proxies for AddDispatchOperation failed with" << op->errorName()
@@ -490,7 +490,7 @@ void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
             continue;
         }
 
-        (*i)->readyOp = 0;
+        (*i)->readyOp = nullptr;
 
         if (op->isError()) {
             warning() << "Preparing proxies for HandleChannels failed with" << op->errorName()

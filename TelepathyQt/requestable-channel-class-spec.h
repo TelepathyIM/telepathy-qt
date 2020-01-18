@@ -71,7 +71,7 @@ public:
     static RequestableChannelClassSpec dbusTube(const QString &serviceName = QString());
     static RequestableChannelClassSpec streamTube(const QString &service = QString());
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     RequestableChannelClassSpec &operator=(const RequestableChannelClassSpec &other);
     bool operator==(const RequestableChannelClassSpec &other) const;

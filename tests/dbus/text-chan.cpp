@@ -35,10 +35,10 @@ class TestTextChan : public Test
     Q_OBJECT
 
 public:
-    TestTextChan(QObject *parent = 0)
+    TestTextChan(QObject *parent = nullptr)
         : Test(parent),
-          mConn(0), mContactRepo(0),
-          mTextChanService(0), mMessagesChanService(0),
+          mConn(nullptr), mContactRepo(nullptr),
+          mTextChanService(nullptr), mMessagesChanService(nullptr),
           mGotChatStateChanged(false),
           mChatStateChangedState((ChannelChatState) -1)
     { }
@@ -127,7 +127,7 @@ void TestTextChan::initTestCase()
     g_type_init();
     g_set_prgname("text-chan");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
@@ -138,7 +138,7 @@ void TestTextChan::initTestCase()
 
     mContactRepo = tp_base_connection_get_handles(TP_BASE_CONNECTION(mConn->service()),
             TP_HANDLE_TYPE_CONTACT);
-    guint handle = tp_handle_ensure(mContactRepo, "someone@localhost", 0, 0);
+    guint handle = tp_handle_ensure(mContactRepo, "someone@localhost", nullptr, nullptr);
 
     mContact = mConn->contacts(UIntList() << handle).first();
     QVERIFY(mContact);
@@ -508,16 +508,16 @@ void TestTextChan::commonTest(bool withMessages)
 
     // wait for everything to settle down
     while (tp_text_mixin_has_pending_messages(
-                G_OBJECT(mTextChanService), 0)
+                G_OBJECT(mTextChanService), nullptr)
             || tp_message_mixin_has_pending_messages(
-                G_OBJECT(mMessagesChanService), 0)) {
+                G_OBJECT(mMessagesChanService), nullptr)) {
         QTest::qWait(1);
     }
 
     QVERIFY(!tp_text_mixin_has_pending_messages(
-                G_OBJECT(mTextChanService), 0));
+                G_OBJECT(mTextChanService), nullptr));
     QVERIFY(!tp_message_mixin_has_pending_messages(
-                G_OBJECT(mMessagesChanService), 0));
+                G_OBJECT(mMessagesChanService), nullptr));
 }
 
 void TestTextChan::testMessages()
@@ -548,14 +548,14 @@ void TestTextChan::cleanupTestCase()
     QCOMPARE(mConn->disconnect(), true);
     delete mConn;
 
-    if (mTextChanService != 0) {
+    if (mTextChanService != nullptr) {
         g_object_unref(mTextChanService);
-        mTextChanService = 0;
+        mTextChanService = nullptr;
     }
 
-    if (mMessagesChanService != 0) {
+    if (mMessagesChanService != nullptr) {
         g_object_unref(mMessagesChanService);
-        mMessagesChanService = 0;
+        mMessagesChanService = nullptr;
     }
 
     cleanupTestCaseImpl();

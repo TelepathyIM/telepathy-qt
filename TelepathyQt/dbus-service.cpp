@@ -206,7 +206,7 @@ struct AbstractDBusServiceInterface::Private
 {
     Private(const QString &interfaceName)
         : interfaceName(interfaceName),
-          dbusObject(0),
+          dbusObject(nullptr),
           registered(false)
     {
     }

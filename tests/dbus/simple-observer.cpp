@@ -140,7 +140,7 @@ class TestSimpleObserver : public Test
     Q_OBJECT
 
 public:
-    TestSimpleObserver(QObject *parent = 0)
+    TestSimpleObserver(QObject *parent = nullptr)
         : Test(parent),
           mChannelsCount(0), mSMChannelsCount(0)
     {
@@ -175,7 +175,7 @@ private:
 
     struct ConnInfo {
         ConnInfo()
-            : connService(0), baseConnService(0), contactRepo(0)
+            : connService(nullptr), baseConnService(nullptr), contactRepo(nullptr)
         {
         }
 
@@ -232,7 +232,7 @@ void TestSimpleObserver::initTestCase()
     g_type_init();
     g_set_prgname("simple-observer");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     QDBusConnection bus = QDBusConnection::sessionBus();
     QString channelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
@@ -274,20 +274,20 @@ void TestSimpleObserver::initTestCase()
                     "account", "me@example.com",
                     "protocol", "example",
                     NULL));
-        QVERIFY(connService != 0);
+        QVERIFY(connService != nullptr);
         TpBaseConnection *baseConnService = TP_BASE_CONNECTION(connService);
-        QVERIFY(baseConnService != 0);
+        QVERIFY(baseConnService != nullptr);
 
         gchar *connName, *connPath;
-        GError *error = NULL;
+        GError *error = nullptr;
 
         QString name(QLatin1String("example") + QString::number(i));
         QVERIFY(tp_base_connection_register(baseConnService,
                     name.toLatin1().constData(), &connName, &connPath, &error));
-        QVERIFY(error == 0);
+        QVERIFY(error == nullptr);
 
-        QVERIFY(connName != 0);
-        QVERIFY(connPath != 0);
+        QVERIFY(connName != nullptr);
+        QVERIFY(connPath != nullptr);
 
         ConnectionPtr conn = Connection::create(QLatin1String(connName), QLatin1String(connPath),
                 ChannelFactory::create(QDBusConnection::sessionBus()), ContactFactory::create());
@@ -311,7 +311,7 @@ void TestSimpleObserver::initTestCase()
         mConns[i].contactRepo = contactRepo;
 
         // setup channels
-        guint handle = tp_handle_ensure(contactRepo, mContacts[i].toLatin1().constData(), 0, 0);
+        guint handle = tp_handle_ensure(contactRepo, mContacts[i].toLatin1().constData(), nullptr, nullptr);
 
         QString messagesChanPath = QLatin1String(connPath) +
             QLatin1String("/MessagesChannel/") + QString::number(i);
@@ -625,14 +625,14 @@ void TestSimpleObserver::testCrossTalk()
 
     // invalidate channels
     for (int i = 0; i < 2; ++i) {
-        if (mMessagesChanServices[i] != 0) {
+        if (mMessagesChanServices[i] != nullptr) {
             g_object_unref(mMessagesChanServices[i]);
-            mMessagesChanServices[i] = 0;
+            mMessagesChanServices[i] = nullptr;
         }
 
-        if (mCallableChanServices[i] != 0) {
+        if (mCallableChanServices[i] != nullptr) {
             g_object_unref(mCallableChanServices[i]);
-            mCallableChanServices[i] = 0;
+            mCallableChanServices[i] = nullptr;
         }
     }
 
@@ -666,7 +666,7 @@ void TestSimpleObserver::cleanupTestCase()
         }
 
         if (mConns[i].conn->requestedFeatures().contains(Connection::FeatureCore)) {
-            QVERIFY(mConns[i].connService != NULL);
+            QVERIFY(mConns[i].connService != nullptr);
 
             if (TP_BASE_CONNECTION(mConns[i].connService)->status != TP_CONNECTION_STATUS_DISCONNECTED) {
                 tp_base_connection_change_status(TP_BASE_CONNECTION(mConns[i].connService),
@@ -684,20 +684,20 @@ void TestSimpleObserver::cleanupTestCase()
         mTextChans[i].reset();
         mSMChans[i].reset();
 
-        if (mMessagesChanServices[i] != 0) {
+        if (mMessagesChanServices[i] != nullptr) {
             g_object_unref(mMessagesChanServices[i]);
-            mMessagesChanServices[i] = 0;
+            mMessagesChanServices[i] = nullptr;
         }
 
-        if (mCallableChanServices[i] != 0) {
+        if (mCallableChanServices[i] != nullptr) {
             g_object_unref(mCallableChanServices[i]);
-            mCallableChanServices[i] = 0;
+            mCallableChanServices[i] = nullptr;
         }
 
-        if (mConns[i].connService != 0) {
-            mConns[i].baseConnService = 0;
+        if (mConns[i].connService != nullptr) {
+            mConns[i].baseConnService = nullptr;
             g_object_unref(mConns[i].connService);
-            mConns[i].connService = 0;
+            mConns[i].connService = nullptr;
         }
     }
 

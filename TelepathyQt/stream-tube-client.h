@@ -64,7 +64,7 @@ public:
         Tube(const Tube &other);
         ~Tube();
 
-        bool isValid() const { return mPriv.constData() != 0; }
+        bool isValid() const { return mPriv.constData() != nullptr; }
 
         Tube &operator=(const Tube &other);
 
@@ -138,7 +138,7 @@ public:
     TcpSourceAddressGenerator *tcpGenerator() const;
     bool acceptsAsUnix() const;
 
-    void setToAcceptAsTcp(TcpSourceAddressGenerator *generator = 0);
+    void setToAcceptAsTcp(TcpSourceAddressGenerator *generator = nullptr);
     void setToAcceptAsUnix(bool requireCredentials = false);
 
     QList<Tube> tubes() const;

@@ -86,7 +86,7 @@ void FakeHandler::onChannelDestroyed(QObject *obj)
     }
 }
 
-FakeHandlerManager *FakeHandlerManager::mInstance = 0;
+FakeHandlerManager *FakeHandlerManager::mInstance = nullptr;
 
 FakeHandlerManager *FakeHandlerManager::instance()
 {
@@ -103,7 +103,7 @@ FakeHandlerManager::FakeHandlerManager()
 
 FakeHandlerManager::~FakeHandlerManager()
 {
-    mInstance = 0;
+    mInstance = nullptr;
 }
 
 ObjectPathList FakeHandlerManager::handledChannels(const QDBusConnection &bus) const
@@ -157,7 +157,7 @@ void FakeHandlerManager::onFakeHandlerInvalidated(FakeHandler *fakeHandler)
     if (mFakeHandlers.isEmpty()) {
         // set mInstance to 0 here as we don't want instance() to return a already
         // deleted instance
-        mInstance = 0;
+        mInstance = nullptr;
         deleteLater();
     }
 }

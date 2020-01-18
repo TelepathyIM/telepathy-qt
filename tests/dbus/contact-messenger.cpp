@@ -164,11 +164,11 @@ class TestContactMessenger : public Test
     Q_OBJECT
 
 public:
-    TestContactMessenger(QObject *parent = 0)
+    TestContactMessenger(QObject *parent = nullptr)
         : Test(parent),
-          mCDMessagesAdaptor(0), mAccountAdaptor(0),
+          mCDMessagesAdaptor(nullptr), mAccountAdaptor(nullptr),
           // service side (telepathy-glib)
-          mConnService(0), mBaseConnService(0), mContactRepo(0),
+          mConnService(nullptr), mBaseConnService(nullptr), mContactRepo(nullptr),
           mSendFinished(false), mGotMessageSent(false)
     { }
 
@@ -289,7 +289,7 @@ void TestContactMessenger::expectPendingContactsFinished(PendingOperation *op)
 void TestContactMessenger::onSendFinished(Tp::PendingOperation *op)
 {
     PendingSendMessage *msg = qobject_cast<PendingSendMessage *>(op);
-    QVERIFY(msg != NULL);
+    QVERIFY(msg != nullptr);
 
     if (msg->isValid()) {
         qDebug() << "Send succeeded, got token" << msg->sentMessageToken();
@@ -329,7 +329,7 @@ void TestContactMessenger::initTestCase()
     g_type_init();
     g_set_prgname("contact-messenger");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     QDBusConnection bus = QDBusConnection::sessionBus();
     QString channelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
@@ -363,19 +363,19 @@ void TestContactMessenger::initTestCase()
             "account", "me@example.com",
             "protocol", "example",
             NULL));
-    QVERIFY(mConnService != 0);
+    QVERIFY(mConnService != nullptr);
     mBaseConnService = TP_BASE_CONNECTION(mConnService);
-    QVERIFY(mBaseConnService != 0);
+    QVERIFY(mBaseConnService != nullptr);
 
     gchar *name, *connPath;
-    GError *error = NULL;
+    GError *error = nullptr;
 
     QVERIFY(tp_base_connection_register(mBaseConnService,
                 "example", &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
+    QVERIFY(name != nullptr);
+    QVERIFY(connPath != nullptr);
 
     mConnName = QLatin1String(name);
     mConnPath = QLatin1String(connPath);
@@ -400,7 +400,7 @@ void TestContactMessenger::initTestCase()
 
     mContactRepo = tp_base_connection_get_handles(mBaseConnService,
             TP_HANDLE_TYPE_CONTACT);
-    guint handle = tp_handle_ensure(mContactRepo, "Ann", 0, 0);
+    guint handle = tp_handle_ensure(mContactRepo, "Ann", nullptr, nullptr);
 
     mMessagesChanPath = mConnPath + QLatin1String("/MessagesChannel");
     QByteArray chanPath = mMessagesChanPath.toLatin1();
@@ -443,7 +443,7 @@ void TestContactMessenger::testNoSupport()
     mCDMessagesAdaptor->setSimulatedSendError(TP_QT_DBUS_ERROR_UNKNOWN_METHOD);
 
     PendingSendMessage *pendingSend = messenger->sendMessage(QLatin1String("Hi!"));
-    QVERIFY(pendingSend != NULL);
+    QVERIFY(pendingSend != nullptr);
 
     QVERIFY(connect(pendingSend,
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -459,7 +459,7 @@ void TestContactMessenger::testNoSupport()
     Message m(ChannelTextMessageTypeAction, QLatin1String("is testing!"));
 
     pendingSend = messenger->sendMessage(m.parts());
-    QVERIFY(pendingSend != NULL);
+    QVERIFY(pendingSend != nullptr);
 
     QVERIFY(connect(pendingSend,
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -531,7 +531,7 @@ void TestContactMessenger::testReceived()
                 QVariantMap());
     }
 
-    guint handle = tp_handle_ensure(mContactRepo, "Ann", 0, 0);
+    guint handle = tp_handle_ensure(mContactRepo, "Ann", nullptr, nullptr);
     TpMessage *msg = tp_cm_message_new_text(mBaseConnService, handle, TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL, "Hi!");
 
     tp_message_mixin_take_received(G_OBJECT(mMessagesChanService), msg);
@@ -571,7 +571,7 @@ void TestContactMessenger::testReceivedFromContact()
                 QVariantMap());
     }
 
-    guint handle = tp_handle_ensure(mContactRepo, "Ann", 0, 0);
+    guint handle = tp_handle_ensure(mContactRepo, "Ann", nullptr, nullptr);
     TpMessage *msg = tp_cm_message_new_text(mBaseConnService, handle, TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL, "Hi!");
 
     tp_message_mixin_take_received(G_OBJECT(mMessagesChanService), msg);
@@ -613,15 +613,15 @@ void TestContactMessenger::cleanupTestCase()
 
     mChan.reset();
 
-    if (mMessagesChanService != 0) {
+    if (mMessagesChanService != nullptr) {
         g_object_unref(mMessagesChanService);
-        mMessagesChanService = 0;
+        mMessagesChanService = nullptr;
     }
 
-    if (mConnService != 0) {
-        mBaseConnService = 0;
+    if (mConnService != nullptr) {
+        mBaseConnService = nullptr;
         g_object_unref(mConnService);
-        mConnService = 0;
+        mConnService = nullptr;
     }
 
     cleanupTestCaseImpl();

@@ -99,7 +99,7 @@ private:
     bool mMonitorConnections;
 
     struct InvocationData : RefCounted {
-        InvocationData() : readyOp(0) {}
+        InvocationData() : readyOp(nullptr) {}
 
         PendingOperation *readyOp;
         QString error, message;

@@ -46,7 +46,7 @@ class RosterWidget : public QWidget
     Q_OBJECT
 
 public:
-    RosterWidget(QWidget *parent = 0);
+    RosterWidget(QWidget *parent = nullptr);
     ~RosterWidget() override;
 
     Tp::ConnectionPtr connection() const { return mConn; }

@@ -18,10 +18,10 @@ class TestContactSearchChan : public Test
     Q_OBJECT
 
 public:
-    TestContactSearchChan(QObject *parent = 0)
+    TestContactSearchChan(QObject *parent = nullptr)
         : Test(parent),
-          mConn(0),
-          mChan1Service(0), mChan2Service(0), mSearchReturned(false)
+          mConn(nullptr),
+          mChan1Service(nullptr), mChan2Service(nullptr), mSearchReturned(false)
     { }
 
 protected Q_SLOTS:
@@ -103,7 +103,7 @@ void TestContactSearchChan::initTestCase()
     g_type_init();
     g_set_prgname("contact-search-chan");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_ECHO_CONNECTION,
@@ -293,14 +293,14 @@ void TestContactSearchChan::cleanupTestCase()
     QCOMPARE(mConn->disconnect(), true);
     delete mConn;
 
-    if (mChan1Service != 0) {
+    if (mChan1Service != nullptr) {
         g_object_unref(mChan1Service);
-        mChan1Service = 0;
+        mChan1Service = nullptr;
     }
 
-    if (mChan2Service != 0) {
+    if (mChan2Service != nullptr) {
         g_object_unref(mChan2Service);
-        mChan2Service = 0;
+        mChan2Service = nullptr;
     }
 
     cleanupTestCaseImpl();

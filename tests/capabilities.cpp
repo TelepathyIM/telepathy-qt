@@ -16,7 +16,7 @@ class TestCapabilities : public QObject
     Q_OBJECT
 
 public:
-    TestCapabilities(QObject *parent = 0);
+    TestCapabilities(QObject *parent = nullptr);
 
 private Q_SLOTS:
     void testConnCapabilities();

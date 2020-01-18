@@ -4199,7 +4199,7 @@ void Account::Private::init()
 void Account::Private::introspectMain(Account::Private *self)
 {
     if (self->dispatcherContext->introspected) {
-        self->parent->onDispatcherIntrospected(0);
+        self->parent->onDispatcherIntrospected(nullptr);
         return;
     }
 
@@ -4578,7 +4578,7 @@ void Account::onDispatcherIntrospected(Tp::PendingOperation *op)
 {
     if (!mPriv->dispatcherContext->introspected) {
         Tp::PendingVariant *pv = static_cast<Tp::PendingVariant *>(op);
-        Q_ASSERT(pv != NULL);
+        Q_ASSERT(pv != nullptr);
 
         // Only the first Account for a given dispatcher will enter this branch, and will
         // immediately make further created accounts skip the whole waiting for CD to get
@@ -4729,7 +4729,7 @@ void Account::onRemoved()
 void Account::onConnectionBuilt(PendingOperation *op)
 {
     PendingReady *readyOp = qobject_cast<PendingReady *>(op);
-    Q_ASSERT(readyOp != NULL);
+    Q_ASSERT(readyOp != nullptr);
 
     if (op->isError()) {
         warning() << "Building connection" << mPriv->connObjPathQueue.head() << "failed with" <<

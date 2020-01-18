@@ -19,8 +19,8 @@ class TestContactsCapabilities : public Test
     Q_OBJECT
 
 public:
-    TestContactsCapabilities(QObject *parent = 0)
-        : Test(parent), mConn(0)
+    TestContactsCapabilities(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr)
     { }
 
 private Q_SLOTS:
@@ -43,7 +43,7 @@ void TestContactsCapabilities::initTestCase()
     g_type_init();
     g_set_prgname("contacts-capabilities");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
@@ -70,7 +70,7 @@ static void addTextChatClass(GPtrArray *classes, TpHandleType handle_type)
         TP_PROP_CHANNEL_TARGET_HANDLE_TYPE, G_TYPE_UINT, handle_type,
         NULL);
 
-    const gchar * const allowed[] = { NULL };
+    const gchar * const allowed[] = { nullptr };
     GValueArray *arr = tp_value_array_build(2,
         TP_HASH_TYPE_STRING_VARIANT_MAP, fixed,
         G_TYPE_STRV, allowed,
@@ -83,7 +83,7 @@ static void addTextChatClass(GPtrArray *classes, TpHandleType handle_type)
 
 static GHashTable *createContactCapabilities(TpHandle *handles)
 {
-    GHashTable *capabilities = g_hash_table_new_full(NULL, NULL, NULL,
+    GHashTable *capabilities = g_hash_table_new_full(nullptr, nullptr, nullptr,
         (GDestroyNotify) freeRccList);
 
     /* Support private text chats */
@@ -119,7 +119,7 @@ void TestContactsCapabilities::testCapabilities()
     TpHandle handles[] = { 0, 0, 0 };
     for (int i = 0; i < 3; i++) {
         handles[i] = tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(),
-                NULL, NULL);
+                nullptr, nullptr);
     }
 
     GHashTable *capabilities = createContactCapabilities(handles);

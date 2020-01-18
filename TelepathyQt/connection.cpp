@@ -201,7 +201,7 @@ Connection::Private::Private(Connection *parent,
       contactFactory(contactFactory),
       baseInterface(new Client::ConnectionInterface(parent)),
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
-      simplePresence(0),
+      simplePresence(nullptr),
       readinessHelper(parent->readinessHelper()),
       introspectingConnected(false),
       pendingStatus((uint) -1),
@@ -214,12 +214,12 @@ Connection::Private::Private(Connection *parent,
       introspectingSelfContact(false),
       reintrospectSelfContactRequired(false),
       maxPresenceStatusMessageLength(0),
-      handleContext(0)
+      handleContext(nullptr)
 {
     accountBalance.amount = 0;
     accountBalance.scale = 0;
 
-    Q_ASSERT(properties != 0);
+    Q_ASSERT(properties != nullptr);
 
     if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
         warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
@@ -489,7 +489,7 @@ void Connection::Private::introspectSelfContact(Connection::Private *self)
 
 void Connection::Private::introspectSimplePresence(Connection::Private *self)
 {
-    Q_ASSERT(self->properties != 0);
+    Q_ASSERT(self->properties != nullptr);
 
     debug() << "Calling Properties::Get("
         "Connection.I.SimplePresence.Statuses)";
@@ -1149,7 +1149,7 @@ struct TP_QT_NO_EXPORT Connection::ErrorDetails::Private : public QSharedData
  * Constructs a new invalid ErrorDetails instance.
  */
 Connection::ErrorDetails::ErrorDetails()
-    : mPriv(0)
+    : mPriv(nullptr)
 {
 }
 

@@ -131,7 +131,7 @@ class ClientFileTransferStateSpy : public QObject, public QList<QList<QVariant> 
 {
     Q_OBJECT
 public:
-    explicit ClientFileTransferStateSpy(QObject *parent = 0) : QObject(parent), QList<QList<QVariant> >()  { }
+    explicit ClientFileTransferStateSpy(QObject *parent = nullptr) : QObject(parent), QList<QList<QVariant> >()  { }
 
 public Q_SLOTS:
     void trigger(Tp::FileTransferState state,Tp::FileTransferStateChangeReason reason) {
@@ -360,7 +360,7 @@ class TestBaseFileTranfserChannel : public Test
 {
     Q_OBJECT
 public:
-    TestBaseFileTranfserChannel(QObject *parent = 0)
+    TestBaseFileTranfserChannel(QObject *parent = nullptr)
         : Test(parent)
     { }
 

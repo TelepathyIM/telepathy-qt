@@ -17,7 +17,7 @@ class TestBaseCM : public Test
 {
     Q_OBJECT
 public:
-    TestBaseCM(QObject *parent = 0)
+    TestBaseCM(QObject *parent = nullptr)
         : Test(parent)
     { }
 

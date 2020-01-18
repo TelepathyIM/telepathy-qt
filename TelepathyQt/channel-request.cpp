@@ -153,8 +153,8 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
     bool needIntrospectMainProps = false;
     const char *propertiesNames[] = { "Account", "UserActionTime",
         "PreferredHandler", "Requests", "Interfaces",
-        NULL };
-    for (unsigned i = 0; propertiesNames[i] != NULL; ++i) {
+        nullptr };
+    for (unsigned i = 0; propertiesNames[i] != nullptr; ++i) {
         key = TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".");
         key += QLatin1String(propertiesNames[i]);
         if (!self->immutableProperties.contains(key)) {
@@ -188,7 +188,7 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
 
 void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool lastCall)
 {
-    PendingReady *readyOp = 0;
+    PendingReady *readyOp = nullptr;
 
     if (props.contains(QLatin1String("Account"))) {
         QDBusObjectPath accountObjectPath =
@@ -755,7 +755,7 @@ ChannelRequestHints &ChannelRequestHints::operator=(const ChannelRequestHints &o
 
 bool ChannelRequestHints::isValid() const
 {
-    return mPriv.constData() != 0;
+    return mPriv.constData() != nullptr;
 }
 
 bool ChannelRequestHints::hasHint(const QString &reversedDomain, const QString &localName) const

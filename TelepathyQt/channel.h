@@ -111,7 +111,7 @@ public:
 
         GroupMemberChangeDetails &operator=(const GroupMemberChangeDetails &other);
 
-        bool isValid() const { return mPriv.constData() != 0; }
+        bool isValid() const { return mPriv.constData() != nullptr; }
 
         bool hasActor() const;
         ContactPtr actor() const;

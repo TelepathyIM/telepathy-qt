@@ -23,8 +23,8 @@ class TestStreamedMediaChan : public Test
     Q_OBJECT
 
 public:
-    TestStreamedMediaChan(QObject *parent = 0)
-        : Test(parent), mConn(0)
+    TestStreamedMediaChan(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr)
     { }
 
 protected Q_SLOTS:
@@ -470,7 +470,7 @@ void TestStreamedMediaChan::initTestCase()
     g_type_init();
     g_set_prgname("streamed-media-chan");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_CALLABLE_CONNECTION,

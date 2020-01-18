@@ -49,7 +49,7 @@ public:
         SearchStateChangeDetails(const SearchStateChangeDetails &other);
         ~SearchStateChangeDetails();
 
-        bool isValid() const { return mPriv.constData() != 0; }
+        bool isValid() const { return mPriv.constData() != nullptr; }
 
         SearchStateChangeDetails &operator=(const SearchStateChangeDetails &other);
 

@@ -18,10 +18,10 @@ class TestConferenceChan : public Test
     Q_OBJECT
 
 public:
-    TestConferenceChan(QObject *parent = 0)
+    TestConferenceChan(QObject *parent = nullptr)
         : Test(parent),
-          mConn(0), mContactRepo(0),
-          mTextChan1Service(0), mTextChan2Service(0), mConferenceChanService(0)
+          mConn(nullptr), mContactRepo(nullptr),
+          mTextChan1Service(nullptr), mTextChan2Service(nullptr), mConferenceChanService(nullptr)
     { }
 
 protected Q_SLOTS:
@@ -78,7 +78,7 @@ void TestConferenceChan::initTestCase()
     g_type_init();
     g_set_prgname("chan-conference");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_ECHO_CONNECTION,
@@ -90,9 +90,9 @@ void TestConferenceChan::initTestCase()
     // create a Channel by magic, rather than doing D-Bus round-trips for it
     mContactRepo = tp_base_connection_get_handles(TP_BASE_CONNECTION(mConn->service()),
             TP_HANDLE_TYPE_CONTACT);
-    guint handle1 = tp_handle_ensure(mContactRepo, "someone1@localhost", 0, 0);
-    guint handle2 = tp_handle_ensure(mContactRepo, "someone2@localhost", 0, 0);
-    guint handle3 = tp_handle_ensure(mContactRepo, "someone3@localhost", 0, 0);
+    guint handle1 = tp_handle_ensure(mContactRepo, "someone1@localhost", nullptr, nullptr);
+    guint handle2 = tp_handle_ensure(mContactRepo, "someone2@localhost", nullptr, nullptr);
+    guint handle3 = tp_handle_ensure(mContactRepo, "someone3@localhost", nullptr, nullptr);
 
     QByteArray chanPath;
     GPtrArray *initialChannels = g_ptr_array_new();
@@ -136,7 +136,7 @@ void TestConferenceChan::initTestCase()
                 "initial-channels", initialChannels,
                 NULL));
 
-    g_ptr_array_foreach(initialChannels, (GFunc) g_free, NULL);
+    g_ptr_array_foreach(initialChannels, (GFunc) g_free, nullptr);
     g_ptr_array_free(initialChannels, TRUE);
 }
 
@@ -262,19 +262,19 @@ void TestConferenceChan::cleanupTestCase()
     QCOMPARE(mConn->disconnect(), true);
     delete mConn;
 
-    if (mTextChan1Service != 0) {
+    if (mTextChan1Service != nullptr) {
         g_object_unref(mTextChan1Service);
-        mTextChan1Service = 0;
+        mTextChan1Service = nullptr;
     }
 
-    if (mTextChan2Service != 0) {
+    if (mTextChan2Service != nullptr) {
         g_object_unref(mTextChan2Service);
-        mTextChan2Service = 0;
+        mTextChan2Service = nullptr;
     }
 
-    if (mConferenceChanService != 0) {
+    if (mConferenceChanService != nullptr) {
         g_object_unref(mConferenceChanService);
-        mConferenceChanService = 0;
+        mConferenceChanService = nullptr;
     }
 
     cleanupTestCaseImpl();

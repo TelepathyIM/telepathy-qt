@@ -592,7 +592,7 @@ void SimpleObserver::onContactConstructed(Tp::PendingOperation *op)
     mPriv->processChannelsQueue();
 
     // disconnect all account signals we are handling
-    disconnect(mPriv->account.data(), 0, this, 0);
+    disconnect(mPriv->account.data(), nullptr, this, nullptr);
 }
 
 void SimpleObserver::onNewChannels(const AccountPtr &channelsAccount,

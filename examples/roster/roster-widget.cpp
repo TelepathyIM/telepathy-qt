@@ -332,7 +332,7 @@ void RosterWidget::updateActions()
         mDenyAction->setEnabled(false);
         mRemoveAction->setEnabled(false);
         mBlockAction->setEnabled(false);
-        updateActions(0);
+        updateActions(nullptr);
         return;
     }
     Q_ASSERT(selectedItems.size() == 1);

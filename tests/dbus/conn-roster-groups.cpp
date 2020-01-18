@@ -29,8 +29,8 @@ class TestConnRosterGroups : public Test
     Q_OBJECT
 
 public:
-    TestConnRosterGroups(QObject *parent = 0)
-        : Test(parent), mConnService(0),
+    TestConnRosterGroups(QObject *parent = nullptr)
+        : Test(parent), mConnService(nullptr),
           mContactsAddedToGroup(0), mContactsRemovedFromGroup(0)
     { }
 
@@ -130,7 +130,7 @@ void TestConnRosterGroups::expectConnInvalidated()
 void TestConnRosterGroups::expectContact(Tp::PendingOperation *op)
 {
     PendingContacts *contacts = qobject_cast<PendingContacts *>(op);
-    QVERIFY(contacts != 0);
+    QVERIFY(contacts != nullptr);
 
     QVERIFY(contacts->isValid());
     QCOMPARE(contacts->contacts().length(), 1);
@@ -156,14 +156,14 @@ void TestConnRosterGroups::initTestCase()
     g_type_init();
     g_set_prgname("conn-roster-groups");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 }
 
 void TestConnRosterGroups::init()
 {
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     mConnService = EXAMPLE_CONTACT_LIST_CONNECTION(g_object_new(
             EXAMPLE_TYPE_CONTACT_LIST_CONNECTION,
@@ -171,13 +171,13 @@ void TestConnRosterGroups::init()
             "simulation-delay", 0,
             "protocol", "example-contact-list",
             NULL));
-    QVERIFY(mConnService != 0);
+    QVERIFY(mConnService != nullptr);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
                 "foo", &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
+    QVERIFY(name != nullptr);
+    QVERIFY(connPath != nullptr);
 
     mConnName = QLatin1String(name);
     mConnPath = QLatin1String(connPath);
@@ -824,7 +824,7 @@ void TestConnRosterGroups::cleanup()
     mContact.reset();
 
     if (mConn && mConn->requestedFeatures().contains(Connection::FeatureCore)) {
-        QVERIFY(mConnService != NULL);
+        QVERIFY(mConnService != nullptr);
 
         if (TP_BASE_CONNECTION(mConnService)->status != TP_CONNECTION_STATUS_DISCONNECTED) {
             tp_base_connection_change_status(TP_BASE_CONNECTION(mConnService),
@@ -839,9 +839,9 @@ void TestConnRosterGroups::cleanup()
     }
     mConn.reset();
 
-    if (mConnService != 0) {
+    if (mConnService != nullptr) {
         g_object_unref(mConnService);
-        mConnService = 0;
+        mConnService = nullptr;
     }
 
     cleanupImpl();

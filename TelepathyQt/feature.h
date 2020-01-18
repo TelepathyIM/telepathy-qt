@@ -46,7 +46,7 @@ public:
     Feature(const Feature &other);
     ~Feature();
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     Feature &operator=(const Feature &other);
 

@@ -521,11 +521,11 @@ CallMemberFlags CallChannel::remoteMemberFlags(const ContactPtr &member) const
 {
     if (!isReady(FeatureCallMembers)) {
         warning() << "CallChannel::remoteMemberFlags() used with FeatureCallMembers not ready";
-        return (CallMemberFlags) 0;
+        return (CallMemberFlags) nullptr;
     }
 
     if (!member) {
-        return (CallMemberFlags) 0;
+        return (CallMemberFlags) nullptr;
     }
 
     for (CallMemberMap::const_iterator i = mPriv->callMembers.constBegin();
@@ -538,7 +538,7 @@ CallMemberFlags CallChannel::remoteMemberFlags(const ContactPtr &member) const
         }
     }
 
-    return (CallMemberFlags) 0;
+    return (CallMemberFlags) nullptr;
 }
 
 /**

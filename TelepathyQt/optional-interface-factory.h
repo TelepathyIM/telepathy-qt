@@ -101,7 +101,7 @@ public:
         // vexing-parse
         QString name( (QLatin1String(Interface::staticInterfaceName())) );
         if (check == CheckInterfaceSupported && !mInterfaces.contains(name)) {
-            return 0;
+            return nullptr;
         }
 
         // If present or forced, delegate to OptionalInterfaceFactory
@@ -111,7 +111,7 @@ public:
     template <typename Interface>
     inline Interface *interface() const
     {
-        AbstractInterface* interfaceMustBeASubclassOfAbstractInterface = static_cast<Interface *>(NULL);
+        AbstractInterface* interfaceMustBeASubclassOfAbstractInterface = static_cast<Interface *>(nullptr);
         Q_UNUSED(interfaceMustBeASubclassOfAbstractInterface);
 
         // If there is a interface cached already, return it

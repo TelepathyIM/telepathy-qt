@@ -31,8 +31,8 @@ class TestConnIntrospectCornercases : public Test
     Q_OBJECT
 
 public:
-    TestConnIntrospectCornercases(QObject *parent = 0)
-        : Test(parent), mConnService(0), mNumSelfHandleChanged(0)
+    TestConnIntrospectCornercases(QObject *parent = nullptr)
+        : Test(parent), mConnService(nullptr), mNumSelfHandleChanged(0)
     { }
 
 protected Q_SLOTS:
@@ -79,7 +79,7 @@ void TestConnIntrospectCornercases::initTestCase()
     g_type_init();
     g_set_prgname("conn-introspect-cornercases");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 }
 
 void TestConnIntrospectCornercases::init()
@@ -87,7 +87,7 @@ void TestConnIntrospectCornercases::init()
     initImpl();
 
     QVERIFY(mConn.isNull());
-    QVERIFY(mConnService == 0);
+    QVERIFY(mConnService == nullptr);
 
     QVERIFY(mStatuses.empty());
     QCOMPARE(mNumSelfHandleChanged, 0);
@@ -100,7 +100,7 @@ void TestConnIntrospectCornercases::testSelfHandleChangeBeforeConnecting()
 {
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     TpTestsSimpleConnection *simpleConnService =
         TP_TESTS_SIMPLE_CONNECTION(
@@ -109,22 +109,22 @@ void TestConnIntrospectCornercases::testSelfHandleChangeBeforeConnecting()
                 "account", "me@example.com",
                 "protocol", "simple",
                 NULL));
-    QVERIFY(simpleConnService != 0);
+    QVERIFY(simpleConnService != nullptr);
 
     mConnService = TP_BASE_CONNECTION(simpleConnService);
-    QVERIFY(mConnService != 0);
+    QVERIFY(mConnService != nullptr);
 
     QVERIFY(tp_base_connection_register(mConnService, "simple",
                 &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
     mConn = Connection::create(QLatin1String(name), QLatin1String(connPath),
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    g_free(name); name = 0;
-    g_free(connPath); connPath = 0;
+    g_free(name); name = nullptr;
+    g_free(connPath); connPath = nullptr;
 
     // Set the initial self handle (we're not using the conn service normally, so it doesn't do this
     // by itself)
@@ -177,7 +177,7 @@ void TestConnIntrospectCornercases::testSelfHandleChangeWhileBuilding()
 {
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     TpTestsSimpleConnection *simpleConnService =
         TP_TESTS_SIMPLE_CONNECTION(
@@ -186,22 +186,22 @@ void TestConnIntrospectCornercases::testSelfHandleChangeWhileBuilding()
                 "account", "me@example.com",
                 "protocol", "simple",
                 NULL));
-    QVERIFY(simpleConnService != 0);
+    QVERIFY(simpleConnService != nullptr);
 
     mConnService = TP_BASE_CONNECTION(simpleConnService);
-    QVERIFY(mConnService != 0);
+    QVERIFY(mConnService != nullptr);
 
     QVERIFY(tp_base_connection_register(mConnService, "simple",
                 &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
     mConn = Connection::create(QLatin1String(name), QLatin1String(connPath),
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    g_free(name); name = 0;
-    g_free(connPath); connPath = 0;
+    g_free(name); name = nullptr;
+    g_free(connPath); connPath = nullptr;
 
     // Make the conn Connected, and with FeatureCore ready
 
@@ -293,7 +293,7 @@ void TestConnIntrospectCornercases::testSlowpath()
 {
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     TpTestsBug16307Connection *bugConnService =
         TP_TESTS_BUG16307_CONNECTION(
@@ -302,22 +302,22 @@ void TestConnIntrospectCornercases::testSlowpath()
                 "account", "me@example.com",
                 "protocol", "simple",
                 NULL));
-    QVERIFY(bugConnService != 0);
+    QVERIFY(bugConnService != nullptr);
 
     mConnService = TP_BASE_CONNECTION(bugConnService);
-    QVERIFY(mConnService != 0);
+    QVERIFY(mConnService != nullptr);
 
     QVERIFY(tp_base_connection_register(mConnService, "simple",
                 &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
     mConn = Connection::create(QLatin1String(name), QLatin1String(connPath),
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    g_free(name); name = 0;
-    g_free(connPath); connPath = 0;
+    g_free(name); name = nullptr;
+    g_free(connPath); connPath = nullptr;
 
     PendingOperation *op = mConn->becomeReady();
     QVERIFY(connect(op,
@@ -337,7 +337,7 @@ void TestConnIntrospectCornercases::testStatusChange()
 {
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     TpTestsSimpleConnection *simpleConnService =
         TP_TESTS_SIMPLE_CONNECTION(
@@ -346,22 +346,22 @@ void TestConnIntrospectCornercases::testStatusChange()
                 "account", "me@example.com",
                 "protocol", "simple",
                 NULL));
-    QVERIFY(simpleConnService != 0);
+    QVERIFY(simpleConnService != nullptr);
 
     mConnService = TP_BASE_CONNECTION(simpleConnService);
-    QVERIFY(mConnService != 0);
+    QVERIFY(mConnService != nullptr);
 
     QVERIFY(tp_base_connection_register(mConnService, "simple",
                 &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
     mConn = Connection::create(QLatin1String(name), QLatin1String(connPath),
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    g_free(name); name = 0;
-    g_free(connPath); connPath = 0;
+    g_free(name); name = nullptr;
+    g_free(connPath); connPath = nullptr;
 
     // Make core ready first, because Connection has internal handling for the status changing
     // during core introspection, and we rather want to test the more general ReadinessHelper
@@ -393,7 +393,7 @@ void TestConnIntrospectCornercases::testStatusChange()
             TP_HANDLE_TYPE_CONTACT);
 
     mConnService->self_handle = tp_handle_ensure(contact_repo, "me@example.com",
-            NULL, NULL);
+            nullptr, nullptr);
 
     tp_base_connection_change_status(mConnService,
             TP_CONNECTION_STATUS_CONNECTING,
@@ -418,7 +418,7 @@ void TestConnIntrospectCornercases::testNoRoster()
 {
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     TpTestsContactsNorosterConnection *connService =
         TP_TESTS_CONTACTS_NOROSTER_CONNECTION(
@@ -427,22 +427,22 @@ void TestConnIntrospectCornercases::testNoRoster()
                 "account", "me@example.com",
                 "protocol", "contacts-noroster",
                 NULL));
-    QVERIFY(connService != 0);
+    QVERIFY(connService != nullptr);
 
     mConnService = TP_BASE_CONNECTION(connService);
-    QVERIFY(mConnService != 0);
+    QVERIFY(mConnService != nullptr);
 
     QVERIFY(tp_base_connection_register(mConnService, "simple",
                 &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
     mConn = Connection::create(QLatin1String(name), QLatin1String(connPath),
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    g_free(name); name = 0;
-    g_free(connPath); connPath = 0;
+    g_free(name); name = nullptr;
+    g_free(connPath); connPath = nullptr;
 
     PendingOperation *op = mConn->lowlevel()->requestConnect();
     QVERIFY(connect(op,
@@ -464,7 +464,7 @@ void TestConnIntrospectCornercases::testNoRoster()
 void TestConnIntrospectCornercases::cleanup()
 {
     if (mConn) {
-        QVERIFY(mConnService != 0);
+        QVERIFY(mConnService != nullptr);
 
         // Disconnect and wait for invalidation
         tp_base_connection_change_status(
@@ -484,9 +484,9 @@ void TestConnIntrospectCornercases::cleanup()
         mConn.reset();
     }
 
-    if (mConnService != 0) {
+    if (mConnService != nullptr) {
         g_object_unref(mConnService);
-        mConnService = 0;
+        mConnService = nullptr;
     }
 
     mStatuses.clear();

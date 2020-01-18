@@ -494,9 +494,9 @@ class TestCmProtocol : public Test
     Q_OBJECT
 
 public:
-    TestCmProtocol(QObject *parent = 0)
+    TestCmProtocol(QObject *parent = nullptr)
         : Test(parent),
-          mCM(0)
+          mCM(nullptr)
     {
     }
 

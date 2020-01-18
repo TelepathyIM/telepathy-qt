@@ -34,8 +34,8 @@ class TestCmBasics : public Test
     Q_OBJECT
 
 public:
-    TestCmBasics(QObject *parent = 0)
-        : Test(parent), mCMService(0)
+    TestCmBasics(QObject *parent = nullptr)
+        : Test(parent), mCMService(nullptr)
     { }
 
 protected Q_SLOTS:
@@ -89,17 +89,17 @@ void TestCmBasics::initTestCase()
     g_type_init();
     g_set_prgname("cm-basics");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mCMService = TP_BASE_CONNECTION_MANAGER(g_object_new(
         EXAMPLE_TYPE_ECHO_2_CONNECTION_MANAGER,
-        NULL));
-    QVERIFY(mCMService != 0);
+        nullptr));
+    QVERIFY(mCMService != nullptr);
 
     mCMServiceLegacy = TP_BASE_CONNECTION_MANAGER(g_object_new(
         TP_TESTS_TYPE_SIMPLE_CONNECTION_MANAGER,
-        NULL));
-    QVERIFY(mCMServiceLegacy != 0);
+        nullptr));
+    QVERIFY(mCMServiceLegacy != nullptr);
 
     QVERIFY(tp_base_connection_manager_register(mCMService));
     QVERIFY(tp_base_connection_manager_register(mCMServiceLegacy));
@@ -336,12 +336,12 @@ void TestCmBasics::cleanupTestCase()
 {
     if (mCMService) {
         g_object_unref(mCMService);
-        mCMService = 0;
+        mCMService = nullptr;
     }
 
     if (mCMServiceLegacy) {
         g_object_unref(mCMServiceLegacy);
-        mCMServiceLegacy = 0;
+        mCMServiceLegacy = nullptr;
     }
 
     cleanupTestCaseImpl();

@@ -167,7 +167,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
 void ConnectionManager::Private::ProtocolWrapper::introspectMainProperties()
 {
     Client::ProtocolInterface *protocol = baseInterface();
-    Q_ASSERT(protocol != 0);
+    Q_ASSERT(protocol != nullptr);
 
     debug() << "Calling Properties::GetAll(Protocol) for" << info().name();
     PendingVariantMap *pvm = protocol->requestAllProperties();
@@ -206,7 +206,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectInterfaces()
 void ConnectionManager::Private::ProtocolWrapper::introspectAvatars()
 {
     Client::ProtocolInterfaceAvatarsInterface *avatars = avatarsInterface();
-    Q_ASSERT(avatars != 0);
+    Q_ASSERT(avatars != nullptr);
 
     debug() << "Calling Properties::GetAll(Protocol.Avatars) for" << info().name();
     PendingVariantMap *pvm = avatars->requestAllProperties();
@@ -218,7 +218,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectAvatars()
 void ConnectionManager::Private::ProtocolWrapper::introspectPresence()
 {
     Client::ProtocolInterfacePresenceInterface *presence = presenceInterface();
-    Q_ASSERT(presence != 0);
+    Q_ASSERT(presence != nullptr);
 
     debug() << "Calling Properties::GetAll(Protocol.Presence) for" << info().name();
     PendingVariantMap *pvm = presence->requestAllProperties();
@@ -230,7 +230,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectPresence()
 void ConnectionManager::Private::ProtocolWrapper::introspectAddressing()
 {
     Client::ProtocolInterfaceAddressingInterface *addressing = addressingInterface();
-    Q_ASSERT(addressing != 0);
+    Q_ASSERT(addressing != nullptr);
 
     debug() << "Calling Properties::GetAll(Protocol.Addressing) for" << info().name();
     PendingVariantMap *pvm = addressing->requestAllProperties();

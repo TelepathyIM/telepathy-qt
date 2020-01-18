@@ -42,7 +42,7 @@ class TestBaseProtocol : public Test
 {
     Q_OBJECT
 public:
-    TestBaseProtocol(QObject *parent = 0)
+    TestBaseProtocol(QObject *parent = nullptr)
         : Test(parent)
     { }
 

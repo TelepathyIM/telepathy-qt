@@ -103,7 +103,7 @@ public:
 
             ErrorDetails &operator=(const ErrorDetails &other);
 
-            bool isValid() const { return mPriv.constData() != 0; }
+            bool isValid() const { return mPriv.constData() != nullptr; }
 
             bool hasDebugMessage() const
             {

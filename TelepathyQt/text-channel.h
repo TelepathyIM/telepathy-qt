@@ -78,10 +78,10 @@ public Q_SLOTS:
 
     PendingSendMessage *send(const QString &text,
             ChannelTextMessageType type = ChannelTextMessageTypeNormal,
-            MessageSendingFlags flags = 0);
+            MessageSendingFlags flags = nullptr);
 
     PendingSendMessage *send(const MessagePartList &parts,
-            MessageSendingFlags flags = 0);
+            MessageSendingFlags flags = nullptr);
 
     inline PendingOperation *inviteContacts(
             const QList<ContactPtr> &contacts,

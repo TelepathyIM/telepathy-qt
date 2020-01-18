@@ -19,7 +19,7 @@ class Test : public QObject
 
 public:
 
-    Test(QObject *parent = 0);
+    Test(QObject *parent = nullptr);
 
     ~Test() override;
 

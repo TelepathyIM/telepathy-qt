@@ -29,7 +29,7 @@ namespace Tp
 
 void TestBackdoors::invalidateProxy(DBusProxy *proxy, const QString &reason, const QString &message)
 {
-    Q_ASSERT(proxy != 0);
+    Q_ASSERT(proxy != nullptr);
     Q_ASSERT(proxy->isValid());
 
     proxy->invalidate(reason, message);

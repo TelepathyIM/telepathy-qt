@@ -107,7 +107,7 @@ public:
     QList<AbstractConnectionInterfacePtr> interfaces() const;
     AbstractConnectionInterfacePtr interface(const QString  &interfaceName) const;
     bool plugInterface(const AbstractConnectionInterfacePtr &interface);
-    bool registerObject(DBusError *error = NULL);
+    bool registerObject(DBusError *error = nullptr);
 
     virtual QString uniqueName() const;
 

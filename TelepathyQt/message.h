@@ -106,7 +106,7 @@ public:
 
         DeliveryDetails &operator=(const DeliveryDetails &other);
 
-        bool isValid() const { return mPriv.constData() != 0; }
+        bool isValid() const { return mPriv.constData() != nullptr; }
 
         DeliveryStatus status() const;
 

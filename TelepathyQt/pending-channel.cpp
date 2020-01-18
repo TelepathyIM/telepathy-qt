@@ -126,7 +126,7 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection, const QString &e
     mPriv->yours = false;
     mPriv->handleType = 0;
     mPriv->handle = 0;
-    mPriv->notifier = 0;
+    mPriv->notifier = nullptr;
     mPriv->create = false;
 
     setFinishedWithError(errorName, errorMessage);
@@ -149,7 +149,7 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
     mPriv->channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
     mPriv->handleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
     mPriv->handle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
-    mPriv->notifier = 0;
+    mPriv->notifier = nullptr;
     mPriv->create = create;
 
     Client::ConnectionInterfaceRequestsInterface *requestsInterface =
@@ -187,7 +187,7 @@ PendingChannel::PendingChannel(const AccountPtr &account,
             account->channelFactory(),
             account->contactFactory());
     mPriv->handler = RequestTemporaryHandler::create(account);
-    mPriv->notifier = 0;
+    mPriv->notifier = nullptr;
     mPriv->create = create;
 
     QString handlerName = QString(QLatin1String("TpQtRaH_%1_%2"))
@@ -395,10 +395,10 @@ HandledChannelNotifier *PendingChannel::handledChannelNotifier() const
 {
     if (!isFinished()) {
         warning() << "PendingChannel::handledChannelNotifier called before finished, returning 0";
-        return 0;
+        return nullptr;
     } else if (!isValid()) {
         warning() << "PendingChannel::handledChannelNotifier called when not valid, returning 0";
-        return 0;
+        return nullptr;
     }
 
     if (mPriv->cr && !mPriv->notifier) {

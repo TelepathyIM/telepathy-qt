@@ -41,7 +41,7 @@ public:
     MessageContentPart(const MessageContentPart &other);
     ~MessageContentPart();
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     MessageContentPart &operator=(const MessageContentPart &other);
     bool operator==(const MessageContentPart &other) const;

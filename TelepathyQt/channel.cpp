@@ -266,8 +266,8 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       connection(connection),
       immutableProperties(immutableProperties),
-      group(0),
-      conference(0),
+      group(nullptr),
+      conference(nullptr),
       readinessHelper(parent->readinessHelper()),
       targetHandleType(0),
       targetHandle(0),
@@ -277,7 +277,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       usingMembersChangedDetailed(false),
       groupHaveMembers(false),
       buildingContacts(false),
-      currentGroupMembersChangedInfo(0),
+      currentGroupMembersChangedInfo(nullptr),
       groupAreHandleOwnersAvailable(false),
       pendingRetrieveGroupSelfContact(false),
       groupIsSelfHandleTracked(false),
@@ -441,11 +441,11 @@ void Channel::Private::introspectMainFallbackInterfaces()
 
 void Channel::Private::introspectGroup()
 {
-    Q_ASSERT(properties != 0);
+    Q_ASSERT(properties != nullptr);
 
     if (!group) {
         group = parent->interface<Client::ChannelInterfaceGroupInterface>();
-        Q_ASSERT(group != 0);
+        Q_ASSERT(group != nullptr);
     }
 
     debug() << "Introspecting Channel.Interface.Group for" << parent->objectPath();
@@ -491,7 +491,7 @@ void Channel::Private::introspectGroup()
 
 void Channel::Private::introspectGroupFallbackFlags()
 {
-    Q_ASSERT(group != 0);
+    Q_ASSERT(group != nullptr);
 
     debug() << "Calling Channel.Interface.Group::GetGroupFlags()";
     QDBusPendingCallWatcher *watcher =
@@ -503,7 +503,7 @@ void Channel::Private::introspectGroupFallbackFlags()
 
 void Channel::Private::introspectGroupFallbackMembers()
 {
-    Q_ASSERT(group != 0);
+    Q_ASSERT(group != nullptr);
 
     debug() << "Calling Channel.Interface.Group::GetAllMembers()";
     QDBusPendingCallWatcher *watcher =
@@ -515,7 +515,7 @@ void Channel::Private::introspectGroupFallbackMembers()
 
 void Channel::Private::introspectGroupFallbackLocalPendingWithInfo()
 {
-    Q_ASSERT(group != 0);
+    Q_ASSERT(group != nullptr);
 
     debug() << "Calling Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
     QDBusPendingCallWatcher *watcher =
@@ -528,7 +528,7 @@ void Channel::Private::introspectGroupFallbackLocalPendingWithInfo()
 
 void Channel::Private::introspectGroupFallbackSelfHandle()
 {
-    Q_ASSERT(group != 0);
+    Q_ASSERT(group != nullptr);
 
     debug() << "Calling Channel.Interface.Group::GetSelfHandle()";
     QDBusPendingCallWatcher *watcher =
@@ -540,12 +540,12 @@ void Channel::Private::introspectGroupFallbackSelfHandle()
 
 void Channel::Private::introspectConference()
 {
-    Q_ASSERT(properties != 0);
-    Q_ASSERT(conference == 0);
+    Q_ASSERT(properties != nullptr);
+    Q_ASSERT(conference == nullptr);
 
     debug() << "Introspecting Conference interface";
     conference = parent->interface<Client::ChannelInterfaceConferenceInterface>();
-    Q_ASSERT(conference != 0);
+    Q_ASSERT(conference != nullptr);
 
     introspectingConference = true;
 
@@ -1099,7 +1099,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
         }
     }
     delete currentGroupMembersChangedInfo;
-    currentGroupMembersChangedInfo = 0;
+    currentGroupMembersChangedInfo = nullptr;
 
     if (selfContactUpdated && parent->isReady(Channel::FeatureCore)) {
         emit parent->groupSelfContactChanged();
@@ -1236,7 +1236,7 @@ void Channel::Private::processConferenceChannelRemoved()
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(gotConferenceChannelRemovedActorContact(Tp::PendingOperation*)));
     } else {
-        parent->gotConferenceChannelRemovedActorContact(0);
+        parent->gotConferenceChannelRemovedActorContact(nullptr);
     }
 }
 
@@ -1835,7 +1835,7 @@ Channel::PendingLeave::PendingLeave(const ChannelPtr &chan, const QString &messa
         ChannelGroupChangeReason reason)
     : PendingOperation(chan)
 {
-    Q_ASSERT(chan->mPriv->group != NULL);
+    Q_ASSERT(chan->mPriv->group != nullptr);
 
     QDBusPendingCall call =
         chan->mPriv->group->RemoveMembersWithReason(

@@ -197,7 +197,7 @@ GHashTable *createSupportedSocketTypesHash(bool supportMonitoring, bool unixOnly
     GArray *tab;
     TpSocketAccessControl ac;
 
-    ret = g_hash_table_new_full(NULL, NULL, NULL, destroySocketControlList);
+    ret = g_hash_table_new_full(nullptr, nullptr, nullptr, destroySocketControlList);
 
     // Named UNIX
     tab = g_array_sized_new(FALSE, FALSE, sizeof(TpSocketAccessControl), 1);
@@ -261,7 +261,7 @@ class TestStreamTubeHandlers : public Test
     Q_OBJECT
 
 public:
-    TestStreamTubeHandlers(QObject *parent = 0)
+    TestStreamTubeHandlers(QObject *parent = nullptr)
         : Test(parent)
     { }
 
@@ -380,12 +380,12 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
     TpHandle handle;
     GType type;
     if (handleType == HandleTypeContact) {
-        handle = tp_handle_ensure(contactRepo, "bob", NULL, NULL);
+        handle = tp_handle_ensure(contactRepo, "bob", nullptr, nullptr);
         type = TP_TESTS_TYPE_CONTACT_STREAM_TUBE_CHANNEL;
         chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetID"),
                 QString::fromLatin1("bob"));
     } else {
-        handle = tp_handle_ensure(roomRepo, "#test", NULL, NULL);
+        handle = tp_handle_ensure(roomRepo, "#test", nullptr, nullptr);
         type = TP_TESTS_TYPE_ROOM_STREAM_TUBE_CHANNEL;
         chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetID"),
                 QString::fromLatin1("#test"));
@@ -393,7 +393,7 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
 
     chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetHandle"), handle);
 
-    TpHandle alfHandle = tp_handle_ensure(contactRepo, "alf", NULL, NULL);
+    TpHandle alfHandle = tp_handle_ensure(contactRepo, "alf", nullptr, nullptr);
 
     GHashTable *sockets = createSupportedSocketTypesHash(supportMonitoring, unixOnly);
 
@@ -713,7 +713,7 @@ void TestStreamTubeHandlers::initTestCase()
     g_type_init();
     g_set_prgname("stream-tube-handlers");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mAM = AccountManager::create();
     QVERIFY(connect(mAM->becomeReady(),
@@ -875,7 +875,7 @@ void TestStreamTubeHandlers::testBasicTcpExport()
 
     QVERIFY(!handlers.isEmpty());
     ClientHandlerInterface *handler = handlers.value(server->clientName());
-    QVERIFY(handler != 0);
+    QVERIFY(handler != nullptr);
 
     ChannelClassList filter;
     QVERIFY(waitForProperty(handler->requestPropertyHandlerChannelFilter(), &filter));
@@ -1004,7 +1004,7 @@ void TestStreamTubeHandlers::testFailedExport()
 
     QVERIFY(!handlers.isEmpty());
     ClientHandlerInterface *handler = handlers.value(server->clientName());
-    QVERIFY(handler != 0);
+    QVERIFY(handler != nullptr);
 
     // To trigger the Offer error codepath, give it a channel which only supports Unix sockets
     // although we're exporting a TCP one - which is always supported in real CMs
@@ -1051,7 +1051,7 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
 
     QVERIFY(!handlers.isEmpty());
     ClientHandlerInterface *handler = handlers.value(server->clientName());
-    QVERIFY(handler != 0);
+    QVERIFY(handler != nullptr);
 
     QPair<QString, QVariantMap> chan = createTubeChannel(true, HandleTypeRoom, true);
 
@@ -1115,7 +1115,7 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
 
     TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
-    TpHandle handle = tp_handle_ensure(contactRepo, "first", NULL, NULL);
+    TpHandle handle = tp_handle_ensure(contactRepo, "first", nullptr, nullptr);
 
     tp_tests_stream_tube_channel_peer_connected_no_stream(mChanServices.back(), connParam, handle);
 
@@ -1147,12 +1147,12 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
     QVERIFY(server->tcpConnections().isEmpty());
 
     // Fire up two new connections
-    handle = tp_handle_ensure(contactRepo, "second", NULL, NULL);
+    handle = tp_handle_ensure(contactRepo, "second", nullptr, nullptr);
     expectedPort = 2;
     dbus_g_type_struct_set(connParam, 1, expectedPort, G_MAXUINT);
     tp_tests_stream_tube_channel_peer_connected_no_stream(mChanServices.back(), connParam, handle);
 
-    handle = tp_handle_ensure(contactRepo, "third", NULL, NULL);
+    handle = tp_handle_ensure(contactRepo, "third", nullptr, nullptr);
     expectedPort = 3;
     dbus_g_type_struct_set(connParam, 1, expectedPort, G_MAXUINT);
     tp_tests_stream_tube_channel_peer_connected_no_stream(mChanServices.back(), connParam, handle);
@@ -1226,7 +1226,7 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
 
     QVERIFY(!handlers.isEmpty());
     ClientHandlerInterface *handler = handlers.value(server->clientName());
-    QVERIFY(handler != 0);
+    QVERIFY(handler != nullptr);
 
     // Pass it a text channel, and with no satisfied requests
     QString textChanPath = mConn->objectPath() + QLatin1String("/TextChannel");
@@ -1361,7 +1361,7 @@ void TestStreamTubeHandlers::testClientBasicTcp()
 
     QVERIFY(!handlers.isEmpty());
     ClientHandlerInterface *handler = handlers.value(client->clientName());
-    QVERIFY(handler != 0);
+    QVERIFY(handler != nullptr);
 
     ChannelClassList filter;
     QVERIFY(waitForProperty(handler->requestPropertyHandlerChannelFilter(), &filter));
@@ -1452,7 +1452,7 @@ void TestStreamTubeHandlers::testClientTcpGeneratorIgnore()
 
     QVERIFY(!handlers.isEmpty());
     ClientHandlerInterface *handler = handlers.value(client->clientName());
-    QVERIFY(handler != 0);
+    QVERIFY(handler != nullptr);
 
     ChannelClassList filter;
     QVERIFY(waitForProperty(handler->requestPropertyHandlerChannelFilter(), &filter));
@@ -1533,7 +1533,7 @@ void TestStreamTubeHandlers::testClientTcpUnsupported()
 
     QVERIFY(!handlers.isEmpty());
     ClientHandlerInterface *handler = handlers.value(client->clientName());
-    QVERIFY(handler != 0);
+    QVERIFY(handler != nullptr);
 
     ChannelClassList filter;
     QVERIFY(waitForProperty(handler->requestPropertyHandlerChannelFilter(), &filter));
@@ -1586,14 +1586,14 @@ void TestStreamTubeHandlers::testClientBasicUnix()
     QCOMPARE(client->registrar()->registeredClients().size(), 1);
     QVERIFY(!client->acceptsAsTcp());
     QVERIFY(client->acceptsAsUnix());
-    QCOMPARE(client->tcpGenerator(), static_cast<StreamTubeClient::TcpSourceAddressGenerator *>(0));
+    QCOMPARE(client->tcpGenerator(), static_cast<StreamTubeClient::TcpSourceAddressGenerator *>(nullptr));
     QVERIFY(!client->monitorsConnections());
 
     QMap<QString, ClientHandlerInterface *> handlers = ourHandlers();
 
     QVERIFY(!handlers.isEmpty());
     ClientHandlerInterface *handler = handlers.value(client->clientName());
-    QVERIFY(handler != 0);
+    QVERIFY(handler != nullptr);
 
     ChannelClassList filter;
     QVERIFY(waitForProperty(handler->requestPropertyHandlerChannelFilter(), &filter));
@@ -1667,14 +1667,14 @@ void TestStreamTubeHandlers::testClientUnixCredsIgnore()
     QVERIFY(client->isRegistered());
     QVERIFY(!client->acceptsAsTcp());
     QVERIFY(client->acceptsAsUnix());
-    QCOMPARE(client->tcpGenerator(), static_cast<StreamTubeClient::TcpSourceAddressGenerator *>(0));
+    QCOMPARE(client->tcpGenerator(), static_cast<StreamTubeClient::TcpSourceAddressGenerator *>(nullptr));
     QVERIFY(!client->monitorsConnections());
 
     QMap<QString, ClientHandlerInterface *> handlers = ourHandlers();
 
     QVERIFY(!handlers.isEmpty());
     ClientHandlerInterface *handler = handlers.value(client->clientName());
-    QVERIFY(handler != 0);
+    QVERIFY(handler != nullptr);
 
     ChannelClassList filter;
     QVERIFY(waitForProperty(handler->requestPropertyHandlerChannelFilter(), &filter));
@@ -1753,7 +1753,7 @@ void TestStreamTubeHandlers::testClientConnMonitoring()
 
     QVERIFY(!handlers.isEmpty());
     ClientHandlerInterface *handler = handlers.value(client->clientName());
-    QVERIFY(handler != 0);
+    QVERIFY(handler != nullptr);
 
     ChannelClassList filter;
     QVERIFY(waitForProperty(handler->requestPropertyHandlerChannelFilter(), &filter));

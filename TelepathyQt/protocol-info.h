@@ -50,7 +50,7 @@ public:
     ProtocolInfo(const ProtocolInfo &other);
     ~ProtocolInfo();
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     ProtocolInfo &operator=(const ProtocolInfo &other);
 

@@ -34,8 +34,8 @@ class TestContacts : public Test
     Q_OBJECT
 
 public:
-    TestContacts(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+    TestContacts(QObject *parent = nullptr)
+        : Test(parent), mConnService(nullptr)
     {
     }
 
@@ -117,24 +117,24 @@ void TestContacts::initTestCase()
     g_type_init();
     g_set_prgname("contacts");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "simple",
             NULL));
-    QVERIFY(mConnService != 0);
+    QVERIFY(mConnService != nullptr);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService), "contacts", &name,
                 &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
+    QVERIFY(name != nullptr);
+    QVERIFY(connPath != nullptr);
 
     mConnName = QLatin1String(name);
     mConnPath = QLatin1String(connPath);
@@ -202,7 +202,7 @@ void TestContacts::testSupport()
 void TestContacts::testSelfContact()
 {
     ContactPtr selfContact = mConn->selfContact();
-    QVERIFY(selfContact != 0);
+    QVERIFY(selfContact != nullptr);
 
     QCOMPARE(selfContact->handle()[0], mConn->selfHandle());
     QCOMPARE(selfContact->id(), QString(QLatin1String("me@example.com")));
@@ -247,19 +247,19 @@ void TestContacts::testForHandles()
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
 
     // Set up a few valid handles
-    handles << tp_handle_ensure(serviceRepo, "alice", NULL, NULL);
+    handles << tp_handle_ensure(serviceRepo, "alice", nullptr, nullptr);
     QVERIFY(handles[0] != 0);
-    handles << tp_handle_ensure(serviceRepo, "bob", NULL, NULL);
+    handles << tp_handle_ensure(serviceRepo, "bob", nullptr, nullptr);
     QVERIFY(handles[1] != 0);
     // Put one probably invalid one in between
     handles << 31337;
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], nullptr));
     // Then another valid one
-    handles << tp_handle_ensure(serviceRepo, "chris", NULL, NULL);
+    handles << tp_handle_ensure(serviceRepo, "chris", nullptr, nullptr);
     QVERIFY(handles[3] != 0);
     // And yet another invalid one
     handles << 12345;
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[4], NULL));
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[4], nullptr));
 
     // Get contacts for the mixture of valid and invalid handles
     PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
@@ -289,7 +289,7 @@ void TestContacts::testForHandles()
 
     // Check the contact contents
     for (int i = 0; i < 3; i++) {
-        QVERIFY(mContacts[i] != NULL);
+        QVERIFY(mContacts[i] != nullptr);
         QCOMPARE(mContacts[i]->manager(), mConn->contactManager());
         QCOMPARE(mContacts[i]->requestedFeatures(), Features());
         QCOMPARE(mContacts[i]->actualFeatures(), Features());
@@ -306,7 +306,7 @@ void TestContacts::testForHandles()
     // Save the contacts, and make a new request, replacing one of the invalid handles with a valid
     // one
     QList<ContactPtr> saveContacts = mContacts;
-    handles[2] = tp_handle_ensure(serviceRepo, "dora", NULL, NULL);
+    handles[2] = tp_handle_ensure(serviceRepo, "dora", nullptr, nullptr);
     QVERIFY(handles[2] != 0);
 
     pending = mConn->contactManager()->contactsForHandles(handles);
@@ -392,9 +392,9 @@ void TestContacts::testForIdentifiers()
     QCOMPARE(mContacts.size(), 3);
 
     for (int i = 0; i < mContacts.size(); i++) {
-        QVERIFY(mContacts[i] != NULL);
+        QVERIFY(mContacts[i] != nullptr);
         QCOMPARE(mContacts[i]->manager(), mConn->contactManager());
-        QVERIFY(tp_handle_is_valid(serviceRepo, mContacts[i]->handle()[0], NULL));
+        QVERIFY(tp_handle_is_valid(serviceRepo, mContacts[i]->handle()[0], nullptr));
         QCOMPARE(mContacts[i]->requestedFeatures(), Features());
         QCOMPARE(mContacts[i]->actualFeatures(), Features());
     }
@@ -462,7 +462,7 @@ void TestContacts::testFeatures()
     // Get test handles
     Tp::UIntList handles;
     for (int i = 0; i < 3; i++) {
-        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
+        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), nullptr, nullptr));
         QVERIFY(handles[i] != 0);
     }
 
@@ -574,7 +574,7 @@ void TestContacts::testFeaturesNotRequested()
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
     Tp::UIntList handles;
     for (int i = 0; i < 3; i++) {
-        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
+        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), nullptr, nullptr));
         QVERIFY(handles[i] != 0);
     }
 
@@ -637,7 +637,7 @@ void TestContacts::testUpgrade()
 
     Tp::UIntList handles;
     for (int i = 0; i < 3; i++) {
-        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
+        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), nullptr, nullptr));
         QVERIFY(handles[i] != 0);
     }
 
@@ -721,7 +721,7 @@ void TestContacts::testSelfContactFallback()
 {
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     TpTestsSimpleConnection *connService;
     connService = TP_TESTS_SIMPLE_CONNECTION(g_object_new(
@@ -729,13 +729,13 @@ void TestContacts::testSelfContactFallback()
             "account", "me@example.com",
             "protocol", "simple",
             NULL));
-    QVERIFY(connService != 0);
+    QVERIFY(connService != nullptr);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(connService), "simple", &name,
                 &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
+    QVERIFY(name != nullptr);
+    QVERIFY(connPath != nullptr);
 
     ConnectionPtr conn = Connection::create(QLatin1String(name), QLatin1String(connPath),
             ChannelFactory::create(QDBusConnection::sessionBus()),
@@ -753,7 +753,7 @@ void TestContacts::testSelfContactFallback()
     QCOMPARE(conn->isReady(features), true);
 
     ContactPtr selfContact = conn->selfContact();
-    QVERIFY(selfContact != 0);
+    QVERIFY(selfContact != nullptr);
 
     QCOMPARE(selfContact->handle()[0], conn->selfHandle());
     QCOMPARE(selfContact->id(), QString(QLatin1String("me@example.com")));
@@ -805,9 +805,9 @@ void TestContacts::cleanupTestCase()
         }
     }
 
-    if (mConnService != 0) {
+    if (mConnService != nullptr) {
         g_object_unref(mConnService);
-        mConnService = 0;
+        mConnService = nullptr;
     }
 
     cleanupTestCaseImpl();

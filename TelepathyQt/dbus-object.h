@@ -42,7 +42,7 @@ class TP_QT_EXPORT DBusObject : public QObject
     Q_DISABLE_COPY(DBusObject)
 
 public:
-    DBusObject(const QDBusConnection &dbusConnection, QObject *parent = 0);
+    DBusObject(const QDBusConnection &dbusConnection, QObject *parent = nullptr);
     ~DBusObject() override;
 
     QString objectPath() const;

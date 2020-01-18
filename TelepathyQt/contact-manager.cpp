@@ -79,7 +79,7 @@ ContactManager::Private::Private(ContactManager *parent, Connection *connection)
       connection(connection),
       roster(new ContactManager::Roster(parent)),
       requestAvatarsIdle(false),
-      refreshInfoOp(0)
+      refreshInfoOp(nullptr)
 {
 }
 
@@ -1434,7 +1434,7 @@ void ContactManager::doRefreshInfo()
 {
     PendingRefreshContactInfo *op = mPriv->refreshInfoOp;
     Q_ASSERT(op);
-    mPriv->refreshInfoOp = 0;
+    mPriv->refreshInfoOp = nullptr;
     op->refreshInfo();
 }
 

@@ -75,7 +75,7 @@ AbstractInterface *OptionalInterfaceCache::getCached(const QString &name) const
     if (mPriv->interfaces.contains(name)) {
         return mPriv->interfaces.value(name);
     } else {
-        return 0;
+        return nullptr;
     }
 }
 

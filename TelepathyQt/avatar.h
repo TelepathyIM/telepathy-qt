@@ -59,7 +59,7 @@ public:
     AvatarSpec(const AvatarSpec &other);
     ~AvatarSpec();
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     AvatarSpec &operator=(const AvatarSpec &other);
 

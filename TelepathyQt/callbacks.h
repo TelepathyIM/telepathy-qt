@@ -64,13 +64,13 @@ struct BaseFunctorCaller : public AbstractFunctorCaller
 
 struct TP_QT_EXPORT BaseCallback
 {
-    BaseCallback() : caller(0) {}
+    BaseCallback() : caller(nullptr) {}
     /* takes ownership of caller */
     BaseCallback(AbstractFunctorCaller *caller) : caller(caller) {}
     BaseCallback(const BaseCallback &other) : caller(other.caller->clone()) {}
     virtual ~BaseCallback() { delete caller; }
 
-    bool isValid() const { return caller != 0; }
+    bool isValid() const { return caller != nullptr; }
 
     BaseCallback &operator=(const BaseCallback &other)
     {

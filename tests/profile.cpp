@@ -10,7 +10,7 @@ class TestProfile : public QObject
     Q_OBJECT
 
 public:
-    TestProfile(QObject *parent = 0);
+    TestProfile(QObject *parent = nullptr);
 
 private Q_SLOTS:
     void testProfile();

@@ -79,7 +79,7 @@ public:
     bool hasProtocol(const QString &protocolName) const;
     bool addProtocol(const BaseProtocolPtr &protocol);
 
-    bool registerObject(DBusError *error = NULL);
+    bool registerObject(DBusError *error = nullptr);
 
     QList<BaseConnectionPtr> connections() const;
 

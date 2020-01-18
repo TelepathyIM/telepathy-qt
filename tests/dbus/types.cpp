@@ -52,7 +52,7 @@ class TestTypes : public Test
     Q_OBJECT
 
 public:
-    TestTypes(QObject *parent = 0)
+    TestTypes(QObject *parent = nullptr)
         : Test(parent)
     { }
 

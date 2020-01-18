@@ -19,8 +19,8 @@ class TestContactsLocation : public Test
     Q_OBJECT
 
 public:
-    TestContactsLocation(QObject *parent = 0)
-        : Test(parent), mConn(0), mContactsLocationUpdated(0)
+    TestContactsLocation(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr), mContactsLocationUpdated(0)
     { }
 
 protected Q_SLOTS:
@@ -54,7 +54,7 @@ void TestContactsLocation::initTestCase()
     g_type_init();
     g_set_prgname("contacts-location");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
@@ -107,7 +107,7 @@ void TestContactsLocation::testLocation()
 
     for (unsigned i = 0; i < 2; i++) {
         handles[i] = tp_handle_ensure(serviceRepo, qPrintable(validIDs[i]),
-                NULL, NULL);
+                nullptr, nullptr);
     }
 
     tp_tests_contacts_connection_change_locations(TP_TESTS_CONTACTS_CONNECTION(mConn->service()), 2,
@@ -123,7 +123,7 @@ void TestContactsLocation::testLocation()
         QCOMPARE(contact->location().country(),
                  QLatin1String(tp_asv_get_string(locations[i], "country")));
         QCOMPARE(contact->location().latitude(),
-                 tp_asv_get_double(locations[i], "lat", NULL));
+                 tp_asv_get_double(locations[i], "lat", nullptr));
     }
 
     g_hash_table_unref(location_1);

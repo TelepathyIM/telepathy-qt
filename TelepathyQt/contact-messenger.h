@@ -55,9 +55,9 @@ public:
 
     PendingSendMessage *sendMessage(const QString &text,
             ChannelTextMessageType type = ChannelTextMessageTypeNormal,
-            MessageSendingFlags flags = 0);
+            MessageSendingFlags flags = nullptr);
     PendingSendMessage *sendMessage(const MessageContentPartList &parts,
-            MessageSendingFlags flags = 0);
+            MessageSendingFlags flags = nullptr);
 
 Q_SIGNALS:
     void messageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,

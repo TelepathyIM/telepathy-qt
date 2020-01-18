@@ -79,11 +79,11 @@ class TestAccountConnectionFactory : public Test
     Q_OBJECT
 
 public:
-    TestAccountConnectionFactory(QObject *parent = 0)
+    TestAccountConnectionFactory(QObject *parent = nullptr)
         : Test(parent),
-          mConn1(0), mConn2(0),
-          mDispatcher(0), mAccountAdaptor(0),
-          mReceivedHaveConnection(0), mReceivedConn(0)
+          mConn1(nullptr), mConn2(nullptr),
+          mDispatcher(nullptr), mAccountAdaptor(nullptr),
+          mReceivedHaveConnection(nullptr), mReceivedConn(nullptr)
     { }
 
 protected Q_SLOTS:
@@ -155,7 +155,7 @@ void TestAccountConnectionFactory::initTestCase()
     g_type_init();
     g_set_prgname("account-connection-factory");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn1 = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
@@ -301,10 +301,10 @@ void TestAccountConnectionFactory::testSwitch()
     QCOMPARE(*mReceivedConn, mConn1->objectPath());
 
     delete mReceivedHaveConnection;
-    mReceivedHaveConnection = 0;
+    mReceivedHaveConnection = nullptr;
 
     delete mReceivedConn;
-    mReceivedConn = 0;
+    mReceivedConn = nullptr;
 
     QCOMPARE(mAccount->connection()->objectPath(), mConn1->objectPath());
     QVERIFY(!mAccount->connection().isNull());
@@ -323,7 +323,7 @@ void TestAccountConnectionFactory::testSwitch()
     QCOMPARE(*mReceivedConn, mConn2->objectPath());
 
     delete mReceivedConn;
-    mReceivedConn = 0;
+    mReceivedConn = nullptr;
 
     // connectionChanged() should have been emitted as it is a new connection
     QVERIFY(mReceivedHaveConnection);
@@ -407,22 +407,22 @@ void TestAccountConnectionFactory::cleanup()
 
     if (mReceivedHaveConnection) {
         delete mReceivedHaveConnection;
-        mReceivedHaveConnection = 0;
+        mReceivedHaveConnection = nullptr;
     }
 
     if (mReceivedConn) {
         delete mReceivedConn;
-        mReceivedConn = 0;
+        mReceivedConn = nullptr;
     }
 
     if (mAccountAdaptor) {
         delete mAccountAdaptor;
-        mAccountAdaptor = 0;
+        mAccountAdaptor = nullptr;
     }
 
     if (mDispatcher) {
         delete mDispatcher;
-        mDispatcher = 0;
+        mDispatcher = nullptr;
     }
 
     mReceivedConns.clear();

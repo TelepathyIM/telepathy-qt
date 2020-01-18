@@ -157,10 +157,10 @@ void SimpleStreamTubeHandler::handleChannels(
 
     if (invocation->tubes.isEmpty()) {
         warning() << "SSTH::HandleChannels got no suitable channels, admitting we're Confused";
-        invocation->readyOp = 0;
+        invocation->readyOp = nullptr;
         invocation->error = TP_QT_ERROR_CONFUSED;
         invocation->message = QLatin1String("Got no suitable channels");
-        onReadyOpFinished(0);
+        onReadyOpFinished(nullptr);
     } else {
         invocation->readyOp = new PendingComposite(readyOps, SharedPtr<SimpleStreamTubeHandler>(this));
         connect(invocation->readyOp,
@@ -175,12 +175,12 @@ void SimpleStreamTubeHandler::onReadyOpFinished(Tp::PendingOperation *op)
     Q_ASSERT(!op || op->isFinished());
 
     for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
-            op != 0 && i != mInvocations.end(); ++i) {
+            op != nullptr && i != mInvocations.end(); ++i) {
         if ((*i)->readyOp != op) {
             continue;
         }
 
-        (*i)->readyOp = 0;
+        (*i)->readyOp = nullptr;
 
         if (op->isError()) {
             warning() << "Preparing proxies for SSTubeHandler failed with" << op->errorName()

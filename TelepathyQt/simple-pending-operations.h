@@ -94,7 +94,7 @@ public:
     PendingComposite(const QList<PendingOperation*> &operations, const SharedPtr<RefCounted> &object);
     PendingComposite(const QList<PendingOperation*> &operations, bool failOnFirstError,
             const SharedPtr<RefCounted> &object);
-    ~PendingComposite() override override;
+    ~PendingComposite() override ;
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onOperationFinished(Tp::PendingOperation *);

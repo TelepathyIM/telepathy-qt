@@ -60,8 +60,8 @@ struct TP_QT_NO_EXPORT IncomingFileTransferChannel::Private
 IncomingFileTransferChannel::Private::Private(IncomingFileTransferChannel *parent)
     : parent(parent),
       fileTransferInterface(parent->interface<Client::ChannelTypeFileTransferInterface>()),
-      output(0),
-      socket(0),
+      output(nullptr),
+      socket(nullptr),
       requestedOffset(0),
       pos(0),
       weOpenedDevice(false)

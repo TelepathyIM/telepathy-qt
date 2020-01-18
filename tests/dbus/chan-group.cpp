@@ -23,12 +23,12 @@ class TestChanGroup : public Test
     Q_OBJECT
 
 public:
-    TestChanGroup(QObject *parent = 0)
-        : Test(parent), mConn(0), mChanService(0),
+    TestChanGroup(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr), mChanService(nullptr),
           mGotGroupFlagsChanged(false),
-          mGroupFlags((ChannelGroupFlags) 0),
-          mGroupFlagsAdded((ChannelGroupFlags) 0),
-          mGroupFlagsRemoved((ChannelGroupFlags) 0)
+          mGroupFlags((ChannelGroupFlags) nullptr),
+          mGroupFlagsAdded((ChannelGroupFlags) nullptr),
+          mGroupFlagsRemoved((ChannelGroupFlags) nullptr)
     { }
 
 protected Q_SLOTS:
@@ -129,7 +129,7 @@ void TestChanGroup::initTestCase()
     g_type_init();
     g_set_prgname("chan-group");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_CONTACT_LIST_CONNECTION,
@@ -158,9 +158,9 @@ void TestChanGroup::init()
     mChangedRemoved.clear();
     mDetails = Channel::GroupMemberChangeDetails();
     mGotGroupFlagsChanged = false;
-    mGroupFlags = (ChannelGroupFlags) 0;
-    mGroupFlagsAdded = (ChannelGroupFlags) 0;
-    mGroupFlagsRemoved = (ChannelGroupFlags) 0;
+    mGroupFlags = (ChannelGroupFlags) nullptr;
+    mGroupFlagsAdded = (ChannelGroupFlags) nullptr;
+    mGroupFlagsRemoved = (ChannelGroupFlags) nullptr;
 }
 
 void TestChanGroup::testCreateChannel()
@@ -258,14 +258,14 @@ void TestChanGroup::commonTest(gboolean properties)
                 "detailed", TRUE,
                 "properties", properties,
                 NULL));
-    QVERIFY(mChanService != 0);
+    QVERIFY(mChanService != nullptr);
 
     TpIntSet *members = tp_intset_sized_new(mInitialMembers.length());
     Q_FOREACH (uint handle, mInitialMembers)
         tp_intset_add(members, handle);
 
     QVERIFY(tp_group_mixin_change_members(G_OBJECT(mChanService), "be there or be []",
-                members, NULL, NULL, NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));
+                members, nullptr, nullptr, nullptr, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));
 
     tp_intset_destroy(members);
 
@@ -308,7 +308,7 @@ void TestChanGroup::commonTest(gboolean properties)
     TpIntSet *remove = tp_intset_new_containing(mContacts[0]->handle()[0]);
 
     QVERIFY(tp_group_mixin_change_members(G_OBJECT(mChanService), "be a []",
-                NULL, remove, NULL, NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));
+                nullptr, remove, nullptr, nullptr, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));
 
     tp_intset_destroy(remove);
 
@@ -403,13 +403,13 @@ void TestChanGroup::testLeaveWithFallback()
                 "detailed", TRUE,
                 "properties", TRUE,
                 NULL));
-    QVERIFY(mChanService != 0);
+    QVERIFY(mChanService != nullptr);
 
     TpIntSet *members = tp_intset_sized_new(1);
     tp_intset_add(members, mConn->client()->selfHandle());
 
     QVERIFY(tp_group_mixin_change_members(G_OBJECT(mChanService), "be there or be []",
-                members, NULL, NULL, NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));
+                members, nullptr, nullptr, nullptr, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));
 
     tp_intset_destroy(members);
 
@@ -445,7 +445,7 @@ void TestChanGroup::testGroupFlagsChange()
     TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()),
             TP_HANDLE_TYPE_CONTACT);
-    guint handle = tp_handle_ensure(contactRepo, "someone@localhost", 0, 0);
+    guint handle = tp_handle_ensure(contactRepo, "someone@localhost", nullptr, nullptr);
 
     QString textChanPath = mConn->objectPath() + QLatin1String("/Channel");
     QByteArray chanPath(textChanPath.toLatin1());
@@ -481,14 +481,14 @@ void TestChanGroup::testGroupFlagsChange()
     QVERIFY(textChan->groupFlags() & ChannelGroupFlagCanAdd);
     QVERIFY(textChan->canInviteContacts());
     QCOMPARE(mGroupFlagsAdded, ChannelGroupFlagCanAdd);
-    QCOMPARE(mGroupFlagsRemoved, (ChannelGroupFlags) 0);
+    QCOMPARE(mGroupFlagsRemoved, (ChannelGroupFlags) nullptr);
 }
 
 void TestChanGroup::cleanup()
 {
     if (mChanService) {
         g_object_unref(mChanService);
-        mChanService = 0;
+        mChanService = nullptr;
     }
 
     // Avoid D-Bus event leak from one test case to another - I've seen this with the

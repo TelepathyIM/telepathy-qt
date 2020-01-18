@@ -18,8 +18,8 @@ class TestConnRosterLegacy : public Test
     Q_OBJECT
 
 public:
-    TestConnRosterLegacy(QObject *parent = 0)
-        : Test(parent), mConn(0),
+    TestConnRosterLegacy(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr),
           mBlockingContactsFinished(false), mHowManyKnownContacts(0),
           mGotPresenceStateChanged(false)
     { }
@@ -127,7 +127,7 @@ void TestConnRosterLegacy::initTestCase()
     g_type_init();
     g_set_prgname("conn-roster-legacy");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_CONTACT_LIST_CONNECTION,

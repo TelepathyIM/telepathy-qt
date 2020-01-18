@@ -71,7 +71,7 @@ public:
 
     inline virtual ~RefCounted()
     {
-        sc->d = 0;
+        sc->d = nullptr;
         if (!sc->weakref.deref()) {
             delete sc;
         }
@@ -98,7 +98,7 @@ class SharedPtr
     typedef bool (SharedPtr<T>::*UnspecifiedBoolType)() const;
 
 public:
-    inline SharedPtr() : d(0) { }
+    inline SharedPtr() : d(nullptr) { }
     explicit inline SharedPtr(T *d) : d(d) { if (d) { d->ref(); } }
     template <typename Subclass>
         inline SharedPtr(const SharedPtr<Subclass> &o) : d(o.data()) { if (d) { d->ref(); } }
@@ -122,12 +122,12 @@ public:
 
             if (tmp > 0) {
                 d = dynamic_cast<T*>(sc->d);
-                Q_ASSERT(d != NULL);
+                Q_ASSERT(d != nullptr);
             } else {
-                d = 0;
+                d = nullptr;
             }
         } else {
-            d = 0;
+            d = nullptr;
         }
     }
 
@@ -135,7 +135,7 @@ public:
     {
         if (d && !d->deref()) {
             T *saved = d;
-            d = 0;
+            d = nullptr;
             delete saved;
         }
     }
@@ -152,7 +152,7 @@ public:
 
     inline bool isNull() const { return !d; }
     inline bool operator!() const { return isNull(); }
-    operator UnspecifiedBoolType() const { return !isNull() ? &SharedPtr<T>::operator! : 0; }
+    operator UnspecifiedBoolType() const { return !isNull() ? &SharedPtr<T>::operator! : nullptr; }
 
     inline bool operator==(const SharedPtr<T> &o) const { return d == o.d; }
     inline bool operator!=(const SharedPtr<T> &o) const { return d != o.d; }
@@ -216,14 +216,14 @@ class WeakPtr
     typedef bool (WeakPtr<T>::*UnspecifiedBoolType)() const;
 
 public:
-    inline WeakPtr() : sc(0) { }
+    inline WeakPtr() : sc(nullptr) { }
     explicit inline WeakPtr(T *d)
     {
         if (d) {
             sc = d->sc;
             sc->weakref.ref();
         } else {
-            sc = 0;
+            sc = nullptr;
         }
     }
     inline WeakPtr(const WeakPtr<T> &o) : sc(o.sc) { if (sc) { sc->weakref.ref(); } }
@@ -233,7 +233,7 @@ public:
             sc = o.d->sc;
             sc->weakref.ref();
         } else {
-            sc = 0;
+            sc = nullptr;
         }
     }
     inline ~WeakPtr()
@@ -245,7 +245,7 @@ public:
 
     inline bool isNull() const { return !sc || sc->strongref.fetchAndAddOrdered(0) <= 0; }
     inline bool operator!() const { return isNull(); }
-    operator UnspecifiedBoolType() const { return !isNull() ? &WeakPtr<T>::operator! : 0; }
+    operator UnspecifiedBoolType() const { return !isNull() ? &WeakPtr<T>::operator! : nullptr; }
 
     inline WeakPtr<T> &operator=(const WeakPtr<T> &o)
     {

@@ -38,7 +38,7 @@ class AccountsWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    AccountsWindow(QWidget *parent = 0);
+    AccountsWindow(QWidget *parent = nullptr);
     ~AccountsWindow() override;
 
 private Q_SLOTS:

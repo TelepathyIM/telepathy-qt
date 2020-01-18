@@ -107,7 +107,7 @@ ChannelClassSpec::~ChannelClassSpec()
 
 bool ChannelClassSpec::isValid() const
 {
-    return mPriv.constData() != 0 &&
+    return mPriv.constData() != nullptr &&
         !(qdbus_cast<QString>(
                     mPriv->props.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")))
                 .isEmpty()) &&
@@ -153,17 +153,17 @@ bool ChannelClassSpec::matches(const QVariantMap &immutableProperties) const
 
 bool ChannelClassSpec::hasProperty(const QString &qualifiedName) const
 {
-    return mPriv.constData() != 0 ? mPriv->props.contains(qualifiedName) : false;
+    return mPriv.constData() != nullptr ? mPriv->props.contains(qualifiedName) : false;
 }
 
 QVariant ChannelClassSpec::property(const QString &qualifiedName) const
 {
-    return mPriv.constData() != 0 ? mPriv->props.value(qualifiedName) : QVariant();
+    return mPriv.constData() != nullptr ? mPriv->props.value(qualifiedName) : QVariant();
 }
 
 void ChannelClassSpec::setProperty(const QString &qualifiedName, const QVariant &value)
 {
-    if (mPriv.constData() == 0) {
+    if (mPriv.constData() == nullptr) {
         mPriv = new Private;
     }
 
@@ -172,7 +172,7 @@ void ChannelClassSpec::setProperty(const QString &qualifiedName, const QVariant 
 
 void ChannelClassSpec::unsetProperty(const QString &qualifiedName)
 {
-    if (mPriv.constData() == 0) {
+    if (mPriv.constData() == nullptr) {
         // No properties set for sure, so don't have to unset any
         return;
     }
@@ -182,7 +182,7 @@ void ChannelClassSpec::unsetProperty(const QString &qualifiedName)
 
 QVariantMap ChannelClassSpec::allProperties() const
 {
-    return mPriv.constData() != 0 ? mPriv->props : QVariantMap();
+    return mPriv.constData() != nullptr ? mPriv->props : QVariantMap();
 }
 
 ChannelClass ChannelClassSpec::bareClass() const

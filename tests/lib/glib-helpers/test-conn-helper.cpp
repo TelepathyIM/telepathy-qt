@@ -70,9 +70,9 @@ TestConnHelper::~TestConnHelper()
 {
     disconnect();
 
-    if (mService != 0) {
+    if (mService != nullptr) {
         g_object_unref(mService);
-        mService = 0;
+        mService = nullptr;
     }
 }
 
@@ -97,16 +97,16 @@ void TestConnHelper::init(Test *parent,
     mLoop = parent->mLoop;
 
     mService = g_object_new_valist(gType, firstPropertyName, varArgs);
-    QVERIFY(mService != 0);
+    QVERIFY(mService != nullptr);
 
     gchar *connBusName;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mService),
                 "testcm", &connBusName, &connPath, &error));
-    QVERIFY(error == 0);
-    QVERIFY(connBusName != 0);
-    QVERIFY(connPath != 0);
+    QVERIFY(error == nullptr);
+    QVERIFY(connBusName != nullptr);
+    QVERIFY(connPath != nullptr);
 
     mClient = Tp::Connection::create(QLatin1String(connBusName), QLatin1String(connPath),
             channelFactory, contactFactory);

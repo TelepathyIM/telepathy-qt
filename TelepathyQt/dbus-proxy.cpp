@@ -375,7 +375,7 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
 StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, const Feature &featureCore)
     : DBusProxy(dbusConnection, busName, objectPath, featureCore),
-      mPriv(0)
+      mPriv(nullptr)
 {
     if (busName.startsWith(QLatin1String(":"))) {
         warning() <<

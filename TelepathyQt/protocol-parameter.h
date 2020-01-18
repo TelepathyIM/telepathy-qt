@@ -55,7 +55,7 @@ public:
     ProtocolParameter(const ProtocolParameter &other);
     ~ProtocolParameter();
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     ProtocolParameter &operator=(const ProtocolParameter &other);
     bool operator==(const ProtocolParameter &other) const;

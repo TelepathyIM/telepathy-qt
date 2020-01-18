@@ -78,7 +78,7 @@ public:
         InfoFields(const InfoFields &other);
         ~InfoFields();
 
-        bool isValid() const { return mPriv.constData() != 0; }
+        bool isValid() const { return mPriv.constData() != nullptr; }
 
         InfoFields &operator=(const InfoFields &other);
 

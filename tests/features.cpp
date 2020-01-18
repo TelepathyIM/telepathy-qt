@@ -29,7 +29,7 @@ class TestFeatures : public QObject
     Q_OBJECT
 
 public:
-    TestFeatures(QObject *parent = 0);
+    TestFeatures(QObject *parent = nullptr);
 
 private Q_SLOTS:
     void testFeaturesHash();

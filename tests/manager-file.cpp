@@ -26,7 +26,7 @@ const ParamSpec *getParam(const ParamSpecList &params, const QString &name)
             return &param;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 PresenceSpec getPresenceSpec(const PresenceSpecList &specs, const QString &status)
@@ -46,7 +46,7 @@ class TestManagerFile : public QObject
     Q_OBJECT
 
 public:
-    TestManagerFile(QObject *parent = 0);
+    TestManagerFile(QObject *parent = nullptr);
 
 private Q_SLOTS:
     void testManagerFile();

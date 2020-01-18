@@ -51,7 +51,7 @@ struct TP_QT_NO_EXPORT DBusError::Private
  * Construct an empty DBusError
  */
 DBusError::DBusError()
-    : mPriv(0)
+    : mPriv(nullptr)
 {
 }
 

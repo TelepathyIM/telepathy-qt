@@ -23,8 +23,8 @@ class TestCallChannel : public Test
     Q_OBJECT
 
 public:
-    TestCallChannel(QObject *parent = 0)
-        : Test(parent), mConn(0)
+    TestCallChannel(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr)
     { }
 
 protected Q_SLOTS:
@@ -253,7 +253,7 @@ void TestCallChannel::initTestCase()
     g_type_init();
     g_set_prgname("call-channel");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_CALL_CONNECTION,
@@ -272,7 +272,7 @@ void TestCallChannel::init()
     mContentRemoved.reset();
     mCallStateReason = CallStateReason();
     mCallState = CallStateUnknown;
-    mCallFlags = (CallFlags) 0;
+    mCallFlags = (CallFlags) nullptr;
     mRemoteMemberFlags.clear();
     mRemoteMembersRemoved.clear();
     mLSSCReturn = (Tp::SendingState) -1;

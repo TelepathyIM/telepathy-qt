@@ -140,7 +140,7 @@ ContactPtr ContactFactory::construct(Tp::ContactManager *manager, const Referenc
  */
 PendingOperation *ContactFactory::prepare(const ContactPtr &contact) const
 {
-    return NULL;
+    return nullptr;
 }
 
 }

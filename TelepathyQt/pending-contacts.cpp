@@ -54,7 +54,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
           satisfyingContacts(satisfyingContacts),
           requestType(PendingContacts::ForHandles),
           handles(handles),
-          nested(0)
+          nested(nullptr)
     {
     }
 
@@ -66,7 +66,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
           missingFeatures(features),
           requestType(type),
           addresses(list),
-          nested(0)
+          nested(nullptr)
     {
         if (type != PendingContacts::ForIdentifiers &&
             type != PendingContacts::ForUris) {
@@ -83,7 +83,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
           requestType(PendingContacts::ForVCardAddresses),
           addresses(vcardAddresses),
           vcardField(vcardField),
-          nested(0)
+          nested(nullptr)
     {
     }
 
@@ -95,7 +95,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
           features(features),
           requestType(PendingContacts::Upgrade),
           contactsToUpgrade(contactsToUpgrade),
-          nested(0)
+          nested(nullptr)
     {
     }
 
@@ -611,7 +611,7 @@ void PendingContacts::onNestedFinished(PendingOperation *operation)
     }
 
     mPriv->contacts = mPriv->nested->contacts();
-    mPriv->nested = 0;
+    mPriv->nested = nullptr;
     mPriv->setFinished();
 }
 

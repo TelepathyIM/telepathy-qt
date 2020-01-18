@@ -19,8 +19,8 @@ class TestContactsClientTypes : public Test
     Q_OBJECT
 
 public:
-    TestContactsClientTypes(QObject *parent = 0)
-        : Test(parent), mConn(0),
+    TestContactsClientTypes(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr),
           mClientTypesUpdated(0)
     { }
 
@@ -70,7 +70,7 @@ void TestContactsClientTypes::initTestCase()
     g_type_init();
     g_set_prgname("contacts-client-types");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
@@ -112,8 +112,8 @@ void TestContactsClientTypes::testClientTypes()
     ContactPtr contactFoo = contacts[0];
     ContactPtr contactBar = contacts[1];
 
-    const gchar *clientTypes1[] = { "phone", "pc", NULL };
-    const gchar *clientTypes2[] = { "web", NULL };
+    const gchar *clientTypes1[] = { "phone", "pc", nullptr };
+    const gchar *clientTypes2[] = { "web", nullptr };
 
     tp_tests_contacts_connection_change_client_types(TP_TESTS_CONTACTS_CONNECTION(mConn->service()),
             contactFoo->handle()[0], g_strdupv((gchar**) clientTypes1));
@@ -160,7 +160,7 @@ void TestContactsClientTypes::testClientTypesAttributes()
 
     QVERIFY(contactManager->supportedFeatures().contains(Contact::FeatureClientTypes));
 
-    const gchar *clientTypes[] = { "pc", "phone", NULL };
+    const gchar *clientTypes[] = { "pc", "phone", nullptr };
     tp_tests_contacts_connection_change_client_types(TP_TESTS_CONTACTS_CONNECTION(mConn->service()),
             2, g_strdupv((gchar**) clientTypes));
 

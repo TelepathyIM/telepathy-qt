@@ -123,8 +123,8 @@ TextChannel::Private::Private(TextChannel *parent)
       readinessHelper(parent->readinessHelper()),
       getAllInFlight(false),
       gotProperties(false),
-      messagePartSupport(0),
-      deliveryReportingSupport(0),
+      messagePartSupport(nullptr),
+      deliveryReportingSupport(nullptr),
       initialMessagesReceived(false)
 {
     ReadinessHelper::Introspectables introspectables;
@@ -1126,7 +1126,7 @@ void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
 
 void TextChannel::onTextSent(uint timestamp, uint type, const QString &text)
 {
-    emit messageSent(Message(timestamp, type, text), 0,
+    emit messageSent(Message(timestamp, type, text), nullptr,
             QLatin1String(""));
 }
 

@@ -20,8 +20,8 @@ class TestConnRoster : public Test
     Q_OBJECT
 
 public:
-    TestConnRoster(QObject *parent = 0)
-        : Test(parent), mConn(0),
+    TestConnRoster(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr),
           mBlockingContactsFinished(false), mHowManyKnownContacts(0),
           mGotPresenceStateChanged(false), mGotPPR(false)
     { }
@@ -141,7 +141,7 @@ void TestConnRoster::initTestCase()
     g_type_init();
     g_set_prgname("conn-roster");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             ChannelFactory::create(QDBusConnection::sessionBus()),

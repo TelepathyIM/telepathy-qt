@@ -34,7 +34,7 @@ struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
 {
     Private()
         : dbusConnection(QDBusConnection::sessionBus()), // make the compiler happy
-          addressingIface(0)
+          addressingIface(nullptr)
     {
     }
 
@@ -44,7 +44,7 @@ struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
           cmName(cm->name()),
           name(name),
           iconName(QString(QLatin1String("im-%1")).arg(name)),
-          addressingIface(0)
+          addressingIface(nullptr)
     {
         QString escapedProtocolName = name;
         escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));

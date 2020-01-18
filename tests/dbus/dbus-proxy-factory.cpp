@@ -33,9 +33,9 @@ class TestDBusProxyFactory : public Test
     Q_OBJECT
 
 public:
-    TestDBusProxyFactory(QObject *parent = 0)
+    TestDBusProxyFactory(QObject *parent = nullptr)
         : Test(parent),
-          mConnService1(0), mConnService2(0)
+          mConnService1(nullptr), mConnService2(nullptr)
     { }
 
 protected Q_SLOTS:
@@ -73,24 +73,24 @@ void TestDBusProxyFactory::initTestCase()
     g_type_init();
     g_set_prgname("dbus-proxy-factory");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     mConnService1 = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me1@example.com",
             "protocol", "simple",
             NULL));
-    QVERIFY(mConnService1 != 0);
+    QVERIFY(mConnService1 != nullptr);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService1),
                 "contacts", &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
+    QVERIFY(name != nullptr);
+    QVERIFY(connPath != nullptr);
 
     mConnName1 = QLatin1String(name);
     mConnPath1 = QLatin1String(connPath);
@@ -103,13 +103,13 @@ void TestDBusProxyFactory::initTestCase()
             "account", "me2@example.com",
             "protocol", "simple",
             NULL));
-    QVERIFY(mConnService2 != 0);
+    QVERIFY(mConnService2 != nullptr);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService2),
                 "contacts", &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
+    QVERIFY(name != nullptr);
+    QVERIFY(connPath != nullptr);
 
     mConnName2 = QLatin1String(name);
     mConnPath2 = QLatin1String(connPath);
@@ -133,14 +133,14 @@ void TestDBusProxyFactory::testCaching()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(first != NULL);
+    QVERIFY(first != nullptr);
     QVERIFY(!first->proxy().isNull());
 
     PendingReady *same = mFactory->proxy(mConnName1, mConnPath1,
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(same != NULL);
+    QVERIFY(same != nullptr);
     QVERIFY(!same->proxy().isNull());
 
     QCOMPARE(same->proxy().data(), first->proxy().data());
@@ -149,7 +149,7 @@ void TestDBusProxyFactory::testCaching()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(different != NULL);
+    QVERIFY(different != nullptr);
     QVERIFY(!different->proxy().isNull());
 
     QVERIFY(different->proxy() != first->proxy());
@@ -175,7 +175,7 @@ void TestDBusProxyFactory::testCaching()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(another != NULL);
+    QVERIFY(another != nullptr);
     QVERIFY(!another->proxy().isNull());
 
     // Should still be the same even if all the initial requests already finished
@@ -192,7 +192,7 @@ void TestDBusProxyFactory::testDropRefs()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(first != NULL);
+    QVERIFY(first != nullptr);
     QVERIFY(!first->proxy().isNull());
 
     ConnectionPtr firstProxy = ConnectionPtr::qObjectCast(first->proxy());
@@ -206,7 +206,7 @@ void TestDBusProxyFactory::testDropRefs()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(same != NULL);
+    QVERIFY(same != nullptr);
     QVERIFY(!same->proxy().isNull());
 
     // The first one is in scope so we should've got it again
@@ -230,7 +230,7 @@ void TestDBusProxyFactory::testDropRefs()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(different != NULL);
+    QVERIFY(different != nullptr);
     QVERIFY(!different->proxy().isNull());
 
     // The first one has gone out of scope and deleted so we should've got a different one
@@ -243,7 +243,7 @@ void TestDBusProxyFactory::testInvalidate()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(first != NULL);
+    QVERIFY(first != nullptr);
     QVERIFY(!first->proxy().isNull());
 
     ConnectionPtr firstProxy = ConnectionPtr::qObjectCast(first->proxy());
@@ -257,7 +257,7 @@ void TestDBusProxyFactory::testInvalidate()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(same != NULL);
+    QVERIFY(same != nullptr);
     QVERIFY(!same->proxy().isNull());
 
     // The first one is in scope and valid so we should've got it again
@@ -283,7 +283,7 @@ void TestDBusProxyFactory::testInvalidate()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(different != NULL);
+    QVERIFY(different != nullptr);
     ConnectionPtr differentProxy = ConnectionPtr::qObjectCast(different->proxy());
     QVERIFY(!differentProxy.isNull());
 
@@ -309,7 +309,7 @@ void TestDBusProxyFactory::testBogusService()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(bogus != NULL);
+    QVERIFY(bogus != nullptr);
     QVERIFY(!bogus->proxy().isNull());
 
     QVERIFY(!ConnectionPtr::qObjectCast(bogus->proxy())->isValid());
@@ -319,7 +319,7 @@ void TestDBusProxyFactory::testBogusService()
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
 
-    QVERIFY(another != NULL);
+    QVERIFY(another != nullptr);
     QVERIFY(!another->proxy().isNull());
 
     QVERIFY(!ConnectionPtr::qObjectCast(another->proxy())->isValid());

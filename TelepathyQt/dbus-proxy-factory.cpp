@@ -177,7 +177,7 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const DBusProxyPtr &proxy) const
 PendingOperation *DBusProxyFactory::initialPrepare(const DBusProxyPtr &proxy) const
 {
     // Nothing we could think about needs doing
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -194,7 +194,7 @@ PendingOperation *DBusProxyFactory::initialPrepare(const DBusProxyPtr &proxy) co
 PendingOperation *DBusProxyFactory::readyPrepare(const DBusProxyPtr &proxy) const
 {
     // Nothing we could think about needs doing
-    return NULL;
+    return nullptr;
 }
 
 /**

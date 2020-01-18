@@ -67,7 +67,7 @@ public:
         RemoteContact(const RemoteContact &other);
         ~RemoteContact();
 
-        bool isValid() const { return mPriv.constData() != 0; }
+        bool isValid() const { return mPriv.constData() != nullptr; }
 
         RemoteContact &operator=(const RemoteContact &other);
 
@@ -95,7 +95,7 @@ public:
         Tube(const Tube &other);
         ~Tube();
 
-        bool isValid() const { return mPriv.constData() != 0; }
+        bool isValid() const { return mPriv.constData() != nullptr; }
 
         Tube &operator=(const Tube &other);
 

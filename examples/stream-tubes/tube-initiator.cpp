@@ -104,7 +104,7 @@ void TubeInitiator::onAccountReady(Tp::PendingOperation *op)
     }
 
     PendingReady *ready = qobject_cast<PendingReady *>(op);
-    Q_ASSERT(ready != NULL);
+    Q_ASSERT(ready != nullptr);
 
     mAccount = AccountPtr::qObjectCast(ready->proxy());
 

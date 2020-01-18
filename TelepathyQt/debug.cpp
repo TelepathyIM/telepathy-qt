@@ -100,7 +100,7 @@ namespace
 {
 bool debugEnabled = false;
 bool warningsEnabled = true;
-DebugCallback debugCallback = NULL;
+DebugCallback debugCallback = nullptr;
 }
 
 void enableDebug(bool enable)

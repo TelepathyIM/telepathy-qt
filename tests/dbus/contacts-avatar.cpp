@@ -54,8 +54,8 @@ class TestContactsAvatar : public Test
     Q_OBJECT
 
 public:
-    TestContactsAvatar(QObject *parent = 0)
-        : Test(parent), mConn(0),
+    TestContactsAvatar(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr),
           mGotAvatarRetrieved(false), mAvatarDatasChanged(0)
     { }
 
@@ -109,7 +109,7 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
     TpHandle handle;
     GArray *array;
 
-    handle = tp_handle_ensure(serviceRepo, id, NULL, NULL);
+    handle = tp_handle_ensure(serviceRepo, id, nullptr, nullptr);
     array = g_array_new(FALSE, FALSE, sizeof(gchar));
     g_array_append_vals(array, avatarData, strlen(avatarData));
 
@@ -157,7 +157,7 @@ void TestContactsAvatar::initTestCase()
     g_type_init();
     g_set_prgname("contacts-avatar");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
@@ -181,7 +181,7 @@ void TestContactsAvatar::testAvatar()
                 Contact::FeatureAvatarData));
 
     /* Make sure our tests does not mess up user's avatar cache */
-    qsrand(time(0));
+    qsrand(time(nullptr));
     static const char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     static const int DirNameLength = 6;
     QString dirName;
@@ -232,7 +232,7 @@ void TestContactsAvatar::testRequestAvatars()
     Tp::UIntList handles;
     for (int i = 0; i < 100; ++i) {
         QString contactId = QLatin1String("contact") + QString::number(i);
-        handle = tp_handle_ensure(serviceRepo, contactId.toLatin1().constData(), NULL, NULL);
+        handle = tp_handle_ensure(serviceRepo, contactId.toLatin1().constData(), nullptr, nullptr);
         handles << handle;
     }
     Features features = Features() << Contact::FeatureAvatarToken << Contact::FeatureAvatarData;

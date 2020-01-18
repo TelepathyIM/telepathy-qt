@@ -79,11 +79,11 @@ public:
     ReadinessHelper(RefCounted *object,
             uint currentStatus = 0,
             const Introspectables &introspectables = Introspectables(),
-            QObject *parent = 0);
+            QObject *parent = nullptr);
     ReadinessHelper(DBusProxy *proxy,
             uint currentStatus = 0,
             const Introspectables &introspectables = Introspectables(),
-            QObject *parent = 0);
+            QObject *parent = nullptr);
     ~ReadinessHelper() override;
 
     void addIntrospectables(const Introspectables &introspectables);
@@ -100,9 +100,9 @@ public:
     Features missingFeatures() const;
 
     bool isReady(const Feature &feature,
-            QString *errorName = 0, QString *errorMessage = 0) const;
+            QString *errorName = nullptr, QString *errorMessage = nullptr) const;
     bool isReady(const Features &features,
-            QString *errorName = 0, QString *errorMessage = 0) const;
+            QString *errorName = nullptr, QString *errorMessage = nullptr) const;
     PendingReady *becomeReady(const Features &requestedFeatures);
 
     void setIntrospectCompleted(const Feature &feature, bool success,

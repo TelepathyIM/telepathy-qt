@@ -19,8 +19,8 @@ class TestContactsInfo : public Test
     Q_OBJECT
 
 public:
-    TestContactsInfo(QObject *parent = 0)
-        : Test(parent), mConn(0),
+    TestContactsInfo(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr),
           mContactsInfoFieldsUpdated(0),
           mRefreshInfoFinished(0)
     { }
@@ -68,7 +68,7 @@ void TestContactsInfo::initTestCase()
     g_type_init();
     g_set_prgname("contacts-info");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
@@ -112,7 +112,7 @@ void TestContactsInfo::testInfo()
               TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST);
     {
         const gchar * const field_values[2] = {
-            "FooBar", NULL
+            "FooBar", nullptr
         };
         g_ptr_array_add (info_default, tp_value_array_build (3,
                     G_TYPE_STRING, "n",
@@ -127,7 +127,7 @@ void TestContactsInfo::testInfo()
               TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST);
     {
         const gchar * const field_values[2] = {
-            "Foo", NULL
+            "Foo", nullptr
         };
         g_ptr_array_add (info_1, tp_value_array_build (3,
                     G_TYPE_STRING, "n",
@@ -139,7 +139,7 @@ void TestContactsInfo::testInfo()
               TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST);
     {
         const gchar * const field_values[2] = {
-            "Bar", NULL
+            "Bar", nullptr
         };
         g_ptr_array_add (info_2, tp_value_array_build (3,
                     G_TYPE_STRING, "n",
@@ -154,7 +154,7 @@ void TestContactsInfo::testInfo()
 
     for (unsigned i = 0; i < 2; i++) {
         handles[i] = tp_handle_ensure(serviceRepo, qPrintable(validIDs[i]),
-                NULL, NULL);
+                nullptr, nullptr);
     }
 
     tp_tests_contacts_connection_change_contact_info(TP_TESTS_CONTACTS_CONNECTION(mConn->service()),

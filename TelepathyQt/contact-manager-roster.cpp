@@ -46,8 +46,8 @@ ContactManager::Roster::Roster(ContactManager *contactManager)
       contactManager(contactManager),
       usingFallbackContactList(false),
       hasContactBlockingInterface(false),
-      introspectPendingOp(0),
-      introspectGroupsPendingOp(0),
+      introspectPendingOp(nullptr),
+      introspectGroupsPendingOp(nullptr),
       pendingContactListState((uint) -1),
       contactListState((uint) -1),
       canReportAbusive(false),
@@ -198,7 +198,7 @@ PendingOperation *ContactManager::Roster::introspectGroups()
     }
 
     if (groupsReintrospectionRequired) {
-        return NULL;
+        return nullptr;
     }
 
     Q_ASSERT(!introspectGroupsPendingOp);
@@ -771,7 +771,7 @@ void ContactManager::Roster::gotContactListProperties(PendingOperation *op)
         if (introspectPendingOp) {
             introspectPendingOp->setFinishedWithError(
                     op->errorName(), op->errorMessage());
-            introspectPendingOp = 0;
+            introspectPendingOp = nullptr;
         }
         return;
     }
@@ -807,7 +807,7 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
         if (introspectPendingOp) {
             introspectPendingOp->setFinishedWithError(
                     reply.error());
-            introspectPendingOp = 0;
+            introspectPendingOp = nullptr;
         }
         return;
     }
@@ -850,7 +850,7 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
         }
 
         introspectPendingOp->setFinished();
-        introspectPendingOp = 0;
+        introspectPendingOp = nullptr;
     } else if (!groupsSetSuccess) {
         setStateSuccess();
     } else {
@@ -900,7 +900,7 @@ void ContactManager::Roster::onContactListStateChanged(uint state)
         // case the contacts will appear.
         Q_ASSERT(introspectPendingOp);
         introspectPendingOp->setFinished();
-        introspectPendingOp = 0;
+        introspectPendingOp = nullptr;
     }
 }
 
@@ -1270,7 +1270,7 @@ void ContactManager::Roster::onContactListChannelReady()
             Q_ASSERT(introspectPendingOp);
             introspectPendingOp->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Roster not supported"));
-            introspectPendingOp = 0;
+            introspectPendingOp = nullptr;
             return;
         }
 
@@ -1306,13 +1306,13 @@ void ContactManager::Roster::onContactListChannelReady()
         }
 
         introspectPendingOp->setFinished();
-        introspectPendingOp = 0;
+        introspectPendingOp = nullptr;
     }
 }
 
 void ContactManager::Roster::gotContactListGroupsProperties(PendingOperation *op)
 {
-    Q_ASSERT(introspectGroupsPendingOp != NULL);
+    Q_ASSERT(introspectGroupsPendingOp != nullptr);
 
     if (groupsSetSuccess) {
         // Connect here, so we catch the following and the other failure cases
@@ -1327,7 +1327,7 @@ void ContactManager::Roster::gotContactListGroupsProperties(PendingOperation *op
 
         introspectGroupsPendingOp->setFinishedWithError(
                 op->errorName(), op->errorMessage());
-        introspectGroupsPendingOp = 0;
+        introspectGroupsPendingOp = nullptr;
 
         return;
     }
@@ -1354,7 +1354,7 @@ void ContactManager::Roster::onContactListContactsUpgraded(PendingOperation *op)
     Q_ASSERT(processingContactListChanges);
     processingContactListChanges = false;
 
-    Q_ASSERT(introspectGroupsPendingOp != NULL);
+    Q_ASSERT(introspectGroupsPendingOp != nullptr);
 
     if (op->isError()) {
         warning() << "Upgrading contacts with group membership failed:" << op->errorName() << '-'
@@ -1362,13 +1362,13 @@ void ContactManager::Roster::onContactListContactsUpgraded(PendingOperation *op)
 
         introspectGroupsPendingOp->setFinishedWithError(
                 op->errorName(), op->errorMessage());
-        introspectGroupsPendingOp = 0;
+        introspectGroupsPendingOp = nullptr;
         processContactListChanges();
         return;
     }
 
     introspectGroupsPendingOp->setFinished();
-    introspectGroupsPendingOp = 0;
+    introspectGroupsPendingOp = nullptr;
     processContactListChanges();
 }
 
@@ -1608,7 +1608,7 @@ void ContactManager::Roster::onContactListGroupRemoved(Tp::DBusProxy *proxy,
             TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
     contactListGroupChannels.remove(id);
     removedContactListGroupChannels.append(contactListGroupChannel);
-    disconnect(contactListGroupChannel.data(), 0, 0, 0);
+    disconnect(contactListGroupChannel.data(), nullptr, nullptr, nullptr);
     emit contactManager->groupRemoved(id);
 }
 
@@ -2068,7 +2068,7 @@ void ContactManager::Roster::checkContactListGroupsReady()
     setContactListGroupChannelsReady();
     if (introspectGroupsPendingOp) {
         introspectGroupsPendingOp->setFinished();
-        introspectGroupsPendingOp = 0;
+        introspectGroupsPendingOp = nullptr;
     }
     pendingContactListGroupChannels.clear();
 }

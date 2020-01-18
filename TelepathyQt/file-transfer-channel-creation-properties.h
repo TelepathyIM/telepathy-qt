@@ -51,7 +51,7 @@ public:
             const FileTransferChannelCreationProperties &other);
     ~FileTransferChannelCreationProperties();
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     FileTransferChannelCreationProperties &operator=(
             const FileTransferChannelCreationProperties &other);

@@ -130,7 +130,7 @@ FileTransferChannelCreationProperties::FileTransferChannelCreationProperties(
     : mPriv(new Private(path, contentType))
 {
     if (mPriv->suggestedFileName.isEmpty()) {
-        mPriv = QSharedDataPointer<Private>(NULL);
+        mPriv = QSharedDataPointer<Private>(nullptr);
     }
 }
 

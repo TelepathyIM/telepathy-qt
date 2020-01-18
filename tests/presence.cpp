@@ -12,7 +12,7 @@ class TestPresence : public QObject
     Q_OBJECT
 
 public:
-    TestPresence(QObject *parent = 0);
+    TestPresence(QObject *parent = nullptr);
 
 private Q_SLOTS:
     void testPresence();

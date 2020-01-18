@@ -300,7 +300,7 @@ struct StreamTubeServer::Private
           clientName(maybeClientName),
           isRegistered(false),
           exportedPort(0),
-          generator(0)
+          generator(nullptr)
     {
         if (clientName.isEmpty()) {
             clientName = QString::fromLatin1("TpQtSTubeServer_%1_%2")
@@ -730,7 +730,7 @@ void StreamTubeServer::exportTcpSocket(
     mPriv->exportedAddr = address;
     mPriv->exportedPort = port;
 
-    mPriv->generator = 0;
+    mPriv->generator = nullptr;
     if (!parameters.isEmpty()) {
         mPriv->fixedGenerator.reset(new FixedParametersGenerator(parameters));
         mPriv->generator = mPriv->fixedGenerator.data();

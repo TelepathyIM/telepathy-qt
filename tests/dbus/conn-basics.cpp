@@ -28,8 +28,8 @@ class TestConnBasics : public Test
     Q_OBJECT
 
 public:
-    TestConnBasics(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+    TestConnBasics(QObject *parent = nullptr)
+        : Test(parent), mConnService(nullptr)
     { }
 
 protected Q_SLOTS:
@@ -109,7 +109,7 @@ void TestConnBasics::initTestCase()
     g_type_init();
     g_set_prgname("conn-basics");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 }
 
 void TestConnBasics::init()
@@ -118,20 +118,20 @@ void TestConnBasics::init()
 
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "contacts",
             NULL));
-    QVERIFY(mConnService != 0);
+    QVERIFY(mConnService != nullptr);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
                 "contacts", &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
+    QVERIFY(name != nullptr);
+    QVERIFY(connPath != nullptr);
 
     mConnName = QLatin1String(name);
     mConnPath = QLatin1String(connPath);
@@ -285,9 +285,9 @@ void TestConnBasics::cleanup()
         mConn.reset();
     }
 
-    if (mConnService != 0) {
+    if (mConnService != nullptr) {
         g_object_unref(mConnService);
-        mConnService = 0;
+        mConnService = nullptr;
     }
 
     cleanupImpl();

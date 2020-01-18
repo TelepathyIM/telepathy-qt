@@ -65,7 +65,7 @@ class TestStatefulProxy : public Test
     Q_OBJECT
 
 public:
-    TestStatefulProxy(QObject *parent = 0);
+    TestStatefulProxy(QObject *parent = nullptr);
 
 private Q_SLOTS:
     void initTestCase();
@@ -110,7 +110,7 @@ QString TestStatefulProxy::objectPath()
 
 TestStatefulProxy::TestStatefulProxy(QObject *parent)
     : Test(parent),
-      mProxy(0),
+      mProxy(nullptr),
       mAdaptor(new ObjectAdaptor(this))
 {
 }
@@ -297,7 +297,7 @@ void TestStatefulProxy::cleanup()
 {
     if (mProxy) {
         delete mProxy;
-        mProxy = 0;
+        mProxy = nullptr;
     }
 
     cleanupImpl();

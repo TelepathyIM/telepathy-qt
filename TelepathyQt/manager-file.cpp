@@ -351,7 +351,7 @@ ParamSpec *ManagerFile::Private::getParameter(const QString &protocol,
             return &paramSpec;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 QStringList ManagerFile::Private::protocols() const

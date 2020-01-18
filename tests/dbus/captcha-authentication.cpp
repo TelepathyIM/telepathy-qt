@@ -24,9 +24,9 @@ class TestCaptchaAuthentication : public Test
     Q_OBJECT
 
 public:
-    TestCaptchaAuthentication(QObject *parent = 0)
+    TestCaptchaAuthentication(QObject *parent = nullptr)
         : Test(parent),
-          mConn(0), mChanService(0)
+          mConn(nullptr), mChanService(nullptr)
     { }
 
 private Q_SLOTS:
@@ -97,7 +97,7 @@ void TestCaptchaAuthentication::initTestCase()
     g_type_init();
     g_set_prgname("captcha-authentication");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_SIMPLE_CONNECTION,
@@ -293,9 +293,9 @@ void TestCaptchaAuthentication::cleanup()
 
     mChan.reset();
 
-    if (mChanService != 0) {
+    if (mChanService != nullptr) {
         g_object_unref(mChanService);
-        mChanService = 0;
+        mChanService = nullptr;
     }
 
     mLoop->processEvents();

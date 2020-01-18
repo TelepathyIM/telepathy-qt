@@ -46,9 +46,9 @@ class TestDBusTubeChan : public Test
     Q_OBJECT
 
 public:
-    TestDBusTubeChan(QObject *parent = 0)
+    TestDBusTubeChan(QObject *parent = nullptr)
         : Test(parent),
-          mConn(0), mChanService(0),
+          mConn(nullptr), mChanService(nullptr),
           mBusNameWasAdded(false),
           mBusNameWasRemoved(false),
           mOfferFinished(false), mAllowsOtherUsers(false)
@@ -167,14 +167,14 @@ void TestDBusTubeChan::createTubeChannel(bool requested,
     TpHandle handle;
     GType type;
     if (withContact) {
-        handle = tp_handle_ensure(contactRepo, "bob", NULL, NULL);
+        handle = tp_handle_ensure(contactRepo, "bob", nullptr, nullptr);
         type = TP_TESTS_TYPE_CONTACT_DBUS_TUBE_CHANNEL;
     } else {
-        handle = tp_handle_ensure(roomRepo, "#test", NULL, NULL);
+        handle = tp_handle_ensure(roomRepo, "#test", nullptr, nullptr);
         type = TP_TESTS_TYPE_ROOM_DBUS_TUBE_CHANNEL;
     }
 
-    TpHandle alfHandle = tp_handle_ensure(contactRepo, "alf", NULL, NULL);
+    TpHandle alfHandle = tp_handle_ensure(contactRepo, "alf", nullptr, nullptr);
 
     GArray *acontrols;
     TpSocketAccessControl a;
@@ -222,7 +222,7 @@ void TestDBusTubeChan::initTestCase()
     g_type_init();
     g_set_prgname("dbus-tube-chan");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_SIMPLE_CONNECTION,
@@ -448,7 +448,7 @@ void TestDBusTubeChan::testOfferSuccess()
 
         TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
-        TpHandle bobHandle = tp_handle_ensure(contactRepo, "bob", NULL, NULL);
+        TpHandle bobHandle = tp_handle_ensure(contactRepo, "bob", nullptr, nullptr);
         gchar *bobService = g_strdup("org.bob.test");
         tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
                 bobService, bobHandle);
@@ -531,7 +531,7 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
     // immediately drop it
     TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
-    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", NULL, NULL);
+    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", nullptr, nullptr);
     gchar *service = g_strdup("org.not.seen.yet");
 
     mExpectedHandle = handle;
@@ -586,7 +586,7 @@ void TestDBusTubeChan::testExtractBusNameMonitoring()
     // Simulate a peer connection from someone
     TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
-    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", NULL, NULL);
+    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", nullptr, nullptr);
     gchar *service = g_strdup("org.not.seen.yet");
 
     mExpectedHandle = handle;
@@ -717,7 +717,7 @@ void TestDBusTubeChan::testOfferCornerCases()
     // Simulate a peer connection from someone
     TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
-    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", NULL, NULL);
+    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", nullptr, nullptr);
     gchar *service = g_strdup("org.not.seen.yet");
 
     mExpectedHandle = handle;
@@ -761,9 +761,9 @@ void TestDBusTubeChan::cleanup()
 
     mChan.reset();
 
-    if (mChanService != 0) {
+    if (mChanService != nullptr) {
         g_object_unref(mChanService);
-        mChanService = 0;
+        mChanService = nullptr;
     }
 
     mLoop->processEvents();

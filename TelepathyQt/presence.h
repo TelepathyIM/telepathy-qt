@@ -52,7 +52,7 @@ public:
     static Presence hidden(const QString &statusMessage = QString());
     static Presence offline(const QString &statusMessage = QString());
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     Presence &operator=(const Presence &other);
     bool operator==(const Presence &other) const;
@@ -103,7 +103,7 @@ public:
     static PresenceSpec unknown(SimpleStatusFlags flags = CanHaveStatusMessage);
     static PresenceSpec error(SimpleStatusFlags flags = CanHaveStatusMessage);
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     PresenceSpec &operator=(const PresenceSpec &other);
     bool operator==(const PresenceSpec &other) const;

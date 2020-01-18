@@ -58,7 +58,7 @@ public:
     };
     Q_ENUMS(Columns)
 
-    AccountItem(Tp::AccountPtr acc, QTableWidget *table, int row, QObject *parent = 0);
+    AccountItem(Tp::AccountPtr acc, QTableWidget *table, int row, QObject *parent = nullptr);
     ~AccountItem() override;
 
     int row() const { return mRow; }

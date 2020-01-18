@@ -63,7 +63,7 @@ GHashTable *createSupportedSocketTypesHash(TpSocketAddressType addressType,
     GHashTable *ret;
     GArray *tab;
 
-    ret = g_hash_table_new_full(NULL, NULL, NULL, destroySocketControlList);
+    ret = g_hash_table_new_full(nullptr, nullptr, nullptr, destroySocketControlList);
 
     tab = g_array_sized_new(FALSE, FALSE, sizeof(TpSocketAccessControl), 1);
     g_array_append_val(tab, accessControl);
@@ -96,10 +96,10 @@ GSocket *createTcpClientGSocket(TpSocketAddressType socketType)
     }
 
     /* Create socket to connect to the CM */
-    GError *error = NULL;
+    GError *error = nullptr;
     GSocket *clientSocket = g_socket_new(family, G_SOCKET_TYPE_STREAM,
             G_SOCKET_PROTOCOL_DEFAULT, &error);
-    Q_ASSERT(clientSocket != NULL);
+    Q_ASSERT(clientSocket != nullptr);
 
     if (socketType == TP_SOCKET_ADDRESS_TYPE_IPV4 ||
         socketType == TP_SOCKET_ADDRESS_TYPE_IPV6) {
@@ -130,9 +130,9 @@ class TestStreamTubeChan : public Test
     Q_OBJECT
 
 public:
-    TestStreamTubeChan(QObject *parent = 0)
+    TestStreamTubeChan(QObject *parent = nullptr)
         : Test(parent),
-          mConn(0), mChanService(0), mLocalConnectionId(-1), mRemoteConnectionId(-1),
+          mConn(nullptr), mChanService(nullptr), mLocalConnectionId(-1), mRemoteConnectionId(-1),
           mGotLocalConnection(false), mGotRemoteConnection(false),
           mGotSocketConnection(false), mGotConnectionClosed(false),
           mOfferFinished(false), mRequiresCredentials(false), mCredentialByte(0)
@@ -267,14 +267,14 @@ void TestStreamTubeChan::createTubeChannel(bool requested,
     TpHandle handle;
     GType type;
     if (withContact) {
-        handle = tp_handle_ensure(contactRepo, "bob", NULL, NULL);
+        handle = tp_handle_ensure(contactRepo, "bob", nullptr, nullptr);
         type = TP_TESTS_TYPE_CONTACT_STREAM_TUBE_CHANNEL;
     } else {
-        handle = tp_handle_ensure(roomRepo, "#test", NULL, NULL);
+        handle = tp_handle_ensure(roomRepo, "#test", nullptr, nullptr);
         type = TP_TESTS_TYPE_ROOM_STREAM_TUBE_CHANNEL;
     }
 
-    TpHandle alfHandle = tp_handle_ensure(contactRepo, "alf", NULL, NULL);
+    TpHandle alfHandle = tp_handle_ensure(contactRepo, "alf", nullptr, nullptr);
 
     GHashTable *sockets = createSupportedSocketTypesHash(addressType, accessControl);
 
@@ -309,7 +309,7 @@ void TestStreamTubeChan::initTestCase()
     g_type_init();
     g_set_prgname("stream-tube-chan");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_SIMPLE_CONNECTION,
@@ -486,7 +486,7 @@ void TestStreamTubeChan::testAcceptSuccess()
         bool requiresCredentials = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_CREDENTIALS) ?
             true : false);
 
-        GSocket *gSocket = 0;
+        GSocket *gSocket = nullptr;
         QHostAddress addr;
         quint16 port = 0;
         IncomingStreamTubeChannelPtr chan = IncomingStreamTubeChannelPtr::qObjectCast(mChan);
@@ -503,8 +503,8 @@ void TestStreamTubeChan::testAcceptSuccess()
                 // for this test. See http://bugreports.qt.nokia.com/browse/QTBUG-121
                 GSocketAddress *localAddr;
 
-                localAddr = g_socket_get_local_address(gSocket, NULL);
-                QVERIFY(localAddr != NULL);
+                localAddr = g_socket_get_local_address(gSocket, nullptr);
+                QVERIFY(localAddr != nullptr);
                 addr = QHostAddress(QLatin1String(g_inet_address_to_string(
                         g_inet_socket_address_get_address(G_INET_SOCKET_ADDRESS(localAddr)))));
                 port = g_inet_socket_address_get_port(G_INET_SOCKET_ADDRESS(localAddr));
@@ -542,14 +542,14 @@ void TestStreamTubeChan::testAcceptSuccess()
             qDebug().nospace() << "Connecting to host " << mChan->ipAddress().first << ":" <<
                 mChan->ipAddress().second;
 
-            QTcpSocket *socket = 0;
+            QTcpSocket *socket = nullptr;
 
             if (contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_PORT) {
                 GSocketAddress *remoteAddr = (GSocketAddress*) g_inet_socket_address_new(
                         g_inet_address_new_from_string(
                             mChan->ipAddress().first.toString().toLatin1().constData()),
                         mChan->ipAddress().second);
-                g_socket_connect(gSocket, remoteAddr, NULL, NULL);
+                g_socket_connect(gSocket, remoteAddr, nullptr, nullptr);
             } else {
                 socket = new QTcpSocket();
                 socket->connectToHost(mChan->ipAddress().first, mChan->ipAddress().second);
@@ -652,14 +652,14 @@ void TestStreamTubeChan::testOfferSuccess()
 
         mOfferFinished = false;
         mGotSocketConnection = false;
-        QLocalServer *localServer = 0;
-        QTcpServer *tcpServer = 0;
+        QLocalServer *localServer = nullptr;
+        QTcpServer *tcpServer = nullptr;
         OutgoingStreamTubeChannelPtr chan = OutgoingStreamTubeChannelPtr::qObjectCast(mChan);
         QVariantMap offerParameters;
         offerParameters.insert(QLatin1String("mushroom"), 44);
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
             localServer = new QLocalServer(this);
-            localServer->listen(QLatin1String(tmpnam(NULL)));
+            localServer->listen(QLatin1String(tmpnam(nullptr)));
             connect(localServer, SIGNAL(newConnection()), SLOT(onNewSocketConnection()));
 
             QVERIFY(connect(chan->offerUnixSocket(localServer, offerParameters, requiresCredentials),
@@ -682,8 +682,8 @@ void TestStreamTubeChan::testOfferSuccess()
         QCOMPARE(mGotSocketConnection, false);
 
         // A client now connects to the tube
-        QLocalSocket *localSocket = 0;
-        QTcpSocket *tcpSocket = 0;
+        QLocalSocket *localSocket = nullptr;
+        QTcpSocket *tcpSocket = nullptr;
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
             qDebug() << "Connecting to host" << localServer->fullServerName();
             localSocket = new QLocalSocket(this);
@@ -705,7 +705,7 @@ void TestStreamTubeChan::testOfferSuccess()
         }
 
         /* simulate CM when peer connects */
-        GValue *connParam = 0;
+        GValue *connParam = nullptr;
         mCredentialByte = 0;
         switch (contexts[i].accessControl) {
             case TP_SOCKET_ACCESS_CONTROL_LOCALHOST:
@@ -739,7 +739,7 @@ void TestStreamTubeChan::testOfferSuccess()
 
         TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
-        TpHandle bobHandle = tp_handle_ensure(contactRepo, "bob", NULL, NULL);
+        TpHandle bobHandle = tp_handle_ensure(contactRepo, "bob", nullptr, nullptr);
         tp_tests_stream_tube_channel_peer_connected_no_stream(mChanService,
                 connParam, bobHandle);
 
@@ -838,7 +838,7 @@ void TestStreamTubeChan::testOutgoingConnectionMonitoring()
     // immediately drop it
     TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
-    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", NULL, NULL);
+    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", nullptr, nullptr);
 
     mExpectedHandle = handle;
     mExpectedId = QLatin1String("youhaventseenmeyet");
@@ -882,9 +882,9 @@ void TestStreamTubeChan::cleanup()
 
     mChan.reset();
 
-    if (mChanService != 0) {
+    if (mChanService != nullptr) {
         g_object_unref(mChanService);
-        mChanService = 0;
+        mChanService = nullptr;
     }
 
     mLoop->processEvents();

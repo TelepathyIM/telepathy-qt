@@ -46,7 +46,7 @@ struct TP_QT_NO_EXPORT PendingChannelRequest::Private
 {
     Private(const QDBusConnection &dbusConnection)
         : dbusConnection(dbusConnection),
-          cancelOperation(0)
+          cancelOperation(nullptr)
     {
     }
 
@@ -96,7 +96,7 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
     Client::ChannelDispatcherInterface *channelDispatcherInterface =
         account->dispatcherInterface();
 
-    QDBusPendingCallWatcher *watcher = 0;
+    QDBusPendingCallWatcher *watcher = nullptr;
     if (create) {
         if (hints.isValid()) {
             if (account->supportsRequestHints()) {
@@ -282,7 +282,7 @@ void PendingChannelRequest::onProceedOperationFinished(PendingOperation *op)
 
 void PendingChannelRequest::onCancelOperationFinished(PendingOperation *op)
 {
-    mPriv->cancelOperation = 0;
+    mPriv->cancelOperation = nullptr;
     if (!isFinished()) {
         setFinishedWithError(TP_QT_ERROR_CANCELLED,
                 QLatin1String("ChannelRequest cancelled"));

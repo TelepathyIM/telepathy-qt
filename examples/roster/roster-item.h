@@ -34,7 +34,7 @@ class RosterItem : public QObject, public QListWidgetItem
 
 public:
     RosterItem(const Tp::ContactPtr &contact,
-            QListWidget *parent = 0);
+            QListWidget *parent = nullptr);
     ~RosterItem() override;
 
     Tp::ContactPtr contact() const { return mContact; }

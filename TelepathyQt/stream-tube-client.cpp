@@ -204,7 +204,7 @@ struct TP_QT_NO_EXPORT StreamTubeClient::Private
           clientName(maybeClientName),
           isRegistered(false),
           acceptsAsTcp(false), acceptsAsUnix(false),
-          tcpGenerator(0), requireCredentials(false)
+          tcpGenerator(nullptr), requireCredentials(false)
     {
         if (clientName.isEmpty()) {
             clientName = QString::fromLatin1("TpQtSTubeClient_%1_%2")
@@ -648,7 +648,7 @@ StreamTubeClient::TcpSourceAddressGenerator *StreamTubeClient::tcpGenerator() co
 {
     if (!acceptsAsTcp()) {
         warning() << "StreamTubeClient::tcpGenerator() used, but not accepting as TCP, returning 0";
-        return 0;
+        return nullptr;
     }
 
     return mPriv->tcpGenerator;
@@ -735,7 +735,7 @@ void StreamTubeClient::setToAcceptAsTcp(TcpSourceAddressGenerator *generator)
  */
 void StreamTubeClient::setToAcceptAsUnix(bool requireCredentials)
 {
-    mPriv->tcpGenerator = 0;
+    mPriv->tcpGenerator = nullptr;
     mPriv->acceptsAsTcp = false;
     mPriv->acceptsAsUnix = true;
     mPriv->requireCredentials = requireCredentials;
@@ -826,7 +826,7 @@ void StreamTubeClient::onInvokedForTube(
         return;
     }
 
-    TubeWrapper *wrapper = 0;
+    TubeWrapper *wrapper = nullptr;
 
     if (mPriv->acceptsAsTcp) {
         QPair<QHostAddress, quint16> srcAddr =
@@ -865,8 +865,8 @@ void StreamTubeClient::onInvokedForTube(
 
 void StreamTubeClient::onAcceptFinished(TubeWrapper *wrapper, PendingStreamTubeConnection *conn)
 {
-    Q_ASSERT(wrapper != NULL);
-    Q_ASSERT(conn != NULL);
+    Q_ASSERT(wrapper != nullptr);
+    Q_ASSERT(conn != nullptr);
 
     if (!mPriv->tubes.contains(wrapper->mTube)) {
         debug() << "StreamTubeClient ignoring Accept result for invalidated tube"

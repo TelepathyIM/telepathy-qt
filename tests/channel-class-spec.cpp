@@ -25,7 +25,7 @@ class TestChannelClassSpec : public QObject
     Q_OBJECT
 
 public:
-    TestChannelClassSpec(QObject *parent = 0);
+    TestChannelClassSpec(QObject *parent = nullptr);
 
 private Q_SLOTS:
     void testChannelClassSpecHash();

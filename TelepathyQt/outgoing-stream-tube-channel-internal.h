@@ -57,7 +57,7 @@ class TP_QT_NO_EXPORT QueuedContactFactory : public QObject
     Q_DISABLE_COPY(QueuedContactFactory)
 
 public:
-    QueuedContactFactory(ContactManagerPtr contactManager, QObject* parent = 0);
+    QueuedContactFactory(ContactManagerPtr contactManager, QObject* parent = nullptr);
     ~QueuedContactFactory() override;
 
     QUuid appendNewRequest(const UIntList &handles);

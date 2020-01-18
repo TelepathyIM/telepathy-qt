@@ -42,7 +42,7 @@ namespace Farstream
 struct TP_QT_FS_NO_EXPORT PendingChannel::Private
 {
     Private()
-        : mTfChannel(0)
+        : mTfChannel(nullptr)
     {
     }
 
@@ -62,7 +62,7 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
         return;
     }
 
-    TpDBusDaemon *dbus = tp_dbus_daemon_dup(0);
+    TpDBusDaemon *dbus = tp_dbus_daemon_dup(nullptr);
     if (!dbus) {
         warning() << "Unable to connect to D-Bus";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
@@ -90,7 +90,7 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
     }
 
     TpConnection *gconnection = tp_simple_client_factory_ensure_connection (factory,
-            connection->objectPath().toLatin1(), NULL, 0);
+            connection->objectPath().toLatin1(), nullptr, nullptr);
     if (!gconnection) {
         warning() << "Unable to construct TpConnection";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
@@ -107,11 +107,11 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
             "object-path", channel->objectPath().toLatin1().constData(),
             NULL);
     g_object_unref(factory);
-    factory = 0;
+    factory = nullptr;
     g_object_unref(dbus);
-    dbus = 0;
+    dbus = nullptr;
     g_object_unref(gconnection);
-    gconnection = 0;
+    gconnection = nullptr;
     if (!gchannel) {
         warning() << "Unable to construct TpChannel";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
@@ -133,7 +133,7 @@ void PendingChannel::Private::onTfChannelNewFinish(GObject *sourceObject,
 {
     PendingChannel *self = reinterpret_cast<PendingChannel *>(userData);
 
-    GError *error = NULL;
+    GError *error = nullptr;
     TfChannel *ret = tf_channel_new_finish(sourceObject, res, &error);
     if (error) {
         warning() << "Fs::PendingChannel::Private::onTfChannelNewFinish: error " << error->message;

@@ -38,7 +38,7 @@ class RosterWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    RosterWindow(const QString &accountName, QWidget *parent = 0);
+    RosterWindow(const QString &accountName, QWidget *parent = nullptr);
     ~RosterWindow() override;
 
 private Q_SLOTS:

@@ -41,7 +41,7 @@ public:
     DBusError(const QString &name, const QString &message);
     ~DBusError();
 
-    bool isValid() const { return mPriv != 0; }
+    bool isValid() const { return mPriv != nullptr; }
 
     bool operator==(const DBusError &other) const;
     bool operator!=(const DBusError &other) const;

@@ -23,8 +23,8 @@ class TestProperties : public Test
     Q_OBJECT
 
 public:
-    TestProperties(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+    TestProperties(QObject *parent = nullptr)
+        : Test(parent), mConnService(nullptr)
     { }
 
 private Q_SLOTS:
@@ -49,7 +49,7 @@ void TestProperties::initTestCase()
     g_type_init();
     g_set_prgname("properties");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 }
 
 void TestProperties::init()
@@ -58,20 +58,20 @@ void TestProperties::init()
 
     gchar *name;
     gchar *connPath;
-    GError *error = 0;
+    GError *error = nullptr;
 
     mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "contacts",
             NULL));
-    QVERIFY(mConnService != 0);
+    QVERIFY(mConnService != nullptr);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
                 "contacts", &name, &connPath, &error));
-    QVERIFY(error == 0);
+    QVERIFY(error == nullptr);
 
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
+    QVERIFY(name != nullptr);
+    QVERIFY(connPath != nullptr);
 
     mConnName = QLatin1String(name);
     mConnPath = QLatin1String(connPath);
@@ -101,10 +101,10 @@ void TestProperties::testPropertiesMonitoring()
                 );
 
     tp_svc_dbus_properties_emit_properties_changed (mConnService,
-            "a.random.interface", changed, NULL);
+            "a.random.interface", changed, nullptr);
 
     tp_svc_dbus_properties_emit_properties_changed (mConnService,
-            mConn->interface().toLatin1().data(), changed, NULL);
+            mConn->interface().toLatin1().data(), changed, nullptr);
 
     QCOMPARE(spy.count(), 0);
 
@@ -130,11 +130,11 @@ void TestProperties::cleanup()
 {
     if (mConn) {
         mConn->deleteLater();
-        mConn = 0;
+        mConn = nullptr;
     }
-    if (mConnService != 0) {
+    if (mConnService != nullptr) {
         g_object_unref(mConnService);
-        mConnService = 0;
+        mConnService = nullptr;
     }
     cleanupImpl();
 }

@@ -58,7 +58,7 @@ class TP_QT_NO_EXPORT AccountSet::Private::AccountWrapper : public QObject
     Q_OBJECT
 
 public:
-    AccountWrapper(const AccountPtr &account, QObject *parent = 0);
+    AccountWrapper(const AccountPtr &account, QObject *parent = nullptr);
     ~AccountWrapper() override;
 
     AccountPtr account() const { return mAccount; }

@@ -54,7 +54,7 @@ public:
     ~BaseChannel() override;
 
     QVariantMap immutableProperties() const override;
-    bool registerObject(DBusError *error = NULL);
+    bool registerObject(DBusError *error = nullptr);
     virtual QString uniqueName() const;
 
     Tp::BaseConnection *connection() const;

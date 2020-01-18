@@ -27,8 +27,8 @@ class TestChanBasics : public Test
     Q_OBJECT
 
 public:
-    TestChanBasics(QObject *parent = 0)
-        : Test(parent), mConn(0), mHandle(0)
+    TestChanBasics(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr), mHandle(0)
     { }
 
 protected Q_SLOTS:
@@ -75,7 +75,7 @@ void TestChanBasics::initTestCase()
     g_type_init();
     g_set_prgname("chan-basics");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_ECHO_2_CONNECTION,
@@ -226,7 +226,7 @@ void TestChanBasics::testFallback()
     TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()),
             TP_HANDLE_TYPE_CONTACT);
-    guint handle = tp_handle_ensure(contactRepo, "someone@localhost", 0, 0);
+    guint handle = tp_handle_ensure(contactRepo, "someone@localhost", nullptr, nullptr);
 
     QString textChanPath = mConn->objectPath() + QLatin1String("/Channel");
     QByteArray chanPath(textChanPath.toLatin1());

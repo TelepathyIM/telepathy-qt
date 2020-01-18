@@ -40,7 +40,7 @@ public:
     Captcha(const Captcha &other);
     ~Captcha();
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv.constData() != nullptr; }
 
     Captcha &operator=(const Captcha &rhs);
 

@@ -38,7 +38,7 @@ class TP_QT_EXPORT IODevice : public QIODevice
 {
     Q_OBJECT
 public:
-    explicit IODevice(QObject *parent = 0);
+    explicit IODevice(QObject *parent = nullptr);
     ~IODevice() override;
     bool isSequential() const override;
     qint64 bytesAvailable() const override;

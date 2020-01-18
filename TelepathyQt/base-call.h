@@ -75,7 +75,7 @@ public:
 
     ~BaseCallContent() override;
     QVariantMap immutableProperties() const override;
-    bool registerObject(DBusError *error = NULL);
+    bool registerObject(DBusError *error = nullptr);
     virtual QString uniqueName() const;
 
     QList<AbstractCallContentInterfacePtr> interfaces() const;

@@ -45,7 +45,7 @@ struct TP_QT_NO_EXPORT ContactMessenger::Private
         : parent(parent),
           account(account),
           contactIdentifier(contactIdentifier),
-          cdMessagesInterface(0)
+          cdMessagesInterface(nullptr)
     {
     }
 

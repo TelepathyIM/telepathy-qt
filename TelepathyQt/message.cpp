@@ -101,7 +101,7 @@ struct TP_QT_NO_EXPORT Message::Private : public QSharedData
 Message::Private::Private(const MessagePartList &parts)
     : parts(parts),
       forceNonText(false),
-      sender(0)
+      sender(nullptr)
 {
 }
 

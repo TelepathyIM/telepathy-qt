@@ -27,7 +27,7 @@ class Data : public QObject,
 
 public:
     static DataPtr create() { return DataPtr(new Data()); }
-    static DataPtr createNull() { return DataPtr(0); }
+    static DataPtr createNull() { return DataPtr(nullptr); }
 
 private:
     Data() {}
@@ -242,7 +242,7 @@ void TestSharedPtr::testWeakPtrBoolConversion()
 class Thread : public QThread
 {
 public:
-    Thread(const DataPtr &ptr, QObject *parent = 0) : QThread(parent), mPtr(ptr) {}
+    Thread(const DataPtr &ptr, QObject *parent = nullptr) : QThread(parent), mPtr(ptr) {}
 
     void run() override
     {
@@ -287,7 +287,7 @@ void TestSharedPtr::testThreadSafety()
     DataPtr ptr = Data::create();
     WeakPtr<Data> weakPtr(ptr);
     Data *savedData = ptr.data();
-    QVERIFY(savedData != NULL);
+    QVERIFY(savedData != nullptr);
     QVERIFY(!ptr.isNull());
     QVERIFY(!weakPtr.isNull());
 

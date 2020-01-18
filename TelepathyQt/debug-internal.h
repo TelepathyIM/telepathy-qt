@@ -33,9 +33,9 @@ namespace Tp
 class TP_QT_EXPORT Debug
 {
 public:
-    inline Debug() : debug(0) { }
+    inline Debug() : debug(nullptr) { }
     inline Debug(QtMsgType type) : type(type), debug(new QDebug(&msg)) { }
-    inline Debug(const Debug &a) : type(a.type), debug(a.debug ? new QDebug(&msg) : 0)
+    inline Debug(const Debug &a) : type(a.type), debug(a.debug ? new QDebug(&msg) : nullptr)
     {
         if (debug) {
             (*debug) << qPrintable(a.msg);
@@ -47,7 +47,7 @@ public:
         if (this != &a) {
             type = a.type;
             delete debug;
-            debug = 0;
+            debug = nullptr;
 
             if (a.debug) {
                 debug = new QDebug(&msg);

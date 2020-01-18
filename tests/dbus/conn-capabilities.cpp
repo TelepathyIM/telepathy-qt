@@ -16,8 +16,8 @@ class TestConnCapabilities : public Test
     Q_OBJECT
 
 public:
-    TestConnCapabilities(QObject *parent = 0)
-        : Test(parent), conn(0)
+    TestConnCapabilities(QObject *parent = nullptr)
+        : Test(parent), conn(nullptr)
     { }
 
 private Q_SLOTS:
@@ -40,7 +40,7 @@ void TestConnCapabilities::initTestCase()
     g_type_init();
     g_set_prgname("conn-capabilities");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 }
 
 void TestConnCapabilities::init()

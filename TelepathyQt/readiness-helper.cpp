@@ -63,7 +63,7 @@ struct TP_QT_NO_EXPORT ReadinessHelper::Introspectable::Private : public QShared
 };
 
 ReadinessHelper::Introspectable::Introspectable()
-    : mPriv(new Private(QSet<uint>(), Features(), QStringList(), 0, 0, false))
+    : mPriv(new Private(QSet<uint>(), Features(), QStringList(), nullptr, nullptr, false))
 {
 }
 
@@ -139,7 +139,7 @@ ReadinessHelper::Private::Private(
         const Introspectables &introspectables)
     : parent(parent),
       object(object),
-      proxy(0),
+      proxy(nullptr),
       currentStatus(currentStatus),
       introspectables(introspectables),
       pendingStatusChange(false),
@@ -149,7 +149,7 @@ ReadinessHelper::Private::Private(
             i != introspectables.constEnd(); ++i) {
         Feature feature = i.key();
         Introspectable introspectable = i.value();
-        Q_ASSERT(introspectable.mPriv->introspectFunc != 0);
+        Q_ASSERT(introspectable.mPriv->introspectFunc != nullptr);
         supportedStatuses += introspectable.mPriv->makesSenseForStatuses;
         supportedFeatures += feature;
     }
@@ -168,13 +168,13 @@ ReadinessHelper::Private::Private(
       pendingStatusChange(false),
       pendingStatus(-1)
 {
-    Q_ASSERT(proxy != 0);
+    Q_ASSERT(proxy != nullptr);
 
     for (Introspectables::const_iterator i = introspectables.constBegin();
             i != introspectables.constEnd(); ++i) {
         Feature feature = i.key();
         Introspectable introspectable = i.value();
-        Q_ASSERT(introspectable.mPriv->introspectFunc != 0);
+        Q_ASSERT(introspectable.mPriv->introspectFunc != nullptr);
         supportedStatuses += introspectable.mPriv->makesSenseForStatuses;
         supportedFeatures += feature;
     }

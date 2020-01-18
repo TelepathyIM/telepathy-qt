@@ -22,8 +22,8 @@ class TestConnRequests : public Test
     Q_OBJECT
 
 public:
-    TestConnRequests(QObject *parent = 0)
-        : Test(parent), mConn(0), mHandle(0)
+    TestConnRequests(QObject *parent = nullptr)
+        : Test(parent), mConn(nullptr), mHandle(0)
     { }
 
 protected Q_SLOTS:
@@ -85,7 +85,7 @@ void TestConnRequests::initTestCase()
     g_type_init();
     g_set_prgname("conn-requests");
     tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+    dbus_g_bus_get(DBUS_BUS_STARTER, nullptr);
 
     mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_ECHO_2_CONNECTION,
