@@ -51,7 +51,7 @@ class TP_QT_NO_EXPORT SimpleTextObserver::Private::TextChannelWrapper :
 
 public:
     TextChannelWrapper(const Tp::TextChannelPtr &channel);
-    ~TextChannelWrapper() { }
+    ~TextChannelWrapper() override { }
 
 Q_SIGNALS:
     void channelMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,

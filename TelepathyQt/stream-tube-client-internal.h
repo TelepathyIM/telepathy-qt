@@ -39,7 +39,7 @@ public:
             const QHostAddress &sourceAddress, quint16 sourcePort, StreamTubeClient *parent);
     TubeWrapper(const AccountPtr &acc, const IncomingStreamTubeChannelPtr &tube,
             bool requireCredentials, StreamTubeClient *parent);
-    ~TubeWrapper() { }
+    ~TubeWrapper() override { }
 
     AccountPtr mAcc;
     IncomingStreamTubeChannelPtr mTube;

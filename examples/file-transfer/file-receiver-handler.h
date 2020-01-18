@@ -40,9 +40,9 @@ public:
         return SharedPtr<FileReceiverHandler>(new FileReceiverHandler());
     }
 
-    ~FileReceiverHandler();
+    ~FileReceiverHandler() override;
 
-    bool bypassApproval() const;
+    bool bypassApproval() const override;
 
     void handleChannels(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
@@ -50,7 +50,7 @@ public:
             const QList<ChannelPtr> &channels,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
-            const HandlerInfo &handlerInfo);
+            const HandlerInfo &handlerInfo) override;
 
 private Q_SLOTS:
     void onReceiveFinished(Tp::PendingOperation *op);

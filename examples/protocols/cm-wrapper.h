@@ -42,7 +42,7 @@ class CMWrapper : public QObject
 
 public:
    CMWrapper(const QString &cmName, QObject *parent = 0);
-   ~CMWrapper();
+   ~CMWrapper() override;
 
    ConnectionManagerPtr cm() const;
 

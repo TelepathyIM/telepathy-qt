@@ -39,7 +39,7 @@ class Sender : public QObject
 
 public:
     Sender(const QString &accountPath, const QString &contactIdentifier, const QString &message);
-    ~Sender();
+    ~Sender() override;
 
 private Q_SLOTS:
     void onSendMessageFinished(Tp::PendingOperation *op);

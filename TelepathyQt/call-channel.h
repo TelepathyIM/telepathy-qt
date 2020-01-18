@@ -47,7 +47,7 @@ public:
     static CallChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~CallChannel();
+    ~CallChannel() override;
 
     bool handlerStreamingRequired() const;
     StreamTransportType initialTransportType() const;

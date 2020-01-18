@@ -39,7 +39,7 @@ class RosterWindow : public QMainWindow
 
 public:
     RosterWindow(const QString &accountName, QWidget *parent = 0);
-    virtual ~RosterWindow();
+    ~RosterWindow() override;
 
 private Q_SLOTS:
     void onAccountReady(Tp::PendingOperation *op);

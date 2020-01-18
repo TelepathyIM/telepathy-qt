@@ -244,7 +244,7 @@ class Thread : public QThread
 public:
     Thread(const DataPtr &ptr, QObject *parent = 0) : QThread(parent), mPtr(ptr) {}
 
-    void run()
+    void run() override
     {
         QVERIFY(!mPtr.isNull());
         for (int i = 0; i < 200; ++i) {

@@ -39,7 +39,7 @@ public:
     PendingOpenTube(PendingVoid *offerOperation,
             const QVariantMap &parameters,
             const OutgoingStreamTubeChannelPtr &object);
-    ~PendingOpenTube();
+    ~PendingOpenTube() override;
 
 private Q_SLOTS:
     void onTubeStateChanged(Tp::TubeChannelState state);
@@ -58,7 +58,7 @@ class TP_QT_NO_EXPORT QueuedContactFactory : public QObject
 
 public:
     QueuedContactFactory(ContactManagerPtr contactManager, QObject* parent = 0);
-    ~QueuedContactFactory();
+    ~QueuedContactFactory() override;
 
     QUuid appendNewRequest(const UIntList &handles);
 

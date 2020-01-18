@@ -39,7 +39,7 @@ class TP_QT_EXPORT PendingDBusTubeConnection : public PendingOperation
     Q_DISABLE_COPY(PendingDBusTubeConnection)
 
 public:
-    virtual ~PendingDBusTubeConnection();
+    ~PendingDBusTubeConnection() override;
 
     QString address() const;
 

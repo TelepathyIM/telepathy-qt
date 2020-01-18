@@ -39,7 +39,7 @@ class TP_QT_NO_EXPORT PendingCaptchaAnswer : public PendingOperation
 public:
     PendingCaptchaAnswer(const QDBusPendingCall &call,
             const CaptchaAuthenticationPtr &object);
-    ~PendingCaptchaAnswer();
+    ~PendingCaptchaAnswer() override;
 
 private Q_SLOTS:
     void onCaptchaStatusChanged(Tp::CaptchaStatus status);
@@ -63,7 +63,7 @@ class TP_QT_NO_EXPORT PendingCaptchaCancel : public PendingOperation
 public:
     PendingCaptchaCancel(const QDBusPendingCall &call,
             const CaptchaAuthenticationPtr &object);
-    ~PendingCaptchaCancel();
+    ~PendingCaptchaCancel() override;
 
 private Q_SLOTS:
     void onCancelFinished();

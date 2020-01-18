@@ -45,7 +45,7 @@ class TP_QT_FS_EXPORT PendingChannel : public Tp::PendingOperation
     Q_DISABLE_COPY(PendingChannel)
 
 public:
-    ~PendingChannel();
+    ~PendingChannel() override;
 
     TfChannel *tfChannel() const;
     CallChannelPtr callChannel() const;

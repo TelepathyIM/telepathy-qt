@@ -48,7 +48,7 @@ class TP_QT_NO_EXPORT BaseProtocol::Adaptee : public QObject
 
 public:
     Adaptee(const QDBusConnection &dbusConnection, BaseProtocol *protocol);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QStringList interfaces() const;
     QStringList connectionInterfaces() const;
@@ -77,7 +77,7 @@ class TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseProtocolAddressingInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QStringList addressableVCardFields() const;
     QStringList addressableURISchemes() const;
@@ -106,7 +106,7 @@ class TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseProtocolAvatarsInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QStringList supportedAvatarMIMETypes() const;
     uint minimumAvatarHeight() const;
@@ -128,7 +128,7 @@ class TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseProtocolPresenceInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     SimpleStatusSpecMap statuses() const;
 

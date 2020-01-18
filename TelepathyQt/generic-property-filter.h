@@ -37,11 +37,11 @@ template <class T>
 class GenericPropertyFilter : public Filter<T>
 {
 public:
-    inline virtual ~GenericPropertyFilter() { }
+    inline ~GenericPropertyFilter() override { }
 
-    inline virtual bool isValid() const { return true; }
+    inline bool isValid() const override { return true; }
 
-    inline virtual bool matches(const SharedPtr<T> &t) const
+    inline bool matches(const SharedPtr<T> &t) const override
     {
         for (QVariantMap::const_iterator i = mFilter.constBegin();
                 i != mFilter.constEnd(); ++i) {

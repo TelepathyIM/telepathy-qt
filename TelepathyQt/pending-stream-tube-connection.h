@@ -46,7 +46,7 @@ class TP_QT_EXPORT PendingStreamTubeConnection : public PendingOperation
     Q_DISABLE_COPY(PendingStreamTubeConnection)
 
 public:
-    virtual ~PendingStreamTubeConnection();
+    ~PendingStreamTubeConnection() override;
 
     SocketAddressType addressType() const;
 

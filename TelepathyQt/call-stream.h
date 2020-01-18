@@ -48,7 +48,7 @@ class TP_QT_EXPORT CallStream : public StatefulDBusProxy,
     Q_DISABLE_COPY(CallStream)
 
 public:
-    ~CallStream();
+    ~CallStream() override;
 
     CallContentPtr content() const;
 

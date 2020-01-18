@@ -34,7 +34,7 @@ public:
             const Tp::ContactFactoryConstPtr &contactFactory,
             GType gType, const char *firstPropertyName, ...);
 
-    virtual ~TestConnHelper();
+    ~TestConnHelper() override;
 
     GObject *service() const { return mService; }
     Tp::ConnectionPtr client() const { return mClient; }

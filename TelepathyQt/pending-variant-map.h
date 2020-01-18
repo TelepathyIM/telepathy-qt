@@ -42,7 +42,7 @@ class TP_QT_EXPORT PendingVariantMap : public PendingOperation
 
 public:
     PendingVariantMap(QDBusPendingCall call, const SharedPtr<RefCounted> &object);
-    ~PendingVariantMap();
+    ~PendingVariantMap() override;
 
     QVariantMap result() const;
 

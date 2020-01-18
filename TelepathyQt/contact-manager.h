@@ -53,7 +53,7 @@ class TP_QT_EXPORT ContactManager : public Object
     Q_DISABLE_COPY(ContactManager)
 
 public:
-    virtual ~ContactManager();
+    ~ContactManager() override;
 
     ConnectionPtr connection() const;
 

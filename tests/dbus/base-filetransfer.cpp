@@ -183,7 +183,7 @@ public:
 
         setSelfContact(1, QLatin1String("selfContact"));
     }
-    virtual ~Connection() { }
+    ~Connection() override { }
 
     Tp::BaseChannelPtr receiveFile(const Tp::FileTransferChannelCreationProperties &properties, uint initiatorHandle)
     {

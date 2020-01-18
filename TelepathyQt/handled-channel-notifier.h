@@ -44,7 +44,7 @@ class TP_QT_EXPORT HandledChannelNotifier : public QObject
     Q_DISABLE_COPY(HandledChannelNotifier)
 
 public:
-    ~HandledChannelNotifier();
+    ~HandledChannelNotifier() override;
 
     ChannelPtr channel() const;
 
@@ -53,7 +53,7 @@ Q_SIGNALS:
 
 protected:
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    void connectNotify(const QMetaMethod &signal);
+    void connectNotify(const QMetaMethod &signal) override;
 #else
     void connectNotify(const char *signal);
 #endif

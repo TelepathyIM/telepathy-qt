@@ -55,9 +55,9 @@ struct BaseFunctorCaller : public AbstractFunctorCaller
     BaseFunctorCaller(const Functor &functor, AbstractFunctorCaller::HookType invokeMethodHook)
         : AbstractFunctorCaller(invokeMethodHook),
           functor(functor) {}
-    virtual ~BaseFunctorCaller() {}
+    ~BaseFunctorCaller() override {}
 
-    virtual AbstractFunctorCaller *clone() const { return new T(functor); }
+    AbstractFunctorCaller *clone() const override { return new T(functor); }
 
     Functor functor;
 };

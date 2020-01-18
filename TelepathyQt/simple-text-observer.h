@@ -47,7 +47,7 @@ public:
     static SimpleTextObserverPtr create(const AccountPtr &account,
             const QString &contactIdentifier);
 
-    virtual ~SimpleTextObserver();
+    ~SimpleTextObserver() override;
 
     AccountPtr account() const;
     QString contactIdentifier() const;

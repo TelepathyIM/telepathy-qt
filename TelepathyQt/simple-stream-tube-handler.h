@@ -52,14 +52,14 @@ public:
             bool requested,
             bool monitorConnections,
             bool bypassApproval = false);
-    ~SimpleStreamTubeHandler();
+    ~SimpleStreamTubeHandler() override;
 
     bool monitorsConnections() const
     {
         return mMonitorConnections;
     }
 
-    bool bypassApproval() const
+    bool bypassApproval() const override
     {
         return mBypassApproval;
     }
@@ -70,7 +70,7 @@ public:
             const QList<ChannelPtr> &channels,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
-            const HandlerInfo &handlerInfo);
+            const HandlerInfo &handlerInfo) override;
 
 Q_SIGNALS:
     void invokedForTube(

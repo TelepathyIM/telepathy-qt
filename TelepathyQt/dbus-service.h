@@ -50,7 +50,7 @@ class TP_QT_EXPORT DBusService : public Object
 
 public:
     DBusService(const QDBusConnection &dbusConnection);
-    virtual ~DBusService();
+    ~DBusService() override;
 
     virtual QVariantMap immutableProperties() const = 0;
 
@@ -77,7 +77,7 @@ class TP_QT_EXPORT AbstractDBusServiceInterface : public Object
 
 public:
     AbstractDBusServiceInterface(const QString &interfaceName);
-    virtual ~AbstractDBusServiceInterface();
+    ~AbstractDBusServiceInterface() override;
 
     QString interfaceName() const;
 

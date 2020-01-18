@@ -88,7 +88,7 @@ public:
     {
     }
 
-    virtual ~ChannelRequestAdaptor()
+    ~ChannelRequestAdaptor() override
     {
     }
 
@@ -784,7 +784,7 @@ void TestStreamTubeHandlers::testRegistration()
         CookieGenerator() : serial(0) {}
 
         QVariantMap nextParameters(const AccountPtr &account, const OutgoingStreamTubeChannelPtr &tube,
-                const ChannelRequestHints &hints)
+                const ChannelRequestHints &hints) override
         {
             QVariantMap params;
             params.insert(QLatin1String("cookie-y"),
@@ -1342,7 +1342,7 @@ void TestStreamTubeHandlers::testClientBasicTcp()
             FakeGenerator() : port(0) {}
 
             QPair<QHostAddress, quint16> nextSourceAddress(const AccountPtr &account,
-                    const IncomingStreamTubeChannelPtr &tube) {
+                    const IncomingStreamTubeChannelPtr &tube) override {
                 return qMakePair(QHostAddress(QHostAddress::LocalHost), ++port);
             }
 
@@ -1436,7 +1436,7 @@ void TestStreamTubeHandlers::testClientTcpGeneratorIgnore()
     {
         public:
             QPair<QHostAddress, quint16> nextSourceAddress(const AccountPtr &account,
-                    const IncomingStreamTubeChannelPtr &tube) {
+                    const IncomingStreamTubeChannelPtr &tube) override {
                 return qMakePair(QHostAddress(QHostAddress::LocalHost), quint16(1111));
             }
     } gen;

@@ -43,7 +43,7 @@ public:
     static DBusTubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~DBusTubeChannel();
+    ~DBusTubeChannel() override;
 
     QString serviceName() const;
 

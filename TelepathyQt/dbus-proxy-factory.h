@@ -51,7 +51,7 @@ class TP_QT_EXPORT DBusProxyFactory : public QObject, public RefCounted
     Q_DISABLE_COPY(DBusProxyFactory)
 
 public:
-    virtual ~DBusProxyFactory();
+    ~DBusProxyFactory() override;
 
     const QDBusConnection &dbusConnection() const;
 

@@ -43,7 +43,7 @@ class TP_QT_EXPORT CallContent : public StatefulDBusProxy,
     Q_DISABLE_COPY(CallContent)
 
 public:
-    ~CallContent();
+    ~CallContent() override;
 
     CallChannelPtr channel() const;
 
@@ -89,7 +89,7 @@ class TP_QT_EXPORT PendingCallContent : public PendingOperation
     Q_DISABLE_COPY(PendingCallContent)
 
 public:
-    ~PendingCallContent();
+    ~PendingCallContent() override;
 
     CallContentPtr content() const;
 

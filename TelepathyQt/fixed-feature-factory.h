@@ -46,7 +46,7 @@ class TP_QT_EXPORT FixedFeatureFactory : public DBusProxyFactory
     Q_DISABLE_COPY(FixedFeatureFactory)
 
 public:
-    virtual ~FixedFeatureFactory();
+    ~FixedFeatureFactory() override;
 
     Features features() const;
 
@@ -56,7 +56,7 @@ public:
 protected:
     FixedFeatureFactory(const QDBusConnection &bus);
 
-    virtual Features featuresFor(const DBusProxyPtr &proxy) const;
+    Features featuresFor(const DBusProxyPtr &proxy) const override;
 
 private:
     struct Private;

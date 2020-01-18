@@ -52,7 +52,7 @@ class TP_QT_NO_EXPORT ClientAdaptor : public QDBusAbstractAdaptor
 
 public:
     ClientAdaptor(ClientRegistrar *registrar, const QStringList &interfaces, QObject *parent);
-    virtual ~ClientAdaptor();
+    ~ClientAdaptor() override;
 
     inline const ClientRegistrar *registrar() const
     {
@@ -96,7 +96,7 @@ public:
     ClientObserverAdaptor(ClientRegistrar *registrar,
             AbstractClientObserver *client,
             QObject *parent);
-    virtual ~ClientObserverAdaptor();
+    ~ClientObserverAdaptor() override;
 
     inline const ClientRegistrar *registrar() const
     {
@@ -170,7 +170,7 @@ public:
     ClientApproverAdaptor(ClientRegistrar *registrar,
             AbstractClientApprover *client,
             QObject *parent);
-    virtual ~ClientApproverAdaptor();
+    ~ClientApproverAdaptor() override;
 
     inline const ClientRegistrar *registrar() const
     {
@@ -242,7 +242,7 @@ public:
     ClientHandlerAdaptor(ClientRegistrar *registrar,
             AbstractClientHandler *client,
             QObject *parent);
-    virtual ~ClientHandlerAdaptor();
+    ~ClientHandlerAdaptor() override;
 
     inline const ClientRegistrar *registrar() const
     {
@@ -333,7 +333,7 @@ public:
     ClientHandlerRequestsAdaptor(ClientRegistrar *registrar,
             AbstractClientHandler *client,
             QObject *parent);
-    virtual ~ClientHandlerRequestsAdaptor();
+    ~ClientHandlerRequestsAdaptor() override;
 
     inline const ClientRegistrar *registrar() const
     {

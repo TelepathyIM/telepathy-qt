@@ -77,7 +77,7 @@ public:
             const ContactFactoryConstPtr &contactFactory =
                 ContactFactory::create());
 
-    virtual ~ConnectionManager();
+    ~ConnectionManager() override;
 
     QString name() const;
 

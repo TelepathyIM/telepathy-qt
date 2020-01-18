@@ -44,7 +44,7 @@ class TP_QT_EXPORT PendingCaptchas : public PendingOperation
     Q_DISABLE_COPY(PendingCaptchas)
 
 public:
-    virtual ~PendingCaptchas();
+    ~PendingCaptchas() override;
 
     Captcha captcha() const;
     QList<Captcha> captchaList() const;

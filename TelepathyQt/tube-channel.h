@@ -42,7 +42,7 @@ public:
     static TubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~TubeChannel();
+    ~TubeChannel() override;
 
     TubeChannelState state() const;
 

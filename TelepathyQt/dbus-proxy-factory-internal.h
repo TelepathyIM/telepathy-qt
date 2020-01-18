@@ -43,7 +43,7 @@ public:
     typedef QPair<QString /* serviceName */, QString /* objectPath */> Key;
 
     Cache();
-    ~Cache();
+    ~Cache() override;
 
     DBusProxyPtr get(const Key &key) const;
     void put(const DBusProxyPtr &proxy);

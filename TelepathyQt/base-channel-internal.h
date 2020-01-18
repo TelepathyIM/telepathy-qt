@@ -45,7 +45,7 @@ class TP_QT_NO_EXPORT BaseChannel::Adaptee : public QObject
     Q_PROPERTY(QString initiatorID READ initiatorID)
 public:
     Adaptee(const QDBusConnection &dbusConnection, BaseChannel *cm);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QString channelType() const {
         return mChannel->channelType();
@@ -98,7 +98,7 @@ class TP_QT_NO_EXPORT BaseChannelTextType::Adaptee : public QObject
     Q_OBJECT
 public:
     Adaptee(BaseChannelTextType *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
 public slots:
     void acknowledgePendingMessages(const Tp::UIntList &IDs, const Tp::Service::ChannelTypeTextAdaptor::AcknowledgePendingMessagesContextPtr &context);
@@ -126,7 +126,7 @@ class TP_QT_NO_EXPORT BaseChannelMessagesInterface::Adaptee : public QObject
     Q_PROPERTY(uint deliveryReportingSupport READ deliveryReportingSupport)
 public:
     Adaptee(BaseChannelMessagesInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QStringList supportedContentTypes() {
         return mInterface->supportedContentTypes();
@@ -176,7 +176,7 @@ class TP_QT_NO_EXPORT BaseChannelFileTransferType::Adaptee : public QObject
 
 public:
     Adaptee(BaseChannelFileTransferType *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     uint state() const;
     QString contentType() const;
@@ -218,7 +218,7 @@ class TP_QT_NO_EXPORT BaseChannelRoomListType::Adaptee : public QObject
 
 public:
     Adaptee(BaseChannelRoomListType *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QString server() const;
 
@@ -244,7 +244,7 @@ class TP_QT_NO_EXPORT BaseChannelServerAuthenticationType::Adaptee : public QObj
     Q_PROPERTY(QString authenticationMethod READ authenticationMethod)
 public:
     Adaptee(BaseChannelServerAuthenticationType *interface);
-    ~Adaptee();
+    ~Adaptee() override;
     QString authenticationMethod() const;
 public:
     BaseChannelServerAuthenticationType *mInterface;
@@ -259,7 +259,7 @@ class TP_QT_NO_EXPORT BaseChannelCaptchaAuthenticationInterface::Adaptee : publi
     Q_PROPERTY(QVariantMap captchaErrorDetails READ captchaErrorDetails)
 public:
     Adaptee(BaseChannelCaptchaAuthenticationInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
     bool canRetryCaptcha() const;
     uint captchaStatus() const;
     QString captchaError() const;
@@ -289,7 +289,7 @@ class TP_QT_NO_EXPORT BaseChannelSASLAuthenticationInterface::Adaptee : public Q
 
 public:
     Adaptee(BaseChannelSASLAuthenticationInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QStringList availableMechanisms() const;
     bool hasInitialData() const;
@@ -330,7 +330,7 @@ class TP_QT_NO_EXPORT BaseChannelSecurableInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseChannelSecurableInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     bool encrypted() const;
     bool verified() const;
@@ -346,7 +346,7 @@ class TP_QT_NO_EXPORT BaseChannelChatStateInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseChannelChatStateInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     Tp::ChatStateMap chatStates() const;
 
@@ -374,7 +374,7 @@ class TP_QT_NO_EXPORT BaseChannelGroupInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseChannelGroupInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     uint groupFlags() const;
     Tp::HandleOwnerMap handleOwners() const;
@@ -416,7 +416,7 @@ class TP_QT_NO_EXPORT BaseChannelRoomInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseChannelRoomInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QString roomName() const;
     QString server() const;
@@ -448,7 +448,7 @@ class TP_QT_NO_EXPORT BaseChannelRoomConfigInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseChannelRoomConfigInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     bool anonymous() const;
     bool inviteOnly() const;
@@ -493,7 +493,7 @@ class TP_QT_NO_EXPORT BaseChannelCallType::Adaptee : public QObject
 
 public:
     Adaptee(BaseChannelCallType *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     Tp::ObjectPathList contents() const {
         return mInterface->contents();
@@ -575,7 +575,7 @@ class TP_QT_NO_EXPORT BaseChannelSMSInterface::Adaptee : public QObject
     Q_PROPERTY(bool smsChannel READ smsChannel)
 public:
     Adaptee(BaseChannelSMSInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     bool flash() {
         return mInterface->flash();
@@ -598,7 +598,7 @@ class TP_QT_NO_EXPORT BaseChannelHoldInterface::Adaptee : public QObject
     Q_OBJECT
 public:
     Adaptee(BaseChannelHoldInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
 public slots:
     void getHoldState(const Tp::Service::ChannelInterfaceHoldAdaptor::GetHoldStateContextPtr &context);
@@ -621,7 +621,7 @@ class TP_QT_NO_EXPORT BaseChannelConferenceInterface::Adaptee : public QObject
     Q_PROPERTY(ChannelOriginatorMap originalChannels READ originalChannels)
 public:
     Adaptee(BaseChannelConferenceInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
     Tp::ObjectPathList channels() const {
         return mInterface->channels();
     }
@@ -654,7 +654,7 @@ class TP_QT_NO_EXPORT BaseChannelMergeableConferenceInterface::Adaptee : public 
     Q_OBJECT
 public:
     Adaptee(BaseChannelMergeableConferenceInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
 public slots:
     void merge(const QDBusObjectPath &channel, const Tp::Service::ChannelInterfaceMergeableConferenceAdaptor::MergeContextPtr &context);
@@ -668,7 +668,7 @@ class TP_QT_NO_EXPORT BaseChannelSplittableInterface::Adaptee : public QObject
     Q_OBJECT
 public:
     Adaptee(BaseChannelSplittableInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
 public slots:
     void split(const Tp::Service::ChannelInterfaceSplittableAdaptor::SplitContextPtr &context);

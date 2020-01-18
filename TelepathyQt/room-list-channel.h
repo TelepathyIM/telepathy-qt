@@ -41,7 +41,7 @@ public:
     static RoomListChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~RoomListChannel();
+    ~RoomListChannel() override;
 
 protected:
     RoomListChannel(const ConnectionPtr &connection, const QString &objectPath,

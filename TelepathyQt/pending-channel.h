@@ -47,7 +47,7 @@ class TP_QT_EXPORT PendingChannel : public PendingOperation
     Q_DISABLE_COPY(PendingChannel)
 
 public:
-    ~PendingChannel();
+    ~PendingChannel() override;
 
     ConnectionPtr connection() const;
 

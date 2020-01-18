@@ -48,7 +48,7 @@ public:
     static IncomingStreamTubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~IncomingStreamTubeChannel();
+    ~IncomingStreamTubeChannel() override;
 
     PendingStreamTubeConnection *acceptTubeAsTcpSocket();
     PendingStreamTubeConnection *acceptTubeAsTcpSocket(const QHostAddress &allowedAddress,

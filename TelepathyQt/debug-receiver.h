@@ -46,7 +46,7 @@ public:
 
     static DebugReceiverPtr create(const QString &busName,
             const QDBusConnection &bus = QDBusConnection::sessionBus());
-    virtual ~DebugReceiver();
+    ~DebugReceiver() override;
 
     PendingDebugMessageList *fetchMessages();
     PendingOperation *setMonitoringEnabled(bool enabled);

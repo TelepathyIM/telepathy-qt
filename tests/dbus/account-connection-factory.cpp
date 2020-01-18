@@ -40,7 +40,7 @@ public:
     {
     }
 
-    virtual ~AccountAdaptor()
+    ~AccountAdaptor() override
     {
     }
 

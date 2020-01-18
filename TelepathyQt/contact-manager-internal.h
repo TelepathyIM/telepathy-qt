@@ -43,7 +43,7 @@ class TP_QT_NO_EXPORT ContactManager::Roster : public QObject
 
 public:
     Roster(ContactManager *manager);
-    virtual ~Roster();
+    ~Roster() override;
 
     ContactListState state() const;
 
@@ -341,7 +341,7 @@ class TP_QT_NO_EXPORT ContactManager::Roster::ModifyFinishOp : public PendingOpe
 
 public:
     ModifyFinishOp(const ConnectionPtr &conn);
-    ~ModifyFinishOp() {};
+    ~ModifyFinishOp() override {};
 
     void setError(const QString &errorName, const QString &errorMessage);
     void finish();
@@ -356,7 +356,7 @@ class TP_QT_NO_EXPORT ContactManager::Roster::RemoveGroupOp : public PendingOper
 
 public:
     RemoveGroupOp(const ChannelPtr &channel);
-    ~RemoveGroupOp() {};
+    ~RemoveGroupOp() override {};
 
 private Q_SLOTS:
     void onContactsRemoved(Tp::PendingOperation *);
@@ -369,7 +369,7 @@ class TP_QT_NO_EXPORT ContactManager::PendingRefreshContactInfo : public Pending
 
 public:
     PendingRefreshContactInfo(const ConnectionPtr &conn);
-    ~PendingRefreshContactInfo();
+    ~PendingRefreshContactInfo() override;
 
     void addContact(Contact *contact);
 

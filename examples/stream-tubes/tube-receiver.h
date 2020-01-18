@@ -39,7 +39,7 @@ class TubeReceiver : public QObject
 
 public:
    TubeReceiver(QObject *parent);
-   ~TubeReceiver();
+   ~TubeReceiver() override;
 
 private Q_SLOTS:
     void onTubeAccepted(const QString &listenAddress);

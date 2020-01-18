@@ -49,7 +49,7 @@ class TP_QT_EXPORT AbstractCallContentInterface : public AbstractDBusServiceInte
 
 public:
     AbstractCallContentInterface(const QString &interfaceName);
-    virtual ~AbstractCallContentInterface();
+    ~AbstractCallContentInterface() override;
 
 private:
     friend class BaseCallContent;
@@ -73,8 +73,8 @@ public:
         return BaseCallContentPtr(new BaseCallContent(dbusConnection, channel, name, type, direction));
     }
 
-    virtual ~BaseCallContent();
-    QVariantMap immutableProperties() const;
+    ~BaseCallContent() override;
+    QVariantMap immutableProperties() const override;
     bool registerObject(DBusError *error = NULL);
     virtual QString uniqueName() const;
 
@@ -93,8 +93,8 @@ protected:
                     const Tp::MediaStreamType &type,
                     const Tp::MediaStreamDirection &direction);
 
-    virtual bool registerObject(const QString &busName, const QString &objectPath,
-                                DBusError *error);
+    bool registerObject(const QString &busName, const QString &objectPath,
+                                DBusError *error) override;
     void remove();
 
 private:
@@ -119,7 +119,7 @@ public:
         return SharedPtr<BaseCallMuteInterfaceSubclass>(
                    new BaseCallMuteInterfaceSubclass());
     }
-    virtual ~BaseCallMuteInterface();
+    ~BaseCallMuteInterface() override;
 
     Tp::LocalMuteState localMuteState() const;
     void setMuteState(const Tp::LocalMuteState &state);
@@ -130,7 +130,7 @@ Q_SIGNALS:
     void muteStateChanged(const Tp::LocalMuteState &state);
 private:
     BaseCallMuteInterface();
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -153,7 +153,7 @@ public:
         return SharedPtr<BaseCallContentDTMFInterfaceSubclass>(
                    new BaseCallContentDTMFInterfaceSubclass());
     }
-    virtual ~BaseCallContentDTMFInterface();
+    ~BaseCallContentDTMFInterface() override;
 
     bool currentlySendingTones() const;
     void setCurrentlySendingTones(bool sendingTones);
@@ -172,7 +172,7 @@ Q_SIGNALS:
 
 private:
     BaseCallContentDTMFInterface();
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;

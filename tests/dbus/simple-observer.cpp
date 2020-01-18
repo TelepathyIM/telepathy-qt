@@ -86,7 +86,7 @@ public:
     {
     }
 
-    virtual ~AccountAdaptor()
+    ~AccountAdaptor() override
     {
     }
 
@@ -130,7 +130,7 @@ public:
     {
     }
 
-    ~Dispatcher()
+    ~Dispatcher() override
     {
     }
 };

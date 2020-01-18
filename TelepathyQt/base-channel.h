@@ -51,9 +51,9 @@ public:
                                               channelType, targetHandleType, targetHandle));
     }
 
-    virtual ~BaseChannel();
+    ~BaseChannel() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
     bool registerObject(DBusError *error = NULL);
     virtual QString uniqueName() const;
 
@@ -84,8 +84,8 @@ Q_SIGNALS:
 protected:
     BaseChannel(const QDBusConnection &dbusConnection, BaseConnection *connection,
                 const QString &channelType, uint targetHandleType, uint targetHandle);
-    virtual bool registerObject(const QString &busName, const QString &objectPath,
-                                DBusError *error);
+    bool registerObject(const QString &busName, const QString &objectPath,
+                                DBusError *error) override;
 private:
     class Adaptee;
     friend class Adaptee;
@@ -101,7 +101,7 @@ class TP_QT_EXPORT AbstractChannelInterface : public AbstractDBusServiceInterfac
 
 public:
     AbstractChannelInterface(const QString &interfaceName);
-    virtual ~AbstractChannelInterface();
+    ~AbstractChannelInterface() override;
 
 protected:
     virtual void close();
@@ -131,7 +131,7 @@ public:
                    new BaseChannelTextTypeSubclass(channel));
     }
 
-    virtual ~BaseChannelTextType();
+    ~BaseChannelTextType() override;
 
     typedef Callback1<void, QString> MessageAcknowledgedCallback;
     void setMessageAcknowledgedCallback(const MessageAcknowledgedCallback &cb);
@@ -150,7 +150,7 @@ protected:
     void removePendingMessages(const Tp::UIntList &IDs);
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -181,9 +181,9 @@ public:
         return SharedPtr<BaseChannelMessagesInterfaceSubclass>(
                    new BaseChannelMessagesInterfaceSubclass());
     }
-    virtual ~BaseChannelMessagesInterface();
+    ~BaseChannelMessagesInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     QStringList supportedContentTypes();
     Tp::UIntList messageTypes();
@@ -206,7 +206,7 @@ private:
                                  Tp::UIntList messageTypes,
                                  uint messagePartSupportFlags,
                                  uint deliveryReportingSupport);
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -237,9 +237,9 @@ public:
                 new BaseChannelFileTransferTypeSubclass(request));
     }
 
-    virtual ~BaseChannelFileTransferType();
+    ~BaseChannelFileTransferType() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
     Direction direction() const;
 
     QString contentType() const;
@@ -278,7 +278,7 @@ protected:
 
     void setClientSocket(QIODevice *socket);
 
-    void close(); // Add Q_DECL_OVERRIDE in Qt5
+    void close() override; // Add Q_DECL_OVERRIDE in Qt5
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onSocketConnection();
@@ -289,7 +289,7 @@ private:
     TP_QT_NO_EXPORT void setUri(const QString &uri);
     TP_QT_NO_EXPORT void tryToOpenAndTransfer();
 
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -315,9 +315,9 @@ public:
                 new BaseChannelRoomListTypeSubclass(server));
     }
 
-    virtual ~BaseChannelRoomListType();
+    ~BaseChannelRoomListType() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     QString server() const;
 
@@ -338,7 +338,7 @@ protected:
     BaseChannelRoomListType(const QString &server);
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -361,13 +361,13 @@ public:
         return SharedPtr<BaseChannelServerAuthenticationTypeSubclass>(
                    new BaseChannelServerAuthenticationTypeSubclass(authenticationMethod));
     }
-    virtual ~BaseChannelServerAuthenticationType();
+    ~BaseChannelServerAuthenticationType() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 private Q_SLOTS:
 private:
     BaseChannelServerAuthenticationType(const QString &authenticationMethod);
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -390,9 +390,9 @@ public:
         return SharedPtr<BaseChannelCaptchaAuthenticationInterfaceSubclass>(
                    new BaseChannelCaptchaAuthenticationInterfaceSubclass(canRetryCaptcha));
     }
-    virtual ~BaseChannelCaptchaAuthenticationInterface();
+    ~BaseChannelCaptchaAuthenticationInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     typedef Callback4<void, Tp::CaptchaInfoList&, uint&, QString&, DBusError*> GetCaptchasCallback;
     void setGetCaptchasCallback(const GetCaptchasCallback &cb);
@@ -412,7 +412,7 @@ public:
 private Q_SLOTS:
 private:
     BaseChannelCaptchaAuthenticationInterface(bool canRetryCaptcha);
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -462,9 +462,9 @@ public:
                                                                    maySaveResponse));
     }
 
-    virtual ~BaseChannelSASLAuthenticationInterface();
+    ~BaseChannelSASLAuthenticationInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     QStringList availableMechanisms() const;
     bool hasInitialData() const;
@@ -515,7 +515,7 @@ protected:
                                            bool maySaveResponse);
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -541,9 +541,9 @@ public:
                 new BaseChannelSecurableInterfaceSubclass());
     }
 
-    virtual ~BaseChannelSecurableInterface();
+    ~BaseChannelSecurableInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     bool encrypted() const;
     void setEncrypted(bool encrypted);
@@ -555,7 +555,7 @@ protected:
     BaseChannelSecurableInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -581,7 +581,7 @@ public:
                 new BaseChannelChatStateInterfaceSubclass());
     }
 
-    virtual ~BaseChannelChatStateInterface();
+    ~BaseChannelChatStateInterface() override;
 
     Tp::ChatStateMap chatStates() const;
     void setChatStates(const Tp::ChatStateMap &chatStates);
@@ -596,7 +596,7 @@ protected:
     BaseChannelChatStateInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -622,7 +622,7 @@ public:
                 new BaseChannelGroupInterfaceSubclass());
     }
 
-    virtual ~BaseChannelGroupInterface();
+    ~BaseChannelGroupInterface() override;
 
     Tp::ChannelGroupFlags groupFlags() const;
     void setGroupFlags(const Tp::ChannelGroupFlags &flags);
@@ -655,10 +655,10 @@ public:
 
 protected:
     BaseChannelGroupInterface();
-    void setBaseChannel(BaseChannel *channel);
+    void setBaseChannel(BaseChannel *channel) override;
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -700,9 +700,9 @@ public:
                                                      creationTimestamp));
     }
 
-    virtual ~BaseChannelRoomInterface();
+    ~BaseChannelRoomInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     QString roomName() const;
     QString server() const;
@@ -718,7 +718,7 @@ protected:
                              const QDateTime &creationTimestamp);
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -744,7 +744,7 @@ public:
                 new BaseChannelRoomConfigInterfaceSubclass());
     }
 
-    virtual ~BaseChannelRoomConfigInterface();
+    ~BaseChannelRoomConfigInterface() override;
 
     bool anonymous() const;
     void setAnonymous(bool anonymous);
@@ -796,7 +796,7 @@ protected:
     BaseChannelRoomConfigInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -852,9 +852,9 @@ public:
     typedef Callback2<bool, const QVariantMap&, DBusError*> EnsureChannelCallback;
     EnsureChannelCallback ensureChannel;
 
-    virtual ~BaseChannelCallType();
+    ~BaseChannelCallType() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     Tp::ObjectPathList contents();
     QVariantMap callStateDetails();
@@ -904,7 +904,7 @@ protected:
                         bool mutableContents = false);
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -927,7 +927,7 @@ public:
         return SharedPtr<BaseChannelHoldInterfaceSubclass>(
                    new BaseChannelHoldInterfaceSubclass());
     }
-    virtual ~BaseChannelHoldInterface();
+    ~BaseChannelHoldInterface() override;
 
     Tp::LocalHoldState getHoldState() const;
     Tp::LocalHoldStateReason getHoldReason() const;
@@ -939,7 +939,7 @@ Q_SIGNALS:
     void holdStateChanged(const Tp::LocalHoldState &state, const Tp::LocalHoldStateReason &reason);
 private:
     BaseChannelHoldInterface();
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -962,7 +962,7 @@ public:
         return SharedPtr<BaseChannelMergeableConferenceInterfaceSubclass>(
                    new BaseChannelMergeableConferenceInterfaceSubclass());
     }
-    virtual ~BaseChannelMergeableConferenceInterface();
+    ~BaseChannelMergeableConferenceInterface() override;
 
     void merge(const QDBusObjectPath &channel);
 
@@ -970,7 +970,7 @@ public:
     void setMergeCallback(const MergeCallback &cb);
 private:
     BaseChannelMergeableConferenceInterface();
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -993,7 +993,7 @@ public:
         return SharedPtr<BaseChannelSplittableInterfaceSubclass>(
                    new BaseChannelSplittableInterfaceSubclass());
     }
-    virtual ~BaseChannelSplittableInterface();
+    ~BaseChannelSplittableInterface() override;
 
     void split();
 
@@ -1001,7 +1001,7 @@ public:
     void setSplitCallback(const SplitCallback &cb);
 private:
     BaseChannelSplittableInterface();
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -1032,9 +1032,9 @@ public:
         return SharedPtr<BaseChannelConferenceInterfaceSubclass>(
                    new BaseChannelConferenceInterfaceSubclass(initialChannels, initialInviteeHandles, initialInviteeIDs, invitationMessage, originalChannels));
     }
-    virtual ~BaseChannelConferenceInterface();
+    ~BaseChannelConferenceInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
     Tp::ObjectPathList channels() const;
     Tp::ObjectPathList initialChannels() const;
     Tp::UIntList initialInviteeHandles() const;
@@ -1047,7 +1047,7 @@ public:
 
 private:
     BaseChannelConferenceInterface(Tp::ObjectPathList initialChannels, Tp::UIntList initialInviteeHandles, QStringList initialInviteeIDs, QString invitationMessage, ChannelOriginatorMap originalChannels);
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -1070,9 +1070,9 @@ public:
         return SharedPtr<BaseChannelSMSInterfaceSubclass>(
                    new BaseChannelSMSInterfaceSubclass(flash, smsChannel));
     }
-    virtual ~BaseChannelSMSInterface();
+    ~BaseChannelSMSInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     typedef Callback2<void, const Tp::MessagePartList &, DBusError*> GetSMSLengthCallback;
     void setGetSMSLengthCallback(const GetSMSLengthCallback &cb);
@@ -1085,7 +1085,7 @@ Q_SIGNALS:
 
 private:
     BaseChannelSMSInterface(bool flash, bool smsChannel);
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;

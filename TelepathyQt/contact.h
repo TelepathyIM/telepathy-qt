@@ -92,7 +92,7 @@ public:
         QSharedDataPointer<Private> mPriv;
     };
 
-    ~Contact();
+    ~Contact() override;
 
     ContactManagerPtr manager() const;
 

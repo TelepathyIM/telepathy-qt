@@ -45,11 +45,11 @@ public:
                     rccSpecs));
     }
 
-    inline virtual ~GenericCapabilityFilter() { }
+    inline ~GenericCapabilityFilter() override { }
 
-    inline virtual bool isValid() const { return true; }
+    inline bool isValid() const override { return true; }
 
-    inline virtual bool matches(const SharedPtr<T> &t) const
+    inline bool matches(const SharedPtr<T> &t) const override
     {
         bool supportedRcc;
         RequestableChannelClassSpecList objectRccSpecs = t->capabilities().allClassSpecs();

@@ -49,7 +49,7 @@ class TP_QT_EXPORT PendingContacts : public PendingOperation
     Q_DISABLE_COPY(PendingContacts);
 
 public:
-    ~PendingContacts();
+    ~PendingContacts() override;
 
     ContactManagerPtr manager() const;
     Features features() const;

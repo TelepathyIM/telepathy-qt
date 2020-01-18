@@ -49,7 +49,7 @@ class TP_QT_EXPORT AbstractClient : public RefCounted
 
 public:
     AbstractClient();
-    virtual ~AbstractClient();
+    ~AbstractClient() override;
 
     bool isRegistered() const;
 
@@ -86,7 +86,7 @@ public:
         QSharedDataPointer<Private> mPriv;
     };
 
-    virtual ~AbstractClientObserver();
+    ~AbstractClientObserver() override;
 
     ChannelClassSpecList observerFilter() const;
 
@@ -114,7 +114,7 @@ class TP_QT_EXPORT AbstractClientApprover : public virtual AbstractClient
     Q_DISABLE_COPY(AbstractClientApprover)
 
 public:
-    virtual ~AbstractClientApprover();
+    ~AbstractClientApprover() override;
 
     ChannelClassSpecList approverFilter() const;
 
@@ -286,7 +286,7 @@ public:
         QSharedDataPointer<Private> mPriv;
     };
 
-    virtual ~AbstractClientHandler();
+    ~AbstractClientHandler() override;
 
     ChannelClassSpecList handlerFilter() const;
 

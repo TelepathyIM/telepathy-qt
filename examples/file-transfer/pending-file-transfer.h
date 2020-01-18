@@ -36,7 +36,7 @@ class PendingFileTransfer : public PendingOperation
 public:
     PendingFileTransfer(const FileTransferChannelPtr &chan,
             const SharedPtr<RefCounted> &object);
-    ~PendingFileTransfer();
+    ~PendingFileTransfer() override;
 
     FileTransferChannelPtr channel() const { return mChannel; }
 

@@ -32,7 +32,7 @@ class Protocol : public Tp::BaseProtocol
 
 public:
     Protocol(const QDBusConnection &dbusConnection, const QString &name);
-    virtual ~Protocol();
+    ~Protocol() override;
 
 private:
     Tp::BaseConnectionPtr createConnection(const QVariantMap &parameters, Tp::DBusError *error);

@@ -48,7 +48,7 @@ class TP_QT_EXPORT ContactFactory : public RefCounted
 public:
     static ContactFactoryPtr create(const Features &features = Features());
 
-    virtual ~ContactFactory();
+    ~ContactFactory() override;
 
     Features features() const;
 

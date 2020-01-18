@@ -37,7 +37,7 @@ class TP_QT_NO_EXPORT RequestTemporaryHandler : public QObject, public AbstractC
 public:
     static SharedPtr<RequestTemporaryHandler> create(const AccountPtr &account);
 
-    ~RequestTemporaryHandler();
+    ~RequestTemporaryHandler() override;
 
     AccountPtr account() const { return mAccount; }
     ChannelPtr channel() const { return ChannelPtr(mChannel); }
@@ -50,7 +50,7 @@ public:
      * first. Though if the CD isn't confused it shouldn't really matter - our filter
      * is empty anyway.
      */
-    bool bypassApproval() const { return false; }
+    bool bypassApproval() const override { return false; }
 
     void handleChannels(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
@@ -58,7 +58,7 @@ public:
             const QList<ChannelPtr> &channels,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
-            const HandlerInfo &handlerInfo);
+            const HandlerInfo &handlerInfo) override;
 
     void setQueueChannelReceived(bool queue);
 

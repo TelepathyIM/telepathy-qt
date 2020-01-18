@@ -39,13 +39,13 @@ class TP_QT_EXPORT IODevice : public QIODevice
     Q_OBJECT
 public:
     explicit IODevice(QObject *parent = 0);
-    ~IODevice();
-    bool isSequential() const;
-    qint64 bytesAvailable() const;
+    ~IODevice() override;
+    bool isSequential() const override;
+    qint64 bytesAvailable() const override;
 
 protected:
-    qint64 readData(char *data, qint64 maxSize);
-    qint64 writeData(const char *data, qint64 maxSize);
+    qint64 readData(char *data, qint64 maxSize) override;
+    qint64 writeData(const char *data, qint64 maxSize) override;
 
 private:
     struct Private;

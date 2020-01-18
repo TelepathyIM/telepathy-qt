@@ -45,7 +45,7 @@ public:
     static OutgoingFileTransferChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~OutgoingFileTransferChannel();
+    ~OutgoingFileTransferChannel() override;
 
     PendingOperation *provideFile(QIODevice *input);
 
@@ -65,8 +65,8 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void doTransfer();
 
 private:
-    TP_QT_NO_EXPORT void connectToHost();
-    TP_QT_NO_EXPORT void setFinished();
+    TP_QT_NO_EXPORT void connectToHost() override;
+    TP_QT_NO_EXPORT void setFinished() override;
 
     struct Private;
     friend struct Private;

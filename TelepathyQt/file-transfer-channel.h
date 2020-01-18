@@ -43,7 +43,7 @@ public:
     static FileTransferChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~FileTransferChannel();
+    ~FileTransferChannel() override;
 
     FileTransferState state() const;
     FileTransferStateChangeReason stateReason() const;

@@ -97,7 +97,7 @@ class TP_QT_NO_EXPORT ConnectionManager::Private::PendingNames : public PendingS
 
 public:
     PendingNames(const QDBusConnection &bus);
-    ~PendingNames() {};
+    ~PendingNames() override {};
 
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *);
@@ -123,7 +123,7 @@ public:
     ProtocolWrapper(const ConnectionManagerPtr &cm,
             const QString &objectPath,
             const QString &name, const QVariantMap &props);
-    ~ProtocolWrapper();
+    ~ProtocolWrapper() override;
 
     ProtocolInfo info() const { return mInfo; }
 

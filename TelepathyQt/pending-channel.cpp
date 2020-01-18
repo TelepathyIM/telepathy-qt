@@ -70,7 +70,7 @@ public:
         return AccountFactoryPtr(new FakeAccountFactory(account));
     }
 
-    ~FakeAccountFactory() { }
+    ~FakeAccountFactory() override { }
 
     AccountPtr account() const { return mAccount; }
 
@@ -78,7 +78,7 @@ protected:
     AccountPtr construct(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connFactory,
             const ChannelFactoryConstPtr &chanFactory,
-            const ContactFactoryConstPtr &contactFactory) const
+            const ContactFactoryConstPtr &contactFactory) const override
     {
         if (mAccount->objectPath() != objectPath) {
             warning() << "Account received by the fake factory is different from original account";

@@ -36,7 +36,7 @@ public:
     TubeWrapper(const AccountPtr &acc, const OutgoingStreamTubeChannelPtr &tube,
             const QHostAddress &exportedAddr, quint16 exportedPort, const QVariantMap &params,
             StreamTubeServer *parent);
-    ~TubeWrapper() { }
+    ~TubeWrapper() override { }
 
     AccountPtr mAcc;
     OutgoingStreamTubeChannelPtr mTube;

@@ -61,7 +61,7 @@ public:
     };
     Q_DECLARE_FLAGS(ChallengeTypes, ChallengeType)
 
-    virtual ~CaptchaAuthentication();
+    ~CaptchaAuthentication() override;
 
     ChannelPtr channel() const;
 

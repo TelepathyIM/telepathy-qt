@@ -83,7 +83,7 @@ public:
         return SharedPtr<FakeAccountFactory>(new FakeAccountFactory(bus));
     }
 
-    ~FakeAccountFactory() { }
+    ~FakeAccountFactory() override { }
 
 private:
     friend class Observer;
@@ -96,7 +96,7 @@ private:
     AccountPtr construct(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connFactory,
             const ChannelFactoryConstPtr &chanFactory,
-            const ContactFactoryConstPtr &contactFactory) const
+            const ContactFactoryConstPtr &contactFactory) const override
     {
         if (mAccounts.contains(objectPath)) {
             return mAccounts.value(objectPath);
@@ -142,7 +142,7 @@ public:
              const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
              const ChannelClassSpecList &channelFilter,
              const QString &observerName);
-    ~Observer();
+    ~Observer() override;
 
     WeakPtr<ClientRegistrar> clientRegistrar() const { return mCr; }
     SharedPtr<FakeAccountFactory> fakeAccountFactory() const { return mFakeAccountFactory; }
@@ -171,7 +171,7 @@ public:
             const QList<ChannelPtr> &channels,
             const ChannelDispatchOperationPtr &dispatchOperation,
             const QList<ChannelRequestPtr> &requestsSatisfied,
-            const ObserverInfo &observerInfo);
+            const ObserverInfo &observerInfo) override;
 
 Q_SIGNALS:
     void newChannels(const Tp::AccountPtr &channelsAccount, const QList<Tp::ChannelPtr> &channels);
@@ -205,7 +205,7 @@ class TP_QT_NO_EXPORT SimpleObserver::Private::ChannelWrapper :
 public:
     ChannelWrapper(const AccountPtr &channelAccount, const ChannelPtr &channel,
             const Features &extraChannelFeatures, QObject *parent);
-    ~ChannelWrapper() { }
+    ~ChannelWrapper() override { }
 
     AccountPtr channelAccount() const { return mChannelAccount; }
     ChannelPtr channel() const { return mChannel; }

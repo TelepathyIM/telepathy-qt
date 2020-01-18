@@ -51,7 +51,7 @@ public:
 
     static ProfileManagerPtr create(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
-    ~ProfileManager();
+    ~ProfileManager() override;
 
     QList<ProfilePtr> profiles() const;
     QList<ProfilePtr> profilesForCM(const QString &cmName) const;

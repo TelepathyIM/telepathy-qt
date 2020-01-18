@@ -41,7 +41,7 @@ public:
     {
     }
 
-    ~PendingChannelRequestCancelOperation()
+    ~PendingChannelRequestCancelOperation() override
     {
     }
 

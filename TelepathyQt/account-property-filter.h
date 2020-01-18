@@ -42,9 +42,9 @@ public:
         return AccountPropertyFilterPtr(new AccountPropertyFilter);
     }
 
-    ~AccountPropertyFilter();
+    ~AccountPropertyFilter() override;
 
-    bool isValid() const;
+    bool isValid() const override;
 
 private:
     AccountPropertyFilter();

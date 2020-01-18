@@ -104,12 +104,12 @@ public:
     XmlHandler(const QString &serviceName, bool allowNonIMType, Profile::Private::Data *outputData);
 
     bool startElement(const QString &namespaceURI, const QString &localName,
-            const QString &qName, const QXmlAttributes &attributes);
+            const QString &qName, const QXmlAttributes &attributes) override;
     bool endElement(const QString &namespaceURI, const QString &localName,
-            const QString &qName);
-    bool characters(const QString &str);
-    bool fatalError(const QXmlParseException &exception);
-    QString errorString() const;
+            const QString &qName) override;
+    bool characters(const QString &str) override;
+    bool fatalError(const QXmlParseException &exception) override;
+    QString errorString() const override;
 
 private:
     bool attributeValueAsBoolean(const QXmlAttributes &attributes,

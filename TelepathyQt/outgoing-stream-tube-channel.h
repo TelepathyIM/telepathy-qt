@@ -47,7 +47,7 @@ public:
     static OutgoingStreamTubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~OutgoingStreamTubeChannel();
+    ~OutgoingStreamTubeChannel() override;
 
     PendingOperation *offerTcpSocket(const QHostAddress &address, quint16 port,
             const QVariantMap &parameters = QVariantMap());

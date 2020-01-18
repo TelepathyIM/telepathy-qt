@@ -42,7 +42,7 @@ class TP_QT_EXPORT PendingStringList : public PendingOperation
 public:
     PendingStringList(const SharedPtr<RefCounted> &object);
     PendingStringList(QDBusPendingCall call, const SharedPtr<RefCounted> &object);
-    ~PendingStringList();
+    ~PendingStringList() override;
 
     QStringList result() const;
 

@@ -23,7 +23,7 @@ class TubeAdaptor : public QDBusAbstractAdaptor
 
 public:
     TubeAdaptor(QObject *parent) : QDBusAbstractAdaptor(parent) {}
-    ~TubeAdaptor() {}
+    ~TubeAdaptor() override {}
 
 public: // Properties
     inline QVariantMap Parameters() const

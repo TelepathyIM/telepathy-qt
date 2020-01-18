@@ -43,7 +43,7 @@ class TP_QT_EXPORT PendingContactAttributes : public PendingOperation
     Q_DISABLE_COPY(PendingContactAttributes)
 
 public:
-    ~PendingContactAttributes();
+    ~PendingContactAttributes() override;
 
     ConnectionPtr connection() const;
 

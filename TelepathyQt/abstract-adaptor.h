@@ -43,7 +43,7 @@ class TP_QT_EXPORT AbstractAdaptor : public QDBusAbstractAdaptor
 
 public:
     AbstractAdaptor(const QDBusConnection &connection, QObject *adaptee, QObject *parent);
-    ~AbstractAdaptor();
+    ~AbstractAdaptor() override;
 
     QDBusConnection dbusConnection() const;
 

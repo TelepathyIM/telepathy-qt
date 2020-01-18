@@ -47,7 +47,7 @@ class TP_QT_EXPORT DBusProxy : public Object, public ReadyObject
 public:
     DBusProxy(const QDBusConnection &dbusConnection, const QString &busName,
             const QString &objectPath, const Feature &featureCore);
-    virtual ~DBusProxy();
+    ~DBusProxy() override;
 
     QDBusConnection dbusConnection() const;
     QString busName() const;
@@ -85,7 +85,7 @@ class TP_QT_EXPORT StatelessDBusProxy : public DBusProxy
 public:
     StatelessDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, const Feature &featureCore);
-    virtual ~StatelessDBusProxy();
+    ~StatelessDBusProxy() override;
 
 private:
     struct Private;
@@ -101,7 +101,7 @@ class TP_QT_EXPORT StatefulDBusProxy : public DBusProxy
 public:
     StatefulDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, const Feature &featureCore);
-    virtual ~StatefulDBusProxy();
+    ~StatefulDBusProxy() override;
 
     static QString uniqueNameFrom(const QDBusConnection &bus, const QString &wellKnownOrUnique);
     static QString uniqueNameFrom(const QDBusConnection &bus, const QString &wellKnownOrUnique,

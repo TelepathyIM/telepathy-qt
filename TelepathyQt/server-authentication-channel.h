@@ -43,7 +43,7 @@ public:
     static ServerAuthenticationChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~ServerAuthenticationChannel();
+    ~ServerAuthenticationChannel() override;
 
     CaptchaAuthenticationPtr captchaAuthentication() const;
 

@@ -45,7 +45,7 @@ class TubeInitiator : public QObject
 
 public:
    TubeInitiator(const QString &accountName, const QString &receiver, QObject *parent);
-   ~TubeInitiator();
+   ~TubeInitiator() override;
 
 private Q_SLOTS:
     void onAccountReady(Tp::PendingOperation *op);

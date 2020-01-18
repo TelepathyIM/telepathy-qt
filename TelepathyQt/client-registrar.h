@@ -63,7 +63,7 @@ public:
             const ContactFactoryConstPtr &contactFactory);
     static ClientRegistrarPtr create(const AccountManagerPtr &accountManager);
 
-    ~ClientRegistrar();
+    ~ClientRegistrar() override;
 
     QDBusConnection dbusConnection() const;
 

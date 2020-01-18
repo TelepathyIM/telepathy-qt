@@ -44,7 +44,7 @@ class TP_QT_EXPORT PendingSendMessage : public PendingOperation
     Q_DISABLE_COPY(PendingSendMessage)
 
 public:
-    ~PendingSendMessage();
+    ~PendingSendMessage() override;
 
     TextChannelPtr channel() const;
 

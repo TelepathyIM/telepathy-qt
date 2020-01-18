@@ -42,7 +42,7 @@ class TP_QT_EXPORT PendingContactInfo : public PendingOperation
     Q_DISABLE_COPY(PendingContactInfo);
 
 public:
-    ~PendingContactInfo();
+    ~PendingContactInfo() override;
 
     ContactPtr contact() const;
 

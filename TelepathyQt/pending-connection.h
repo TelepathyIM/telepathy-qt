@@ -46,7 +46,7 @@ class TP_QT_EXPORT PendingConnection : public PendingOperation
     Q_DISABLE_COPY(PendingConnection);
 
 public:
-    ~PendingConnection();
+    ~PendingConnection() override;
 
     ConnectionManagerPtr manager() const;
 

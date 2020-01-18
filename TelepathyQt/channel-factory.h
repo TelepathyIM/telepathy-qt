@@ -52,7 +52,7 @@ public:
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
     struct TP_QT_EXPORT Constructor : public RefCounted
     {
-        virtual ~Constructor() {}
+        ~Constructor() override {}
 
         virtual ChannelPtr construct(const ConnectionPtr &conn, const QString &objectPath,
                 const QVariantMap &immutableProperties) const = 0;
@@ -63,7 +63,7 @@ public:
 
     static ChannelFactoryPtr create(const QDBusConnection &bus);
 
-    virtual ~ChannelFactory();
+    ~ChannelFactory() override;
 
     Features featuresForTextChats(const QVariantMap &additionalProps = QVariantMap()) const;
     void addFeaturesForTextChats(const Features &features,
@@ -374,19 +374,19 @@ protected:
             return ConstructorPtr(new SubclassCtor<Subclass>());
         }
 
-        virtual ~SubclassCtor() {}
+        ~SubclassCtor() override {}
 
         ChannelPtr construct(const ConnectionPtr &conn, const QString &objectPath,
-                const QVariantMap &immutableProperties) const
+                const QVariantMap &immutableProperties) const override
         {
             return Subclass::create(conn, objectPath, immutableProperties);
         }
     };
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-    virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
+    QString finalBusNameFrom(const QString &uniqueOrWellKnown) const override;
     // Nothing we'd like to prepare()
-    virtual Features featuresFor(const DBusProxyPtr &proxy) const;
+    Features featuresFor(const DBusProxyPtr &proxy) const override;
 
 private:
     struct Private;

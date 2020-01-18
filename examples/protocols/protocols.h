@@ -43,7 +43,7 @@ class Protocols : public QObject
 
 public:
    Protocols();
-   ~Protocols();
+   ~Protocols() override;
 
 private Q_SLOTS:
     void onListNamesFinished(Tp::PendingOperation *op);

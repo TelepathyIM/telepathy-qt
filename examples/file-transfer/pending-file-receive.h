@@ -37,7 +37,7 @@ class PendingFileReceive : public PendingFileTransfer
 
 public:
     PendingFileReceive(const IncomingFileTransferChannelPtr &chan, const SharedPtr<RefCounted> &object);
-    ~PendingFileReceive();
+    ~PendingFileReceive() override;
 
 private Q_SLOTS:
     void onTransferStateChanged(Tp::FileTransferState state,

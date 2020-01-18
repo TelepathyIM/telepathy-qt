@@ -52,7 +52,7 @@ public:
     static TextChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~TextChannel();
+    ~TextChannel() override;
 
     bool hasMessagesInterface() const;
     bool hasChatStateInterface() const;

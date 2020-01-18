@@ -46,7 +46,7 @@ class TP_QT_EXPORT PendingAccount : public PendingOperation
     Q_DISABLE_COPY(PendingAccount);
 
 public:
-    ~PendingAccount();
+    ~PendingAccount() override;
 
     AccountManagerPtr manager() const;
 

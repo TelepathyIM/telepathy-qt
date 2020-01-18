@@ -36,7 +36,7 @@ class TP_QT_NO_EXPORT ChannelDispatchOperation::PendingClaim : public PendingOpe
 public:
     PendingClaim(const ChannelDispatchOperationPtr &op,
             const AbstractClientHandlerPtr &handler = AbstractClientHandlerPtr());
-    ~PendingClaim();
+    ~PendingClaim() override;
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onClaimFinished(Tp::PendingOperation *op);

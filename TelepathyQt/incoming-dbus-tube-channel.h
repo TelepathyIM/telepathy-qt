@@ -41,7 +41,7 @@ public:
     static IncomingDBusTubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~IncomingDBusTubeChannel();
+    ~IncomingDBusTubeChannel() override;
 
     PendingDBusTubeConnection *acceptTube(bool allowOtherUsers = false);
 

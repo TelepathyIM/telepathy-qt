@@ -52,7 +52,7 @@ public:
     static ConnectionFactoryPtr create(const QDBusConnection &bus,
             const Features &features = Features());
 
-    virtual ~ConnectionFactory();
+    ~ConnectionFactory() override;
 
     PendingReady *proxy(const QString &busName, const QString &objectPath,
             const ChannelFactoryConstPtr &chanFactory,
@@ -64,7 +64,7 @@ protected:
     virtual ConnectionPtr construct(const QString &busName, const QString &objectPath,
             const ChannelFactoryConstPtr &chanFactory,
             const ContactFactoryConstPtr &contactFactory) const;
-    virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
+    QString finalBusNameFrom(const QString &uniqueOrWellKnown) const override;
     // Nothing we'd like to prepare()
     // Fixed features
 

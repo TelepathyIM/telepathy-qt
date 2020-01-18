@@ -71,11 +71,11 @@ public:
         return SharedPtr<BaseProtocolSubclass>(new BaseProtocolSubclass(dbusConnection, name));
     }
 
-    virtual ~BaseProtocol();
+    ~BaseProtocol() override;
 
     QString name() const;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     // Proto
     QStringList connectionInterfaces() const;
@@ -118,8 +118,8 @@ public:
 protected:
     BaseProtocol(const QDBusConnection &dbusConnection, const QString &name);
 
-    virtual bool registerObject(const QString &busName, const QString &objectPath,
-            DBusError *error);
+    bool registerObject(const QString &busName, const QString &objectPath,
+            DBusError *error) override;
 
 private:
     friend class BaseConnectionManager;
@@ -137,7 +137,7 @@ class TP_QT_EXPORT AbstractProtocolInterface : public AbstractDBusServiceInterfa
 
 public:
     AbstractProtocolInterface(const QString &interfaceName);
-    virtual ~AbstractProtocolInterface();
+    ~AbstractProtocolInterface() override;
 
 private:
     friend class BaseProtocol;
@@ -164,7 +164,7 @@ public:
                 new BaseProtocolAddressingInterfaceSubclass());
     }
 
-    virtual ~BaseProtocolAddressingInterface();
+    ~BaseProtocolAddressingInterface() override;
 
     QStringList addressableVCardFields() const;
     void setAddressableVCardFields(const QStringList &vcardFields);
@@ -184,7 +184,7 @@ protected:
     BaseProtocolAddressingInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -210,9 +210,9 @@ public:
                 new BaseProtocolAvatarsInterfaceSubclass());
     }
 
-    virtual ~BaseProtocolAvatarsInterface();
+    ~BaseProtocolAvatarsInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     AvatarSpec avatarDetails() const;
     void setAvatarDetails(const AvatarSpec &spec);
@@ -221,7 +221,7 @@ protected:
     BaseProtocolAvatarsInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -247,9 +247,9 @@ public:
                 new BaseProtocolPresenceInterfaceSubclass());
     }
 
-    virtual ~BaseProtocolPresenceInterface();
+    ~BaseProtocolPresenceInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     PresenceSpecList statuses() const;
     void setStatuses(const PresenceSpecList &statuses);
@@ -258,7 +258,7 @@ protected:
     BaseProtocolPresenceInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;

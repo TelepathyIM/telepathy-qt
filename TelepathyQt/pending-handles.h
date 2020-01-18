@@ -49,7 +49,7 @@ class TP_QT_EXPORT PendingHandles : public PendingOperation
     Q_DISABLE_COPY(PendingHandles)
 
 public:
-    ~PendingHandles();
+    ~PendingHandles() override;
 
     ConnectionPtr connection() const;
 

@@ -42,7 +42,7 @@ class TP_QT_NO_EXPORT BaseConnectionManager::Adaptee : public QObject
 
 public:
     Adaptee(const QDBusConnection &dbusConnection, BaseConnectionManager *cm);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QStringList interfaces() const;
     Tp::ProtocolPropertiesMap protocols() const;

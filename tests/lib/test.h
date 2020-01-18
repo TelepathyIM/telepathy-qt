@@ -21,7 +21,7 @@ public:
 
     Test(QObject *parent = 0);
 
-    virtual ~Test();
+    ~Test() override;
 
     QEventLoop *mLoop;
     void processDBusQueue(Tp::DBusProxy *proxy);

@@ -127,7 +127,7 @@ public:
             bool monitorConnections = false,
             bool bypassApproval = false);
 
-    virtual ~StreamTubeClient();
+    ~StreamTubeClient() override;
 
     ClientRegistrarPtr registrar() const;
     QString clientName() const;

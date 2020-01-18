@@ -42,7 +42,7 @@ class TP_QT_EXPORT Object : public QObject, public RefCounted
     Q_DISABLE_COPY(Object)
 
 public:
-    virtual ~Object();
+    ~Object() override;
 
 Q_SIGNALS:
     void propertyChanged(const QString &propertyName);

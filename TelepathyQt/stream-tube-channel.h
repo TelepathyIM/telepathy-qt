@@ -45,7 +45,7 @@ public:
     static StreamTubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~StreamTubeChannel();
+    ~StreamTubeChannel() override;
 
     QString service() const;
 

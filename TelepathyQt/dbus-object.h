@@ -43,7 +43,7 @@ class TP_QT_EXPORT DBusObject : public QObject
 
 public:
     DBusObject(const QDBusConnection &dbusConnection, QObject *parent = 0);
-    virtual ~DBusObject();
+    ~DBusObject() override;
 
     QString objectPath() const;
     QDBusConnection dbusConnection() const;

@@ -59,7 +59,7 @@ public:
     Q_ENUMS(Columns)
 
     AccountItem(Tp::AccountPtr acc, QTableWidget *table, int row, QObject *parent = 0);
-    virtual ~AccountItem();
+    ~AccountItem() override;
 
     int row() const { return mRow; }
 

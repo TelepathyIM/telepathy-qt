@@ -36,7 +36,7 @@ class FileReceiver : public QObject
 
 public:
     FileReceiver(QObject *parent);
-    ~FileReceiver();
+    ~FileReceiver() override;
 
 private:
     ClientRegistrarPtr mCR;

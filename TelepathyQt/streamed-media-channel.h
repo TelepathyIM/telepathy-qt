@@ -46,7 +46,7 @@ class TP_QT_EXPORT_DEPRECATED PendingStreamedMediaStreams : public PendingOperat
     Q_DISABLE_COPY(PendingStreamedMediaStreams)
 
 public:
-    ~PendingStreamedMediaStreams();
+    ~PendingStreamedMediaStreams() override;
 
     StreamedMediaChannelPtr channel() const;
 
@@ -82,7 +82,7 @@ public:
         SendingStateSending = 2
     };
 
-    ~StreamedMediaStream();
+    ~StreamedMediaStream() override;
 
     StreamedMediaChannelPtr channel() const;
 
@@ -156,7 +156,7 @@ public:
     static StreamedMediaChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~StreamedMediaChannel();
+    ~StreamedMediaChannel() override;
 
     bool awaitingLocalAnswer() const;
     bool awaitingRemoteAnswer() const;

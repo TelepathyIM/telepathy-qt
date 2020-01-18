@@ -72,7 +72,7 @@ private:
     {
     }
 
-    void onFinished()
+    void onFinished() override
     {
         if (mFinishedCb) {
             mFinishedCb(MethodInvocationContextPtr<>(this), mChannels, mFinishedCbData);

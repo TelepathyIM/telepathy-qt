@@ -119,7 +119,7 @@ public:
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory =
                 ContactFactory::create());
-    virtual ~Account();
+    ~Account() override;
 
     ConnectionFactoryConstPtr connectionFactory() const;
     ChannelFactoryConstPtr channelFactory() const;

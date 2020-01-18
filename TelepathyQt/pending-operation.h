@@ -48,7 +48,7 @@ class TP_QT_EXPORT PendingOperation : public QObject
     Q_DISABLE_COPY(PendingOperation)
 
 public:
-    virtual ~PendingOperation();
+    ~PendingOperation() override;
 
     bool isFinished() const;
 

@@ -57,7 +57,7 @@ public:
             const QString &contactIdentifier,
             CallDirection direction = CallDirectionBoth);
 
-    virtual ~SimpleCallObserver();
+    ~SimpleCallObserver() override;
 
     AccountPtr account() const;
     QString contactIdentifier() const;

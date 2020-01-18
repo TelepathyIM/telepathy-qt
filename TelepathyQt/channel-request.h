@@ -68,7 +68,7 @@ public:
     static ChannelRequestPtr create(const AccountPtr &account,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~ChannelRequest();
+    ~ChannelRequest() override;
 
     AccountPtr account() const;
     QDateTime userActionTime() const;

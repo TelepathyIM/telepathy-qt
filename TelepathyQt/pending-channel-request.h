@@ -49,7 +49,7 @@ class TP_QT_EXPORT PendingChannelRequest : public PendingOperation
     Q_DISABLE_COPY(PendingChannelRequest)
 
 public:
-    ~PendingChannelRequest();
+    ~PendingChannelRequest() override;
 
     AccountPtr account() const;
 

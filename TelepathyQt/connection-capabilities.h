@@ -39,7 +39,7 @@ class TP_QT_EXPORT ConnectionCapabilities : public CapabilitiesBase
 {
 public:
     ConnectionCapabilities();
-    virtual ~ConnectionCapabilities();
+    ~ConnectionCapabilities() override;
 
     bool textChatrooms() const;
 

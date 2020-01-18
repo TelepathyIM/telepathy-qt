@@ -55,7 +55,7 @@ public:
             const QList<ChannelClassFeatures> &extraChannelFeatures =
                 QList<ChannelClassFeatures>());
 
-    virtual ~SimpleObserver();
+    ~SimpleObserver() override;
 
     AccountPtr account() const;
     ChannelClassSpecList channelFilter() const;

@@ -68,11 +68,11 @@ public:
                     dbusConnection, name));
     }
 
-    virtual ~BaseConnectionManager();
+    ~BaseConnectionManager() override;
 
     QString name() const;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     QList<BaseProtocolPtr> protocols() const;
     BaseProtocolPtr protocol(const QString &protocolName) const;
@@ -89,8 +89,8 @@ Q_SIGNALS:
 protected:
     BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &name);
 
-    virtual bool registerObject(const QString &busName, const QString &objectPath,
-            DBusError *error);
+    bool registerObject(const QString &busName, const QString &objectPath,
+            DBusError *error) override;
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void removeConnection();

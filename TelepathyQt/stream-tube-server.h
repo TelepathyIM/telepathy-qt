@@ -154,7 +154,7 @@ public:
             const QString &clientName = QString(),
             bool monitorConnections = false);
 
-    virtual ~StreamTubeServer();
+    ~StreamTubeServer() override;
 
     ClientRegistrarPtr registrar() const;
     QString clientName() const;

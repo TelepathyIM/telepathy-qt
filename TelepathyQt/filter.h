@@ -39,7 +39,7 @@ class Filter : public RefCounted
     Q_DISABLE_COPY(Filter)
 
 public:
-    virtual ~Filter() {}
+    ~Filter() override {}
 
     virtual bool isValid() const { return false; }
 

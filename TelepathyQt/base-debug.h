@@ -57,7 +57,7 @@ public Q_SLOTS:
     void newDebugMessage(const QString &domain, DebugLevel level, const QString &message);
     void newDebugMessage(double time, const QString &domain, DebugLevel level, const QString &message);
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     bool registerObject(const QString &busName, DBusError *error = NULL);
 

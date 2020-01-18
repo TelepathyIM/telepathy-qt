@@ -51,7 +51,7 @@ public:
             const AccountFilterConstPtr &filter);
     AccountSet(const AccountManagerPtr &accountManager,
             const QVariantMap &filter);
-    virtual ~AccountSet();
+    ~AccountSet() override;
 
     AccountManagerPtr accountManager() const;
 

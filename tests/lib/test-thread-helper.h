@@ -24,7 +24,7 @@ public:
     typedef Tp::Callback1<void, Context&> Callback;
     Callback mCallback;
 
-    virtual void executeCallback()
+    void executeCallback() override
     {
         Q_ASSERT(mCallback.isValid());
         Q_ASSERT(QThread::currentThread() != QCoreApplication::instance()->thread());

@@ -76,7 +76,7 @@ public:
             const ContactFactoryConstPtr &contactFactory =
                 ContactFactory::create());
 
-    virtual ~AccountManager();
+    ~AccountManager() override;
 
     AccountFactoryConstPtr accountFactory() const;
     ConnectionFactoryConstPtr connectionFactory() const;

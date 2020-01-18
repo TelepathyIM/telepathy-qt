@@ -43,7 +43,7 @@ class TP_QT_EXPORT PendingReady: public PendingOperation
     Q_DISABLE_COPY(PendingReady);
 
 public:
-    ~PendingReady();
+    ~PendingReady() override;
 
     DBusProxyPtr proxy() const;
 

@@ -46,7 +46,7 @@ public:
     static ContactMessengerPtr create(const AccountPtr &account, const ContactPtr &contact);
     static ContactMessengerPtr create(const AccountPtr &account, const QString &contactIdentifier);
 
-    virtual ~ContactMessenger();
+    ~ContactMessenger() override;
 
     AccountPtr account() const;
     QString contactIdentifier() const;

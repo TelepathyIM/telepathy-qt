@@ -50,7 +50,7 @@ public:
     {
     }
 
-    virtual ~ConnectionManagerAdaptor()
+    ~ConnectionManagerAdaptor() override
     {
     }
 
@@ -116,7 +116,7 @@ public:
         mIcon = QLatin1String("icon-adaptor");
     }
 
-    virtual ~ProtocolAdaptor()
+    ~ProtocolAdaptor() override
     {
     }
 
@@ -214,7 +214,7 @@ public:
         mUris << QLatin1String("adaptor");
     }
 
-    virtual ~ProtocolAddressingAdaptor()
+    ~ProtocolAddressingAdaptor() override
     {
     }
 
@@ -291,7 +291,7 @@ public:
         mMaximumAvatarBytes = 4096;
     }
 
-    virtual ~ProtocolAvatarsAdaptor()
+    ~ProtocolAvatarsAdaptor() override
     {
     }
 
@@ -400,7 +400,7 @@ public:
         mStatuses.insert(QLatin1String("available"), spec);
     }
 
-    virtual ~ProtocolPresenceAdaptor()
+    ~ProtocolPresenceAdaptor() override
     {
     }
 

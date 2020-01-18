@@ -48,7 +48,7 @@ public:
     static ProfilePtr createForServiceName(const QString &serviceName);
     static ProfilePtr createForFileName(const QString &fileName);
 
-    ~Profile();
+    ~Profile() override;
 
     QString serviceName() const;
 

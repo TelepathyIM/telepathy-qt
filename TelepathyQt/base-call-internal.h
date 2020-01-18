@@ -43,7 +43,7 @@ class TP_QT_NO_EXPORT BaseCallContent::Adaptee : public QObject
 
 public:
     Adaptee(const QDBusConnection &dbusConnection, BaseCallContent *content);
-    ~Adaptee();
+    ~Adaptee() override;
     QStringList interfaces() const;
 
     QString name() const {
@@ -83,7 +83,7 @@ class TP_QT_NO_EXPORT BaseCallMuteInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseCallMuteInterface *content);
-    ~Adaptee();
+    ~Adaptee() override;
     QStringList interfaces() const;
 
     uint localMuteState() const {
@@ -109,7 +109,7 @@ class TP_QT_NO_EXPORT BaseCallContentDTMFInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseCallContentDTMFInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
     QStringList interfaces() const;
 
     bool currentlySendingTones() const {

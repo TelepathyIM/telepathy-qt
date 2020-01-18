@@ -73,7 +73,7 @@ public:
     static ContactSearchChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~ContactSearchChannel();
+    ~ContactSearchChannel() override;
 
     ChannelContactSearchState searchState() const;
     uint limit() const;

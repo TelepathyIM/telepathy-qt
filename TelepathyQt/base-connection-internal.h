@@ -41,7 +41,7 @@ class TP_QT_NO_EXPORT BaseConnection::Adaptee : public QObject
 
 public:
     Adaptee(const QDBusConnection &dbusConnection, BaseConnection *connection);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QStringList interfaces() const;
     uint selfHandle() const;
@@ -100,7 +100,7 @@ class TP_QT_NO_EXPORT BaseConnectionRequestsInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseConnectionRequestsInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
     Tp::ChannelDetailsList channels() const;
     Tp::RequestableChannelClassList requestableChannelClasses() const {
         debug() << "BaseConnectionRequestsInterface::requestableChannelClasses";
@@ -125,7 +125,7 @@ class TP_QT_NO_EXPORT BaseConnectionContactsInterface::Adaptee : public QObject
     Q_PROPERTY(QStringList contactAttributeInterfaces READ contactAttributeInterfaces)
 public:
     Adaptee(BaseConnectionContactsInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
     QStringList contactAttributeInterfaces() const;
 
 private Q_SLOTS:
@@ -145,7 +145,7 @@ class TP_QT_NO_EXPORT BaseConnectionSimplePresenceInterface::Adaptee : public QO
     Q_PROPERTY(uint maximumStatusMessageLength READ maximumStatusMessageLength)
 public:
     Adaptee(BaseConnectionSimplePresenceInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
     Tp::SimpleStatusSpecMap statuses() const;
     int maximumStatusMessageLength() const;
 
@@ -172,7 +172,7 @@ class TP_QT_NO_EXPORT BaseConnectionContactListInterface::Adaptee : public QObje
 
 public:
     Adaptee(BaseConnectionContactListInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     uint contactListState() const;
     bool contactListPersists() const;
@@ -213,7 +213,7 @@ class TP_QT_NO_EXPORT BaseConnectionContactGroupsInterface::Adaptee : public QOb
 
 public:
     Adaptee(BaseConnectionContactGroupsInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     bool disjointGroups() const;
     uint groupStorage() const;
@@ -251,7 +251,7 @@ class TP_QT_NO_EXPORT BaseConnectionContactInfoInterface::Adaptee : public QObje
 
 public:
     Adaptee(BaseConnectionContactInfoInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     uint contactInfoFlags() const;
     Tp::FieldSpecs supportedFields() const;
@@ -279,7 +279,7 @@ class TP_QT_NO_EXPORT BaseConnectionAddressingInterface::Adaptee : public QObjec
 
 public:
     Adaptee(BaseConnectionAddressingInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
 
 private Q_SLOTS:
@@ -297,7 +297,7 @@ class TP_QT_NO_EXPORT BaseConnectionAliasingInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseConnectionAliasingInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
 private Q_SLOTS:
     void getAliasFlags(
@@ -330,7 +330,7 @@ class TP_QT_NO_EXPORT BaseConnectionAvatarsInterface::Adaptee : public QObject
 
 public:
     Adaptee(BaseConnectionAvatarsInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
     QStringList supportedAvatarMimeTypes() const;
     uint minimumAvatarHeight() const;
@@ -365,7 +365,7 @@ class TP_QT_NO_EXPORT BaseConnectionClientTypesInterface::Adaptee : public QObje
 
 public:
     Adaptee(BaseConnectionClientTypesInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
 private Q_SLOTS:
     void getClientTypes(const Tp::UIntList &contacts,
@@ -386,7 +386,7 @@ class TP_QT_NO_EXPORT BaseConnectionContactCapabilitiesInterface::Adaptee : publ
 
 public:
     Adaptee(BaseConnectionContactCapabilitiesInterface *interface);
-    ~Adaptee();
+    ~Adaptee() override;
 
 private Q_SLOTS:
     void updateCapabilities(const Tp::HandlerCapabilitiesList &handlerCapabilities,

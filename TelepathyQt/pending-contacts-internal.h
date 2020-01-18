@@ -41,7 +41,7 @@ public:
     PendingAddressingGetContacts(const ConnectionPtr &connection,
             const QStringList &uris,
             const QStringList &interfaces);
-    ~PendingAddressingGetContacts();
+    ~PendingAddressingGetContacts() override;
 
     UIntList validHandles() const { return mValidHandles; }
 

@@ -42,7 +42,7 @@ class TP_QT_EXPORT PendingVariant : public PendingOperation
 
 public:
     PendingVariant(QDBusPendingCall call, const SharedPtr<RefCounted> &object);
-    ~PendingVariant();
+    ~PendingVariant() override;
 
     QVariant result() const;
 

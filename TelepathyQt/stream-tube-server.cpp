@@ -90,7 +90,7 @@ public:
     FixedParametersGenerator(const QVariantMap &params) : mParams(params) {}
 
     QVariantMap nextParameters(const AccountPtr &, const OutgoingStreamTubeChannelPtr &,
-            const ChannelRequestHints &)
+            const ChannelRequestHints &) override
     {
         return mParams;
     }

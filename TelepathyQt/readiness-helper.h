@@ -84,7 +84,7 @@ public:
             uint currentStatus = 0,
             const Introspectables &introspectables = Introspectables(),
             QObject *parent = 0);
-    ~ReadinessHelper();
+    ~ReadinessHelper() override;
 
     void addIntrospectables(const Introspectables &introspectables);
 

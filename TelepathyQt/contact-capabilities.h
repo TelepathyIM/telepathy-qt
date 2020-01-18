@@ -39,7 +39,7 @@ class TP_QT_EXPORT ContactCapabilities : public CapabilitiesBase
 {
 public:
     ContactCapabilities();
-    virtual ~ContactCapabilities();
+    ~ContactCapabilities() override;
 
     bool dbusTubes(const QString &serviceName) const;
     QStringList dbusTubeServices() const;

@@ -40,7 +40,7 @@ class FakeHandler : public QObject
 
 public:
     FakeHandler(const QDBusConnection &bus);
-    ~FakeHandler();
+    ~FakeHandler() override;
 
     QDBusConnection dbusConnection() const { return mBus; }
     ObjectPathList handledChannels() const;
@@ -66,7 +66,7 @@ class FakeHandlerManager : public QObject
 public:
     static FakeHandlerManager *instance();
 
-    ~FakeHandlerManager();
+    ~FakeHandlerManager() override;
 
     ObjectPathList handledChannels(const QDBusConnection &bus) const;
     void registerClientRegistrar(const ClientRegistrarPtr &cr);

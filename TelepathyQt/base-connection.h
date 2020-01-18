@@ -63,12 +63,12 @@ public:
                     dbusConnection, cmName, protocolName, parameters));
     }
 
-    virtual ~BaseConnection();
+    ~BaseConnection() override;
 
     QString cmName() const;
     QString protocolName() const;
     QVariantMap parameters() const;
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     uint selfHandle() const;
     void setSelfHandle(uint selfHandle);
@@ -122,8 +122,8 @@ protected:
                    const QString &cmName, const QString &protocolName,
                    const QVariantMap &parameters);
 
-    virtual bool registerObject(const QString &busName, const QString &objectPath,
-                                DBusError *error);
+    bool registerObject(const QString &busName, const QString &objectPath,
+                                DBusError *error) override;
 
     virtual bool matchChannel(const Tp::BaseChannelPtr &channel, const QVariantMap &request, Tp::DBusError *error);
 
@@ -142,7 +142,7 @@ class TP_QT_EXPORT AbstractConnectionInterface : public AbstractDBusServiceInter
 
 public:
     AbstractConnectionInterface(const QString &interfaceName);
-    virtual ~AbstractConnectionInterface();
+    ~AbstractConnectionInterface() override;
 
 protected:
     virtual void setBaseConnection(BaseConnection *connection);
@@ -170,9 +170,9 @@ public:
                    new BaseConnectionRequestsInterfaceSubclass(connection));
     }
 
-    virtual ~BaseConnectionRequestsInterface();
+    ~BaseConnectionRequestsInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     Tp::RequestableChannelClassList requestableChannelClasses;
     void ensureChannel(const QVariantMap &request, bool &yours,
@@ -188,7 +188,7 @@ protected:
     BaseConnectionRequestsInterface(BaseConnection* connection);
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -214,9 +214,9 @@ public:
                 new BaseConnectionContactsInterfaceSubclass());
     }
 
-    virtual ~BaseConnectionContactsInterface();
+    ~BaseConnectionContactsInterface() override;
 
-    QVariantMap immutableProperties() const;
+    QVariantMap immutableProperties() const override;
 
     QStringList contactAttributeInterfaces() const;
     void setContactAttributeInterfaces(const QStringList &contactAttributeInterfaces);
@@ -229,10 +229,10 @@ public:
 
 protected:
     BaseConnectionContactsInterface();
-    void setBaseConnection(BaseConnection *connection);
+    void setBaseConnection(BaseConnection *connection) override;
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -258,7 +258,7 @@ public:
                 new BaseConnectionSimplePresenceInterfaceSubclass());
     }
 
-    virtual ~BaseConnectionSimplePresenceInterface();
+    ~BaseConnectionSimplePresenceInterface() override;
 
     Tp::SimpleStatusSpecMap statuses() const;
     void setStatuses(const Tp::SimpleStatusSpecMap &statuses);
@@ -277,7 +277,7 @@ protected:
     BaseConnectionSimplePresenceInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -303,7 +303,7 @@ public:
                 new BaseConnectionContactListInterfaceSubclass());
     }
 
-    virtual ~BaseConnectionContactListInterface();
+    ~BaseConnectionContactListInterface() override;
 
     uint contactListState() const;
     void setContactListState(uint contactListState);
@@ -354,7 +354,7 @@ protected:
     BaseConnectionContactListInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -380,7 +380,7 @@ public:
                 new BaseConnectionContactGroupsInterfaceSubclass());
     }
 
-    virtual ~BaseConnectionContactGroupsInterface();
+    ~BaseConnectionContactGroupsInterface() override;
 
     bool disjointGroups() const;
     void setDisjointGroups(bool disjointGroups);
@@ -424,7 +424,7 @@ protected:
     BaseConnectionContactGroupsInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -450,7 +450,7 @@ public:
                 new BaseConnectionContactInfoInterfaceSubclass());
     }
 
-    virtual ~BaseConnectionContactInfoInterface();
+    ~BaseConnectionContactInfoInterface() override;
 
     Tp::ContactInfoFlags contactInfoFlags() const;
     void setContactInfoFlags(const Tp::ContactInfoFlags &contactInfoFlags);
@@ -480,7 +480,7 @@ protected:
     BaseConnectionContactInfoInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -504,7 +504,7 @@ public:
                    new BaseConnectionAddressingInterfaceSubclass());
     }
 
-    virtual ~BaseConnectionAddressingInterface();
+    ~BaseConnectionAddressingInterface() override;
 
     typedef Callback6 < void, const QString&, const QStringList&, const QStringList&,
             Tp::AddressingNormalizationMap&, Tp::ContactAttributesMap&, DBusError* > GetContactsByVCardFieldCallback;
@@ -518,7 +518,7 @@ protected:
     BaseConnectionAddressingInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -544,7 +544,7 @@ public:
                 new BaseConnectionAliasingInterfaceSubclass());
     }
 
-    virtual ~BaseConnectionAliasingInterface();
+    ~BaseConnectionAliasingInterface() override;
 
     typedef Callback1<Tp::ConnectionAliasFlags, DBusError*> GetAliasFlagsCallback;
     void setGetAliasFlagsCallback(const GetAliasFlagsCallback &cb);
@@ -568,7 +568,7 @@ protected:
     BaseConnectionAliasingInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -594,7 +594,7 @@ public:
                 new BaseConnectionAvatarsInterfaceSubclass());
     }
 
-    virtual ~BaseConnectionAvatarsInterface();
+    ~BaseConnectionAvatarsInterface() override;
 
     AvatarSpec avatarDetails() const;
     void setAvatarDetails(const AvatarSpec &spec);
@@ -622,7 +622,7 @@ protected:
     BaseConnectionAvatarsInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -648,7 +648,7 @@ public:
                 new BaseConnectionClientTypesInterfaceSubclass());
     }
 
-    virtual ~BaseConnectionClientTypesInterface();
+    ~BaseConnectionClientTypesInterface() override;
 
     typedef Callback2<Tp::ContactClientTypes, const Tp::UIntList &, DBusError*> GetClientTypesCallback;
     void setGetClientTypesCallback(const GetClientTypesCallback &cb);
@@ -664,7 +664,7 @@ protected:
     BaseConnectionClientTypesInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;
@@ -690,7 +690,7 @@ public:
                 new BaseConnectionContactCapabilitiesInterfaceSubclass());
     }
 
-    virtual ~BaseConnectionContactCapabilitiesInterface();
+    ~BaseConnectionContactCapabilitiesInterface() override;
 
     typedef Callback2<void, const Tp::HandlerCapabilitiesList &, DBusError*> UpdateCapabilitiesCallback;
     void setUpdateCapabilitiesCallback(const UpdateCapabilitiesCallback &cb);
@@ -706,7 +706,7 @@ protected:
     BaseConnectionContactCapabilitiesInterface();
 
 private:
-    void createAdaptor();
+    void createAdaptor() override;
 
     class Adaptee;
     friend class Adaptee;

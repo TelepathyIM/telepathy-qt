@@ -97,7 +97,7 @@ public:
         mMessage.setDelayedReply(true);
     }
 
-    virtual ~MethodInvocationContext()
+    ~MethodInvocationContext() override
     {
         if (!mFinished) {
             setFinishedWithError(QString(), QString());

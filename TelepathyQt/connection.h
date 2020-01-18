@@ -82,7 +82,7 @@ public:
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
 
-    virtual ~Connection();
+    ~Connection() override;
 
     ChannelFactoryConstPtr channelFactory() const;
     ContactFactoryConstPtr contactFactory() const;

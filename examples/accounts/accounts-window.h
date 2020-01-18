@@ -39,7 +39,7 @@ class AccountsWindow : public QMainWindow
 
 public:
     AccountsWindow(QWidget *parent = 0);
-    virtual ~AccountsWindow();
+    ~AccountsWindow() override;
 
 private Q_SLOTS:
     void onAMReady(Tp::PendingOperation *);

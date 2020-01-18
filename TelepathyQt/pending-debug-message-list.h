@@ -37,7 +37,7 @@ class TP_QT_EXPORT PendingDebugMessageList : public Tp::PendingOperation
     Q_DISABLE_COPY(PendingDebugMessageList)
 
 public:
-    virtual ~PendingDebugMessageList();
+    ~PendingDebugMessageList() override;
 
     DebugMessageList result() const;
 

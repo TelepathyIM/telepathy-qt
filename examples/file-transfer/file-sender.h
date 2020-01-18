@@ -40,7 +40,7 @@ class FileSender : public QObject
 public:
     FileSender(const QString &accountName, const QString &receiverID,
             const QString &filePath, QObject *parent);
-    ~FileSender();
+    ~FileSender() override;
 
 private Q_SLOTS:
     void onAMReady(Tp::PendingOperation *op);

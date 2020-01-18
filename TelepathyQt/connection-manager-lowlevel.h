@@ -41,7 +41,7 @@ class TP_QT_EXPORT ConnectionManagerLowlevel : public QObject, public RefCounted
     Q_DISABLE_COPY(ConnectionManagerLowlevel)
 
 public:
-    ~ConnectionManagerLowlevel();
+    ~ConnectionManagerLowlevel() override;
 
     bool isValid() const;
     ConnectionManagerPtr connectionManager() const;

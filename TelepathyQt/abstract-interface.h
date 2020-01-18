@@ -45,7 +45,7 @@ class TP_QT_EXPORT AbstractInterface : public QDBusAbstractInterface
     Q_DISABLE_COPY(AbstractInterface)
 
 public:
-    virtual ~AbstractInterface();
+    ~AbstractInterface() override;
 
     bool isValid() const;
     QString invalidationReason() const;

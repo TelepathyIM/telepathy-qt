@@ -46,7 +46,7 @@ class TP_QT_EXPORT ConnectionLowlevel : public QObject, public RefCounted
     Q_DISABLE_COPY(ConnectionLowlevel)
 
 public:
-    ~ConnectionLowlevel();
+    ~ConnectionLowlevel() override;
 
     bool isValid() const;
     ConnectionPtr connection() const;
