@@ -325,7 +325,7 @@ Q_SIGNALS:\
         # specific signals in order to remove its signal match rules)
         self.h("""
 protected:
-    virtual void invalidate(Tp::DBusProxy *, const QString &, const QString &);
+    void invalidate(Tp::DBusProxy *, const QString &, const QString &) override;
 """)
 
         self.b("""
