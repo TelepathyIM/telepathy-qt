@@ -13,7 +13,11 @@ QList<Feature> reverse(const QList<Feature> &list)
 {
     QList<Feature> ret(list);
     for (int k = 0; k < (list.size() / 2); k++) {
+#if QT_VERSION > QT_VERSION_CHECK(5, 13, 0)
+        ret.swapItemsAt(k, list.size() - (1 + k));
+#else
         ret.swap(k, list.size() - (1 + k));
+#endif
     }
     return ret;
 }
