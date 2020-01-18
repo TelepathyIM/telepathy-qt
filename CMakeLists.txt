@@ -6,6 +6,18 @@ if(${CMAKE_VERSION} VERSION_LESS 3.15)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
+find_program(CCACHE_PROGRAM ccache)
+
+if(CCACHE_PROGRAM)
+    # Support Unix Makefiles and Ninja
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+
+    message(STATUS "CCache activated")
+else()
+    message(STATUS "CCache is not active")
+endif()
+
 # Making releases:
 #   set the new version number:
 #     odd minor -> development series
