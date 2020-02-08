@@ -401,4 +401,25 @@ private:
     BaseConnectionContactCapabilitiesInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseConnectionChatReadInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(uint readReportingSupport READ readReportingSupport)
+
+public:
+    Adaptee(BaseConnectionChatReadInterface *interface);
+    ~Adaptee();
+
+    uint readReportingSupport() const;
+
+private Q_SLOTS:
+    void markRead(const QVariantMap &channelRequest, const QString &messageToken,
+            const Tp::Service::ConnectionInterfaceChatReadAdaptor::MarkReadContextPtr &context);
+    void markUnread(const QVariantMap &channelRequest,
+            const Tp::Service::ConnectionInterfaceChatReadAdaptor::MarkUnreadContextPtr &context);
+
+private:
+    BaseConnectionChatReadInterface *mInterface;
+};
+
 }

@@ -715,6 +715,50 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseConnectionChatReadInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionChatReadInterface)
+
+public:
+    static BaseConnectionChatReadInterfacePtr create(const Tp::ReadReportingSupportFlags &readReportingSupport)
+    {
+        return BaseConnectionChatReadInterfacePtr(new BaseConnectionChatReadInterface(readReportingSupport));
+    }
+    template<typename BaseConnectionChatReadInterfaceSubclass>
+    static SharedPtr<BaseConnectionChatReadInterfaceSubclass> create(const Tp::ReadReportingSupportFlags &readReportingSupport)
+    {
+        return SharedPtr<BaseConnectionChatReadInterfaceSubclass>(
+                new BaseConnectionChatReadInterfaceSubclass(readReportingSupport));
+    }
+
+    virtual ~BaseConnectionChatReadInterface();
+
+    QVariantMap immutableProperties() const;
+
+    Tp::ReadReportingSupportFlags readReportingSupport() const;
+
+    typedef Callback3<void, const QVariantMap &, const QString &, DBusError*> MarkReadCallback;
+    void setMarkReadCallback(const MarkReadCallback &cb);
+    void markRead(const QVariantMap &channelRequest, const QString &messageToken, DBusError *error);
+
+    typedef Callback2<void, const QVariantMap &, DBusError*> MarkUnreadCallback;
+    void setMarkUnreadCallback(const MarkUnreadCallback &cb);
+    void markUnread(const QVariantMap &channelRequest, DBusError *error);
+
+protected:
+    BaseConnectionChatReadInterface(const Tp::ReadReportingSupportFlags &readReportingSupport);
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 }
 
 #endif
