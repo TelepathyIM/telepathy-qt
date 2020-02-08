@@ -549,6 +549,15 @@ public:
             const QVariantMap &requestedProperties,
             const QDateTime &userActionTime);
 
+    PendingOperation *markTextChatRead(const QString &contactIdentifier,
+                                       const QString &messageToken);
+
+    PendingOperation *markTextChatroomRead(const QString &roomIdentifier,
+                                           const QString &messageToken);
+
+    PendingOperation *markChatRead(const QVariantMap &channelRequest,
+                                   const QString &messageToken);
+
 Q_SIGNALS:
     void removed();
     void serviceNameChanged(const QString &serviceName);

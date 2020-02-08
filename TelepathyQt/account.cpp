@@ -4151,6 +4151,24 @@ PendingChannel *Account::ensureAndHandleChannel(
     return new PendingChannel(AccountPtr(this), request, userActionTime, false);
 }
 
+PendingOperation *Account::markTextChatRead(const QString &contactIdentifier, const QString &messageToken)
+{
+    QVariantMap request = textChatRequest(contactIdentifier);
+    return markChatRead(request, messageToken);
+}
+
+PendingOperation *Account::markTextChatroomRead(const QString &roomIdentifier, const QString &messageToken)
+{
+    QVariantMap request = textChatroomRequest(roomIdentifier);
+    return markChatRead(request, messageToken);
+}
+
+PendingOperation *Account::markChatRead(const QVariantMap &channelRequest, const QString &messageToken)
+{
+    return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
+            QLatin1String("Connection does not support MarkChatRead"), AccountPtr(this));
+}
+
 /**
  * Return the Client::AccountInterface interface proxy object for this account.
  * This method is protected since the convenience methods provided by this
