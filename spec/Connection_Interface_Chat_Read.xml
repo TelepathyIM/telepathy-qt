@@ -1,0 +1,106 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Chat_Read"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2020 Alexander Akulich</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.ChatRead.DRAFT"
+    tp:causes-havoc="experimental">
+    <tp:added version="0.UNRELEASED">(draft 1)</tp:added>
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>An interface on connections to mark a Channel messages as read or unread.</p>
+    </tp:docstring>
+
+    <method name="MarkRead" tp:name-for-bindings="Mark_Read">
+      <tp:docstring>
+        Mark the referenced Channel history as read.
+      </tp:docstring>
+
+      <arg direction="in" name="ChannelRequest" type="a{sv}"
+        tp:type="Channel_Class">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A dictionary containing desirable properties, with the same
+            semantics as the corresponding parameter to
+            <tp:dbus-ref
+              namespace="ofdT.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="MessageToken" type="s"
+        tp:type="Protocol_Message_Token">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>An identifier of the last read message. All messages up to this one
+          should be marked as read. MUST NOT be an empty string.</p>
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument"/>
+      </tp:possible-errors>
+    </method>
+
+    <method name="MarkUnread" tp:name-for-bindings="Mark_Unread">
+    <tp:docstring>
+      Manually mark a Channel as unread.
+    </tp:docstring>
+    <arg direction="in" name="ChannelRequest" type="a{sv}"
+      tp:type="Channel_Class">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A dictionary containing desirable properties, with the same
+          semantics as the corresponding parameter to
+          <tp:dbus-ref
+            namespace="ofdT.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>.</p>
+      </tp:docstring>
+    </arg>
+    <tp:possible-errors>
+      <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument"/>
+    </tp:possible-errors>
+    </method>
+    <tp:flags name="Read_Reporting_Support_Flags"
+      value-prefix="Read_Reporting_Support_Flag" type="u">
+      <tp:docstring>
+        Flags indicating the level of support for read reporting on this
+        connection, as found on the
+        <tp:member-ref>ReadReportingSupport</tp:member-ref> property.
+      </tp:docstring>
+
+      <tp:flag suffix="Mark_Read" value="1">
+        <tp:docstring>
+          Clients MAY mark Channels messages as read.
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Mark_Unread" value="2">
+        <tp:docstring>
+          Clients MAY mark Channels as unread.
+        </tp:docstring>
+      </tp:flag>
+    </tp:flags>
+
+    <property name="ReadReportingSupport" access="read"
+      tp:type="Read_Reporting_Support_Flags" type="u"
+      tp:name-for-bindings="Read_Reporting_Support"
+      tp:immutable="yes">
+      <tp:docstring>
+        A bitfield indicating features supported by this channel.
+      </tp:docstring>
+    </property>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->
