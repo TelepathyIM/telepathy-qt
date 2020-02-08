@@ -81,13 +81,13 @@ set(toolchain_files
     glib-ginterface-gen.py
     glib-gtypes-generator.py
     glib-interfaces-gen.py
-    libtpcodegen.py
     libglibcodegen.py
     libqtcodegen.py
+    libtpcodegen.py
+    manager-file.py
     qt-client-gen.py
     qt-constants-gen.py
     qt-types-gen.py
-    manager-file.py
     with-session-bus.sh
     xincludator.py
 )

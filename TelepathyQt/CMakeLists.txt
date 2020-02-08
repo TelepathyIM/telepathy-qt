@@ -10,62 +10,62 @@ configure_file(global.h.in ${CMAKE_CURRENT_BINARY_DIR}/global.h)
 set(telepathy_qt_SRCS
     abstract-client.cpp
     abstract-interface.cpp
-    account.cpp
     account-factory.cpp
     account-manager.cpp
     account-property-filter.cpp
-    account-set.cpp
     account-set-internal.h
+    account-set.cpp
+    account.cpp
     avatar.cpp
     call-channel.cpp
+    call-content-media-description.cpp
     call-content.cpp
+    call-content.cpp
+    call-stream-endpoint.cpp
+    call-stream.cpp
     call-stream.cpp
     capabilities-base.cpp
-    call-content.cpp
-    call-content-media-description.cpp
-    call-stream.cpp
-    call-stream-endpoint.cpp
-    captcha.cpp
     captcha-authentication.cpp
-    channel.cpp
+    captcha.cpp
     channel-class-spec.cpp
-    channel-dispatcher.cpp
     channel-dispatch-operation.cpp
+    channel-dispatcher.cpp
     channel-factory.cpp
     channel-internal.h
     channel-request.cpp
-    client.cpp
-    client-registrar.cpp
+    channel.cpp
     client-registrar-internal.h
-    connection.cpp
+    client-registrar.cpp
+    client.cpp
     connection-capabilities.cpp
     connection-factory.cpp
     connection-internal.h
-    connection-manager.cpp
     connection-manager-internal.h
-    contact.cpp
+    connection-manager.cpp
+    connection.cpp
     contact-capabilities.cpp
     contact-factory.cpp
-    contact-manager.cpp
     contact-manager-roster.cpp
+    contact-manager.cpp
     contact-messenger.cpp
     contact-search-channel.cpp
-    dbus.cpp
-    dbus-proxy.cpp
-    dbus-proxy-factory.cpp
+    contact.cpp
     dbus-proxy-factory-internal.h
+    dbus-proxy-factory.cpp
+    dbus-proxy.cpp
     dbus-tube-channel.cpp
-    debug.cpp
-    debug-receiver.cpp
+    dbus.cpp
     debug-internal.h
+    debug-receiver.cpp
+    debug.cpp
     fake-handler-manager-internal.cpp
     fake-handler-manager-internal.h
     feature.cpp
-    file-transfer-channel.cpp
     file-transfer-channel-creation-properties.cpp
+    file-transfer-channel.cpp
     fixed-feature-factory.cpp
-    future.cpp
     future-internal.h
+    future.cpp
     handled-channel-notifier.cpp
     incoming-dbus-tube-channel.cpp
     incoming-file-transfer-channel.cpp
@@ -77,8 +77,8 @@ set(telepathy_qt_SRCS
     manager-file.h
     media-session-handler.cpp
     media-stream-handler.cpp
-    message.cpp
     message-content-part.cpp
+    message.cpp
     object.cpp
     optional-interface-factory.cpp
     outgoing-dbus-tube-channel.cpp
@@ -86,9 +86,9 @@ set(telepathy_qt_SRCS
     outgoing-stream-tube-channel.cpp
     pending-account.cpp
     pending-captchas.cpp
-    pending-channel.cpp
-    pending-channel-request.cpp
     pending-channel-request-internal.h
+    pending-channel-request.cpp
+    pending-channel.cpp
     pending-connection.cpp
     pending-contact-attributes.cpp
     pending-contact-info.cpp
@@ -99,149 +99,124 @@ set(telepathy_qt_SRCS
     pending-operation.cpp
     pending-ready.cpp
     pending-send-message.cpp
-    pending-string.cpp
-    pending-string-list.cpp
     pending-stream-tube-connection.cpp
+    pending-string-list.cpp
+    pending-string.cpp
+    pending-variant-map.cpp
     pending-variant.cpp
     presence.cpp
-    pending-variant-map.cpp
-    profile.cpp
     profile-manager.cpp
+    profile.cpp
     properties.cpp
     protocol-info.cpp
     protocol-parameter.cpp
     readiness-helper.cpp
-    requestable-channel-class-spec.cpp
     ready-object.cpp
     referenced-handles.cpp
     request-temporary-handler-internal.cpp
     request-temporary-handler-internal.h
+    requestable-channel-class-spec.cpp
     room-list-channel.cpp
     server-authentication-channel.cpp
     simple-call-observer.cpp
-    simple-observer.cpp
     simple-observer-internal.h
+    simple-observer.cpp
     simple-stream-tube-handler.cpp
-    simple-text-observer.cpp
     simple-text-observer-internal.h
+    simple-text-observer.cpp
     stream-tube-channel.cpp
-    stream-tube-client.cpp
     stream-tube-client-internal.h
-    stream-tube-server.cpp
+    stream-tube-client.cpp
     stream-tube-server-internal.h
+    stream-tube-server.cpp
     streamed-media-channel.cpp
     text-channel.cpp
     tls-certificate.cpp
     tube-channel.cpp
-    types.cpp
     types-internal.h
-    utils.cpp)
+    types.cpp
+    utils.cpp
+)
 
 # Exported headers for Tp-Qt
 set(telepathy_qt_HEADERS
+    ${CMAKE_CURRENT_BINARY_DIR}/global.h
     AbstractClient
     AbstractClientApprover
-    abstract-client.h
     AbstractClientHandler
     AbstractClientObserver
     AbstractInterface
-    abstract-interface.h
     Account
-    account.h
     AccountCapabilityFilter
-    account-capability-filter.h
     AccountFactory
-    account-factory.h
     AccountFilter
-    account-filter.h
     AccountInterface
     AccountInterfaceAddressingInterface
     AccountInterfaceAvatarInterface
     AccountInterfaceStorageInterface
     AccountManager
-    account-manager.h
     AccountManagerInterface
-    account-property-filter.h
     AccountPropertyFilter
     AccountSet
-    account-set.h
     AndFilter
-    and-filter.h
     AuthenticationTLSCertificateInterface
     AvatarData
     AvatarSpec
-    avatar.h
     CallChannel
-    call-channel.h
-    Callbacks
-    callbacks.h
     CallContent
     CallContentInterface
     CallContentInterfaceAudioControlInterface
     CallContentInterfaceDTMFInterface
     CallContentInterfaceMediaInterface
     CallContentInterfaceVideoControlInterface
-    call-content.h
     CallContentMediaDescription
     CallContentMediaDescriptionInterface
     CallContentMediaDescriptionInterfaceRTCPExtendedReportsInterface
     CallContentMediaDescriptionInterfaceRTCPFeedbackInterface
     CallContentMediaDescriptionInterfaceRTPHeaderExtensionsInterface
-    call-content-media-description.h
     CallStream
-    CallStreamInterface
-    CallStreamInterfaceMediaInterface
-    call-stream.h
     CallStreamEndpoint
     CallStreamEndpoint
     CallStreamEndpointInterface
-    call-stream-endpoint.h
+    CallStreamInterface
+    CallStreamInterfaceMediaInterface
+    Callbacks
     CapabilitiesBase
-    capabilities-base.h
     Captcha
-    captcha.h
     CaptchaAuthentication
-    captcha-authentication.h
     Channel
-    channel.h
     ChannelClassFeatures
-    channel-class-features.h
     ChannelClassSpec
     ChannelClassSpecList
-    channel-class-spec.h
+    ChannelDispatchOperation
+    ChannelDispatchOperationInterface
     ChannelDispatcher
     ChannelDispatcherInterface
-    channel-dispatcher.h
-    ChannelDispatchOperation
-    channel-dispatch-operation.h
-    ChannelDispatchOperationInterface
     ChannelFactory
-    channel-factory.h
     ChannelInterface
     ChannelInterfaceAnonymityInterface
-    ChannelInterfaceCaptchaAuthenticationInterface
     ChannelInterfaceCallStateInterface
+    ChannelInterfaceCaptchaAuthenticationInterface
     ChannelInterfaceChatStateInterface
     ChannelInterfaceConferenceInterface
-    ChannelInterfaceDestroyableInterface
     ChannelInterfaceDTMFInterface
+    ChannelInterfaceDestroyableInterface
     ChannelInterfaceFileTransferMetadataInterface
     ChannelInterfaceGroupInterface
     ChannelInterfaceHoldInterface
     ChannelInterfaceMediaSignallingInterface
     ChannelInterfaceMessagesInterface
     ChannelInterfacePasswordInterface
-    ChannelInterfaceRoomInterface
     ChannelInterfaceRoomConfigInterface
+    ChannelInterfaceRoomInterface
     ChannelInterfaceSASLAuthenticationInterface
+    ChannelInterfaceSMSInterface
     ChannelInterfaceSecurableInterface
     ChannelInterfaceServicePointInterface
-    ChannelInterfaceSMSInterface
     ChannelInterfaceSubjectInterface
     ChannelInterfaceTubeInterface
     ChannelRequest
     ChannelRequestHints
-    channel-request.h
     ChannelRequestInterface
     ChannelTypeCallInterface
     ChannelTypeContactListInterface
@@ -251,27 +226,21 @@ set(telepathy_qt_HEADERS
     ChannelTypeRoomListInterface
     ChannelTypeServerAuthenticationInterface
     ChannelTypeServerTLSConnectionInterface
-    ChannelTypeStreamedMediaInterface
     ChannelTypeStreamTubeInterface
+    ChannelTypeStreamedMediaInterface
     ChannelTypeTextInterface
     ChannelTypeTubeInterface
     ChannelTypeTubesInterface
     Client
     ClientApproverInterface
-    client.h
     ClientHandlerInterface
     ClientInterface
     ClientInterfaceRequestsInterface
     ClientObserverInterface
     ClientRegistrar
-    client-registrar.h
     Connection
     ConnectionCapabilities
-    connection-capabilities.h
-    connection.h
     ConnectionFactory
-    connection-factory.h
-    connection-lowlevel.h
     ConnectionInterface
     ConnectionInterfaceAddressingInterface
     ConnectionInterfaceAliasingInterface
@@ -280,8 +249,8 @@ set(telepathy_qt_HEADERS
     ConnectionInterfaceBalanceInterface
     ConnectionInterfaceCapabilitiesInterface
     ConnectionInterfaceCellularInterface
-    ConnectionInterfaceContactBlockingInterface
     ConnectionInterfaceClientTypesInterface
+    ConnectionInterfaceContactBlockingInterface
     ConnectionInterfaceContactCapabilitiesInterface
     ConnectionInterfaceContactGroupsInterface
     ConnectionInterfaceContactInfoInterface
@@ -296,223 +265,256 @@ set(telepathy_qt_HEADERS
     ConnectionInterfaceSimplePresenceInterface
     ConnectionLowlevel
     ConnectionManager
-    connection-manager.h
-    connection-manager-lowlevel.h
     ConnectionManagerInterface
     ConnectionManagerLowlevel
     Constants
-    constants.h
     Contact
-    contact.h
     ContactCapabilities
-    contact-capabilities.h
     ContactFactory
-    contact-factory.h
     ContactManager
-    contact-manager.h
     ContactMessenger
-    contact-messenger.h
     ContactSearchChannel
-    contact-search-channel.h
     DBus
     DBusDaemonInterface
-    dbus.h
     DBusProxy
-    dbus-proxy.h
     DBusProxyFactory
-    dbus-proxy-factory.h
     DBusTubeChannel
-    dbus-tube-channel.h
     Debug
-    debug.h
     DebugReceiver
-    debug-receiver.h
     Feature
     Features
-    feature.h
     FileTransferChannel
     FileTransferChannelCreationProperties
-    file-transfer-channel-creation-properties.h
-    file-transfer-channel.h
     Filter
-    filter.h
     FixedFeatureFactory
-    fixed-feature-factory.h
     Functors
-    functors.h
     GenericCapabilityFilter
-    generic-capability-filter.h
     GenericPropertyFilter
-    generic-property-filter.h
     Global
-    ${CMAKE_CURRENT_BINARY_DIR}/global.h
     HandledChannelNotifier
-    handled-channel-notifier.h
     IncomingDBusTubeChannel
-    incoming-dbus-tube-channel.h
     IncomingFileTransferChannel
-    incoming-file-transfer-channel.h
     IncomingStreamTubeChannel
-    incoming-stream-tube-channel.h
     IntrospectableInterface
     LocationInfo
-    location-info.h
     MediaSessionHandler
-    media-session-handler.h
     MediaSessionHandlerInterface
     MediaStreamHandler
-    media-stream-handler.h
     MediaStreamHandlerInterface
     Message
-    message.h
     MessageContentPart
     MessageContentPartList
-    message-content-part.h
     MethodInvocationContext
-    method-invocation-context.h
     NotFilter
-    not-filter.h
     Object
-    object.h
     OptionalInterfaceFactory
-    optional-interface-factory.h
     OrFilter
-    or-filter.h
     OutgoingDBusTubeChannel
-    outgoing-dbus-tube-channel.h
     OutgoingFileTransferChannel
-    outgoing-file-transfer-channel.h
     OutgoingStreamTubeChannel
-    outgoing-stream-tube-channel.h
     PeerInterface
     PendingAccount
-    pending-account.h
     PendingCallContent
     PendingCaptchas
-    pending-captchas.h
     PendingChannel
-    pending-channel.h
     PendingChannelRequest
-    pending-channel-request.h
     PendingComposite
     PendingConnection
-    pending-connection.h
     PendingContactAttributes
-    pending-contact-attributes.h
     PendingContactInfo
-    pending-contact-info.h
     PendingContacts
-    pending-contacts.h
     PendingDBusTubeConnection
-    pending-dbus-tube-connection.h
     PendingDebugMessageList
-    pending-debug-message-list.h
     PendingFailure
     PendingHandles
-    pending-handles.h
     PendingOperation
-    pending-operation.h
     PendingReady
-    pending-ready.h
     PendingSendMessage
-    pending-send-message.h
-    PendingStreamedMediaStreams
     PendingStreamTubeConnection
-    pending-stream-tube-connection.h
+    PendingStreamedMediaStreams
     PendingString
-    pending-string.h
     PendingStringList
-    pending-string-list.h
     PendingSuccess
     PendingVariant
-    pending-variant.h
     PendingVariantMap
-    pending-variant-map.h
     PendingVoid
     Presence
-    presence.h
     PresenceSpec
     PresenceSpecList
     Profile
-    profile.h
     ProfileManager
-    profile-manager.h
     Properties
-    properties.h
     PropertiesInterface
     PropertiesInterfaceInterface
     ProtocolInfo
     ProtocolInfoList
-    protocol-info.h
     ProtocolInterface
     ProtocolInterfaceAddressingInterface
     ProtocolInterfaceAvatarsInterface
     ProtocolInterfacePresenceInterface
     ProtocolParameter
     ProtocolParameterList
-    protocol-parameter.h
     ReadinessHelper
-    readiness-helper.h
     ReadyObject
-    ready-object.h
     ReceivedMessage
     RefCounted
     ReferencedHandles
-    referenced-handles.h
     ReferencedHandlesIterator
-    requestable-channel-class-spec.h
     RequestableChannelClassSpec
     RequestableChannelClassSpecList
     RoomListChannel
-    room-list-channel.h
     ServerAuthenticationChannel
-    server-authentication-channel.h
     SharedPtr
-    shared-ptr.h
+    SharedPtr
     SimpleCallObserver
-    simple-call-observer.h
     SimpleObserver
-    simple-observer.h
-    simple-pending-operations.h
     SimpleTextObserver
-    simple-text-observer.h
     StatefulDBusProxy
     StatelessDBusProxy
     StreamTubeChannel
     StreamTubeClient
     StreamTubeServer
+    StreamedMediaChannel
+    StreamedMediaStream
+    TextChannel
+    TubeChannel
+    Types
+    Utils
+    abstract-client.h
+    abstract-interface.h
+    account-capability-filter.h
+    account-factory.h
+    account-filter.h
+    account-manager.h
+    account-property-filter.h
+    account-set.h
+    account.h
+    and-filter.h
+    avatar.h
+    call-channel.h
+    call-content-media-description.h
+    call-content.h
+    call-stream-endpoint.h
+    call-stream.h
+    callbacks.h
+    capabilities-base.h
+    captcha-authentication.h
+    captcha.h
+    channel-class-features.h
+    channel-class-spec.h
+    channel-dispatch-operation.h
+    channel-dispatcher.h
+    channel-factory.h
+    channel-request.h
+    channel.h
+    client-registrar.h
+    client.h
+    connection-capabilities.h
+    connection-factory.h
+    connection-lowlevel.h
+    connection-manager-lowlevel.h
+    connection-manager.h
+    connection.h
+    constants.h
+    contact-capabilities.h
+    contact-factory.h
+    contact-manager.h
+    contact-messenger.h
+    contact-search-channel.h
+    contact.h
+    dbus-proxy-factory.h
+    dbus-proxy.h
+    dbus-tube-channel.h
+    dbus.h
+    debug-receiver.h
+    debug.h
+    feature.h
+    file-transfer-channel-creation-properties.h
+    file-transfer-channel.h
+    filter.h
+    fixed-feature-factory.h
+    functors.h
+    generic-capability-filter.h
+    generic-property-filter.h
+    handled-channel-notifier.h
+    incoming-dbus-tube-channel.h
+    incoming-file-transfer-channel.h
+    incoming-stream-tube-channel.h
+    location-info.h
+    media-session-handler.h
+    media-stream-handler.h
+    message-content-part.h
+    message.h
+    method-invocation-context.h
+    not-filter.h
+    object.h
+    optional-interface-factory.h
+    or-filter.h
+    outgoing-dbus-tube-channel.h
+    outgoing-file-transfer-channel.h
+    outgoing-stream-tube-channel.h
+    pending-account.h
+    pending-captchas.h
+    pending-channel-request.h
+    pending-channel.h
+    pending-connection.h
+    pending-contact-attributes.h
+    pending-contact-info.h
+    pending-contacts.h
+    pending-dbus-tube-connection.h
+    pending-debug-message-list.h
+    pending-handles.h
+    pending-operation.h
+    pending-ready.h
+    pending-send-message.h
+    pending-stream-tube-connection.h
+    pending-string-list.h
+    pending-string.h
+    pending-variant-map.h
+    pending-variant.h
+    presence.h
+    profile-manager.h
+    profile.h
+    properties.h
+    protocol-info.h
+    protocol-parameter.h
+    readiness-helper.h
+    ready-object.h
+    referenced-handles.h
+    requestable-channel-class-spec.h
+    room-list-channel.h
+    server-authentication-channel.h
+    shared-ptr.h
+    simple-call-observer.h
+    simple-observer.h
+    simple-pending-operations.h
+    simple-text-observer.h
     stream-tube-channel.h
     stream-tube-client.h
     stream-tube-server.h
-    StreamedMediaChannel
     streamed-media-channel.h
-    StreamedMediaStream
-    TextChannel
     text-channel.h
     tls-certificate.h
-    TubeChannel
     tube-channel.h
-    Types
     types.h
-    Utils
     utils.h
-    SharedPtr)
+)
 
 # Generated headers which will be installed and exported
 set(telepathy_qt_gen_HEADERS
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account-manager.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-call-content.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-call-content-media-description.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-call-stream.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-call-content.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-call-stream-endpoint.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-dispatcher.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-call-stream.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-dispatch-operation.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-dispatcher.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-request.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-client.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-manager.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-dbus.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-debug-receiver.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-session-handler.h
@@ -520,46 +522,47 @@ set(telepathy_qt_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-properties.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-tls-certificate.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h
+)
 
 # Headers file moc will be run on
 set(telepathy_qt_MOC_SRCS
     abstract-interface.h
-    account.h
     account-factory.h
     account-manager.h
-    account-set.h
     account-set-internal.h
+    account-set.h
+    account.h
     call-channel.h
     call-content.h
     call-stream.h
-    captcha-authentication.h
     captcha-authentication-internal.h
-    channel.h
-    channel-dispatch-operation.h
+    captcha-authentication.h
     channel-dispatch-operation-internal.h
+    channel-dispatch-operation.h
     channel-factory.h
     channel-internal.h
     channel-request.h
-    client-registrar.h
+    channel.h
     client-registrar-internal.h
-    connection.h
+    client-registrar.h
     connection-internal.h
     connection-lowlevel.h
-    connection-manager.h
     connection-manager-internal.h
     connection-manager-lowlevel.h
-    contact.h
-    contact-manager.h
+    connection-manager.h
+    connection.h
     contact-manager-internal.h
+    contact-manager.h
     contact-messenger.h
-    contact-search-channel.h
     contact-search-channel-internal.h
-    dbus-proxy.h
-    dbus-proxy-factory.h
+    contact-search-channel.h
+    contact.h
     dbus-proxy-factory-internal.h
-    debug-receiver.h
+    dbus-proxy-factory.h
+    dbus-proxy.h
     dbus-tube-channel.h
+    debug-receiver.h
     fake-handler-manager-internal.h
     file-transfer-channel.h
     fixed-feature-factory.h
@@ -570,18 +573,18 @@ set(telepathy_qt_MOC_SRCS
     object.h
     outgoing-dbus-tube-channel.h
     outgoing-file-transfer-channel.h
-    outgoing-stream-tube-channel.h
     outgoing-stream-tube-channel-internal.h
+    outgoing-stream-tube-channel.h
     pending-account.h
     pending-captchas.h
-    pending-channel.h
-    pending-channel-request.h
     pending-channel-request-internal.h
+    pending-channel-request.h
+    pending-channel.h
     pending-connection.h
     pending-contact-attributes.h
     pending-contact-info.h
-    pending-contacts.h
     pending-contacts-internal.h
+    pending-contacts.h
     pending-dbus-tube-connection.h
     pending-debug-message-list.h
     pending-handles.h
@@ -589,37 +592,39 @@ set(telepathy_qt_MOC_SRCS
     pending-ready.h
     pending-send-message.h
     pending-stream-tube-connection.h
-    pending-string.h
     pending-string-list.h
-    pending-variant.h
+    pending-string.h
     pending-variant-map.h
+    pending-variant.h
     profile-manager.h
     readiness-helper.h
     request-temporary-handler-internal.h
     room-list-channel.h
     server-authentication-channel.h
     simple-call-observer.h
-    simple-pending-operations.h
-    simple-observer.h
     simple-observer-internal.h
+    simple-observer.h
+    simple-pending-operations.h
     simple-stream-tube-handler.h
-    simple-text-observer.h
     simple-text-observer-internal.h
+    simple-text-observer.h
     stream-tube-channel.h
-    stream-tube-client.h
     stream-tube-client-internal.h
-    stream-tube-server.h
+    stream-tube-client.h
     stream-tube-server-internal.h
+    stream-tube-server.h
     streamed-media-channel.h
     text-channel.h
-    tube-channel.h)
+    tube-channel.h
+)
 
 # Sources for test library, used by tests to test some unexported functionality
 set(telepathy_qt_test_backdoors_SRCS
     key-file.cpp
     manager-file.cpp
     test-backdoors.cpp
-    utils.cpp)
+    utils.cpp
+)
 
 # Generate the spec files for both stable and future spec
 set(gen_stable_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml)
@@ -667,8 +672,8 @@ set(SPECS
     call-stream
     call-stream-endpoint
     channel
-    channel-dispatcher
     channel-dispatch-operation
+    channel-dispatcher
     channel-request
     client
     connection
@@ -678,7 +683,9 @@ set(SPECS
     media-session-handler
     media-stream-handler
     properties
-    tls-certificate)
+    tls-certificate
+)
+
 foreach(spec ${SPECS})
     tpqt_xincludator(${spec}-spec-xincludator ${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
                       DEPENDS stable-typesgen)
@@ -871,84 +878,88 @@ if(ENABLE_SERVICE_SUPPORT)
     # lets build tp-qt service side support as a separate library until we can guarantee API/ABI
     # stability
     set(telepathy_qt_service_SRCS
+        abstract-adaptor.cpp
         base-call.cpp
+        base-channel.cpp
         base-connection-manager.cpp
         base-connection.cpp
-        base-channel.cpp
         base-debug.cpp
         base-protocol.cpp
         dbus-error.cpp
         dbus-object.cpp
         dbus-service.cpp
         io-device.cpp
-        abstract-adaptor.cpp)
+    )
 
     set(telepathy_qt_service_HEADERS
         AbstractAdaptor
-        abstract-adaptor.h
         AbstractDBusServiceInterface
         AbstractProtocolInterface
         BaseCall
-        base-call.h
-        BaseConnectionManager
-        base-connection-manager.h
-        BaseConnection
-        base-connection.h
         BaseChannel
-        base-channel.h
+        BaseConnection
+        BaseConnectionManager
         BaseDebug
-        base-debug.h
         BaseProtocol
         BaseProtocolAddressingInterface
         BaseProtocolAvatarsInterface
         BaseProtocolPresenceInterface
-        base-protocol.h
         DBusError
-        dbus-error.h
         DBusObject
-        dbus-object.h
         DBusService
-        dbus-service.h
         IODevice
-        io-device.h
         ServiceTypes
-        service-types.h)
+        abstract-adaptor.h
+        base-call.h
+        base-channel.h
+        base-connection-manager.h
+        base-connection.h
+        base-debug.h
+        base-protocol.h
+        dbus-error.h
+        dbus-object.h
+        dbus-service.h
+        io-device.h
+        service-types.h
+    )
 
     # Generated headers which will be installed and exported
     set(telepathy_qt_service_gen_HEADERS
-        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-channel.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-call.h
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-channel.h
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection-manager.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection.h
-        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection-manager.h)
+    )
 
     # Headers file moc will be run on
     set(telepathy_qt_service_MOC_SRCS
         abstract-adaptor.h
-        base-call.h
         base-call-internal.h
-        base-connection-manager.h
-        base-connection-manager-internal.h
-        base-channel.h
+        base-call.h
         base-channel-internal.h
-        base-connection.h
+        base-channel.h
         base-connection-internal.h
-        base-debug.h
+        base-connection-manager-internal.h
+        base-connection-manager.h
+        base-connection.h
         base-debug-internal.h
-        base-protocol.h
+        base-debug.h
         base-protocol-internal.h
+        base-protocol.h
         dbus-object.h
+        dbus-service.h
         io-device.h
-        dbus-service.h)
+    )
 
     add_custom_target(all-generated-service-sources)
 
     set(SPECS
-        svc-channel
         svc-call
+        svc-channel
         svc-connection
         svc-connection-manager
         svc-debug
-        )
+    )
     foreach(spec ${SPECS})
         tpqt_xincludator(${spec}-spec-xincludator ${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
                          DEPENDS stable-typesgen)
