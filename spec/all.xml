@@ -101,6 +101,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Connection_Interface_Anonymity.xml"/>
    <xi:include href="Connection_Interface_Balance.xml"/>
    <xi:include href="Connection_Interface_Cellular.xml"/>
+   <xi:include href="Connection_Interface_Chat_Read.xml"/>
    <xi:include href="Connection_Interface_Communication_Policy.xml"/>
    <xi:include href="Connection_Interface_Forwarding.xml"/>
    <xi:include href="Connection_Interface_Keepalive.xml"/>
