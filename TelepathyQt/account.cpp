@@ -29,6 +29,7 @@
 #include "TelepathyQt/debug-internal.h"
 
 #include "TelepathyQt/connection-internal.h"
+#include "TelepathyQt/pending-chat-read.h"
 
 #include <TelepathyQt/AccountManager>
 #include <TelepathyQt/Channel>
@@ -4165,8 +4166,7 @@ PendingOperation *Account::markTextChatroomRead(const QString &roomIdentifier, c
 
 PendingOperation *Account::markChatRead(const QVariantMap &channelRequest, const QString &messageToken)
 {
-    return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
-            QLatin1String("Connection does not support MarkChatRead"), AccountPtr(this));
+    return new PendingChatReadOperation(AccountPtr(this), channelRequest, messageToken);
 }
 
 /**

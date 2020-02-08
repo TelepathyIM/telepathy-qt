@@ -89,6 +89,7 @@ set(telepathy_qt_SRCS
     pending-channel-request-internal.h
     pending-channel-request.cpp
     pending-channel.cpp
+    pending-chat-read.cpp
     pending-connection.cpp
     pending-contact-attributes.cpp
     pending-contact-info.cpp
@@ -580,6 +581,7 @@ set(telepathy_qt_MOC_SRCS
     pending-channel-request-internal.h
     pending-channel-request.h
     pending-channel.h
+    pending-chat-read.h
     pending-connection.h
     pending-contact-attributes.h
     pending-contact-info.h
