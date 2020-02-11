@@ -176,6 +176,8 @@ public:
 
     ContactManagerPtr contactManager() const;
 
+    ChatManagerPtr chatManager() const;
+
 #if defined(BUILDING_TP_QT) || defined(TP_QT_ENABLE_LOWLEVEL_API)
     ConnectionLowlevelPtr lowlevel();
     ConnectionLowlevelConstPtr lowlevel() const;
