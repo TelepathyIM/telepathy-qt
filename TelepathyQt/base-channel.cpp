@@ -399,7 +399,7 @@ BaseChannelTextType::Adaptee::~Adaptee()
 void BaseChannelTextType::Adaptee::acknowledgePendingMessages(const Tp::UIntList &IDs,
         const Tp::Service::ChannelTypeTextAdaptor::AcknowledgePendingMessagesContextPtr &context)
 {
-    debug() << "BaseConnectionContactsInterface::acknowledgePendingMessages " << IDs;
+    debug() << "BaseChannelTextType::acknowledgePendingMessages " << IDs;
     DBusError error;
     mInterface->acknowledgePendingMessages(IDs, &error);
     if (error.isValid()) {
