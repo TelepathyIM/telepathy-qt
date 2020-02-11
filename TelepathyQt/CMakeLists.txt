@@ -36,6 +36,7 @@ set(telepathy_qt_SRCS
     channel-requests-properties-internal.cpp
     channel-requests-properties-internal.h
     channel.cpp
+    chat-manager.cpp
     client-registrar-internal.h
     client-registrar.cpp
     client.cpp
@@ -233,6 +234,7 @@ set(telepathy_qt_HEADERS
     ChannelTypeTextInterface
     ChannelTypeTubeInterface
     ChannelTypeTubesInterface
+    ChatManager
     Client
     ClientApproverInterface
     ClientHandlerInterface
@@ -409,6 +411,7 @@ set(telepathy_qt_HEADERS
     channel-factory.h
     channel-request.h
     channel.h
+    chat-manager.h
     client-registrar.h
     client.h
     connection-capabilities.h
@@ -546,6 +549,7 @@ set(telepathy_qt_MOC_SRCS
     channel-internal.h
     channel-request.h
     channel.h
+    chat-manager.h
     client-registrar-internal.h
     client-registrar.h
     connection-internal.h

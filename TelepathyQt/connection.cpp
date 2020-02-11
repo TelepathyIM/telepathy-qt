@@ -33,6 +33,7 @@
 #include "TelepathyQt/debug-internal.h"
 
 #include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/ChatManager>
 #include <TelepathyQt/ConnectionCapabilities>
 #include <TelepathyQt/ContactFactory>
 #include <TelepathyQt/ContactManager>
@@ -129,6 +130,7 @@ struct TP_QT_NO_EXPORT Connection::Private
 
     ConnectionCapabilities caps;
 
+    ChatManagerPtr chatManager;
     ContactManagerPtr contactManager;
 
     // FeatureSelfContact
@@ -210,6 +212,7 @@ Connection::Private::Private(Connection *parent,
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
       immortalHandles(false),
+      chatManager(ChatManagerPtr(new ChatManager(parent))),
       contactManager(ContactManagerPtr(new ContactManager(parent))),
       introspectingSelfContact(false),
       reintrospectSelfContactRequired(false),
@@ -2289,6 +2292,19 @@ bool ConnectionLowlevel::hasImmortalHandles() const
 ContactManagerPtr Connection::contactManager() const
 {
     return mPriv->contactManager;
+}
+
+/**
+ * Return the ChatManager object for this connection.
+ *
+ * The chat manager is responsible for all chats handling in this
+ * connection.
+ *
+ * \return A pointer to the ChatManager object.
+ */
+ChatManagerPtr Connection::chatManager() const
+{
+    return mPriv->chatManager;
 }
 
 ConnectionLowlevelPtr Connection::lowlevel()
