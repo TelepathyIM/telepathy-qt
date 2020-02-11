@@ -831,8 +831,9 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
         contactListContacts.insert(contact);
     }
 
-    if (contactManager->connection()->requestedFeatures().contains(
-                Connection::FeatureRosterGroups)) {
+    const bool groupsRequested = conn->requestedFeatures().contains(Connection::FeatureRosterGroups);
+    const bool groupsSupported = conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS);
+    if (groupsRequested && groupsSupported) {
         groupsSetSuccess = true;
     }
 
