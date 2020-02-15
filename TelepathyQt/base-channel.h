@@ -278,7 +278,7 @@ protected:
 
     void setClientSocket(QIODevice *socket);
 
-    void close() override; // Add Q_DECL_OVERRIDE in Qt5
+    void close() override;
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onSocketConnection();
