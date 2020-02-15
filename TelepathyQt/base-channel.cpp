@@ -806,15 +806,7 @@ struct TP_QT_NO_EXPORT BaseChannelFileTransferType::Private {
 
     Private(BaseChannelFileTransferType *parent,
             const QVariantMap &request)
-        : state(Tp::FileTransferStatePending),
-          transferredBytes(0),
-          initialOffset(0),
-          deviceOffset(0),
-          device(nullptr),
-          weOpenedDevice(false),
-          serverSocket(nullptr),
-          clientSocket(nullptr),
-          adaptee(new BaseChannelFileTransferType::Adaptee(parent))
+        : adaptee(new BaseChannelFileTransferType::Adaptee(parent))
     {
         contentType = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentType")).toString();
         filename = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Filename")).toString();
@@ -842,25 +834,25 @@ struct TP_QT_NO_EXPORT BaseChannelFileTransferType::Private {
         }
     }
 
-    uint state;
+    uint state = Tp::FileTransferStatePending;
     QString contentType;
     QString filename;
-    qulonglong size;
-    uint contentHashType;
+    qulonglong size = 0;
+    uint contentHashType = 0;
     QString contentHash;
     QString description;
     QDateTime date;
-    qulonglong transferredBytes;
-    qulonglong initialOffset;
-    qulonglong deviceOffset;
+    qulonglong transferredBytes = 0;
+    qulonglong initialOffset = 0;
+    qulonglong deviceOffset = 0;
     QString uri;
     QString fileCollection;
-    QIODevice *device; // A socket to read or write file to underlying connection manager
-    bool weOpenedDevice;
-    QTcpServer *serverSocket; // Server socket is an implementation detail.
-    QIODevice *clientSocket; // A socket to communicate with a Telepathy client
-    BaseChannelFileTransferType::Direction direction;
-    BaseChannelFileTransferType::Adaptee *adaptee;
+    QIODevice *device = nullptr; // A socket to read or write file to underlying connection manager
+    bool weOpenedDevice = false;
+    QTcpServer *serverSocket = nullptr; // Server socket is an implementation detail.
+    QIODevice *clientSocket = nullptr; // A socket to communicate with a Telepathy client
+    BaseChannelFileTransferType::Direction direction = BaseChannelFileTransferType::Incoming;
+    BaseChannelFileTransferType::Adaptee *adaptee = nullptr;
 
     friend class BaseChannelFileTransferType::Adaptee;
 
@@ -1112,7 +1104,7 @@ bool BaseChannelFileTransferType::createSocket(uint addressType, uint accessCont
     mPriv->serverSocket = new QTcpServer(this);
     mPriv->serverSocket->setMaxPendingConnections(1);
 
-    connect(mPriv->serverSocket, SIGNAL(newConnection()), this, SLOT(onSocketConnection()));
+    connect(mPriv->serverSocket, &QTcpServer::newConnection, this, &BaseChannelFileTransferType::onSocketConnection);
 
     bool result =  mPriv->serverSocket->listen(address);
     if (!result) {
@@ -1175,14 +1167,14 @@ void BaseChannelFileTransferType::setClientSocket(QIODevice *socket)
 
     switch (mPriv->direction) {
     case BaseChannelFileTransferType::Outgoing:
-        connect(mPriv->clientSocket, SIGNAL(readyRead()), this, SLOT(doTransfer()));
+        connect(mPriv->clientSocket, &QIODevice::readyRead, this, &BaseChannelFileTransferType::doTransfer);
         break;
     case BaseChannelFileTransferType::Incoming:
-        connect(mPriv->clientSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(onBytesWritten(qint64)));
+        connect(mPriv->clientSocket, &QIODevice::bytesWritten, this, &BaseChannelFileTransferType::onBytesWritten);
         break;
     default:
         // Should not be ever possible
-        Q_ASSERT(0);
+        Q_UNREACHABLE();
         break;
     }
 
@@ -1353,8 +1345,9 @@ QDateTime BaseChannelFileTransferType::date() const
 
 Tp::SupportedSocketMap BaseChannelFileTransferType::availableSocketTypes() const
 {
-    Tp::SupportedSocketMap types;
-    types.insert(Tp::SocketAddressTypeIPv4, Tp::UIntList() << Tp::SocketAccessControlLocalhost);
+    static const Tp::SupportedSocketMap types = {
+        { Tp::SocketAddressTypeIPv4, { Tp::SocketAccessControlLocalhost } },
+    };
 
     return types;
 }
@@ -1391,6 +1384,7 @@ void BaseChannelFileTransferType::setUri(const QString &uri)
     QMetaObject::invokeMethod(mPriv->adaptee, "uriDefined", Q_ARG(QString, uri)); //Can simply use emit in Qt5
     emit uriDefined(uri);
 }
+
 QString BaseChannelFileTransferType::fileCollection() const
 {
     return mPriv->fileCollection;
@@ -1407,66 +1401,82 @@ void BaseChannelFileTransferType::createAdaptor()
             mPriv->adaptee, dbusObject());
 }
 
+/*!
+ *
+ * Connection manager should call this method once the remote agreed to receive the file.
+ *
+ * \param output The input device
+ * \param offset The number of content bytes that should be skipped before write to the device.
+ *
+ * \return True if success, false otherwise.
+ */
 bool BaseChannelFileTransferType::remoteAcceptFile(QIODevice *output, qulonglong offset)
 {
-    QString errorText;
-    bool deviceIsAlreadynOpened = output && output->isOpen();
+    bool deviceIsAlreadyOpened = output && output->isOpen();
 
     if (!output) {
-        errorText = QLatin1String("The device must not be null.");
-        goto errorLabel;
+        warning() << "BaseChannelFileTransferType::remoteAcceptFile(): "
+                     "The device must not be null.";
+        setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+        return false;
     }
 
     if (mPriv->state != Tp::FileTransferStatePending) {
-        errorText = QLatin1String("The state should be Pending.");
-        goto errorLabel;
+        warning() << "BaseChannelFileTransferType::remoteAcceptFile(): "
+                     "The state should be Pending.";
+        setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+        return false;
     }
 
     if (mPriv->direction != Outgoing) {
-        errorText = QLatin1String("The direction should be Outgoing.");
-        goto errorLabel;
+        warning() << "BaseChannelFileTransferType::remoteAcceptFile(): "
+                     "The direction should be Outgoing.";
+        setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+        return false;
     }
 
     if (offset > size()) {
-        errorText = QLatin1String("The offset should be less than the size.");
-        goto errorLabel;
+        warning() << "BaseChannelFileTransferType::remoteAcceptFile(): "
+                     "The offset should be less than the size.";
+        setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+        return false;
     }
 
     if (mPriv->device) {
-        errorText = QLatin1String("The device is already set.");
-        goto errorLabel;
+        warning() << "BaseChannelFileTransferType::remoteAcceptFile(): "
+                     "The device is already set.";
+        setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+        return false;
     }
 
-    if (!deviceIsAlreadynOpened) {
+    if (!deviceIsAlreadyOpened) {
         if (!output->open(QIODevice::WriteOnly)) {
-            errorText = QLatin1String("Unable to open the device .");
-            goto errorLabel;
+            warning() << "BaseChannelFileTransferType::remoteAcceptFile(): "
+                         "Unable to open the device .";
+            setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+            return false;
         }
 
         if (!output->isSequential()) {
             if (!output->seek(offset)) {
-                errorText = QLatin1String("Unable to seek the device to the offset.");
-                goto errorLabel;
+                warning() << "BaseChannelFileTransferType::remoteAcceptFile(): "
+                             "Unable to seek the device to the offset.";
+                setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+                return false;
             }
         }
     }
 
     if (!output->isWritable()) {
-        errorText = QLatin1String("The device is not writable.");
-        goto errorLabel;
-    }
-
-    if (!errorText.isEmpty()) {
-        errorLabel:
-        warning() << "BaseChannelFileTransferType::remoteAcceptFile(): Invalid call:" << errorText;
+        warning() << "BaseChannelFileTransferType::remoteAcceptFile(): "
+                     "The device is not writable.";
         setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
-
         return false;
     }
 
     mPriv->device = output;
     mPriv->deviceOffset = offset;
-    mPriv->weOpenedDevice = !deviceIsAlreadynOpened;
+    mPriv->weOpenedDevice = !deviceIsAlreadyOpened;
     mPriv->initialOffset = offset;
 
     QMetaObject::invokeMethod(mPriv->adaptee, "initialOffsetDefined", Q_ARG(qulonglong, offset)); //Can simply use emit in Qt5
@@ -1478,7 +1488,7 @@ bool BaseChannelFileTransferType::remoteAcceptFile(QIODevice *output, qulonglong
 /*!
  *
  * Connection manager should call this method to pass the input device and its offset.
- * The interface would skip remaining initialOffset - deviceOffset bytes.
+ * The interface will skip the remaining initialOffset - deviceOffset bytes.
  *
  * \param input The input device
  * \param deviceOffset The number of bytes, already skipped by the device.
@@ -1487,12 +1497,13 @@ bool BaseChannelFileTransferType::remoteAcceptFile(QIODevice *output, qulonglong
  */
 bool BaseChannelFileTransferType::remoteProvideFile(QIODevice *input, qulonglong deviceOffset)
 {
-    QString errorText;
     bool deviceIsAlreadyOpened = input && input->isOpen();
 
     if (!input) {
-        errorText = QLatin1String("The device must not be null.");
-        goto errorLabel;
+        warning() << "BaseChannelFileTransferType::remoteProvideFile(): "
+                     "The device must not be null.";
+        setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+        return false;
     }
 
     switch (mPriv->state) {
@@ -1500,60 +1511,64 @@ bool BaseChannelFileTransferType::remoteProvideFile(QIODevice *input, qulonglong
     case Tp::FileTransferStateAccepted:
         break;
     default:
-        errorText = QLatin1String("The state should be Pending or Accepted.");
-        goto errorLabel;
-        break;
+        warning() << "BaseChannelFileTransferType::remoteProvideFile(): "
+                     "The state should be Pending or Accepted.";
+        setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+        return false;
     }
 
     if (mPriv->direction != Incoming) {
-        errorText = QLatin1String("The direction should be Incoming.");
-        goto errorLabel;
+        warning() << "BaseChannelFileTransferType::remoteProvideFile(): "
+                     "The direction should be Incoming.";
+        setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+        return false;
     }
 
     if (deviceOffset > initialOffset()) {
-        errorText = QLatin1String("The deviceOffset should be less or equal to the initialOffset.");
-        goto errorLabel;
+        warning() << "BaseChannelFileTransferType::remoteProvideFile(): "
+                     "The deviceOffset should be less or equal to the initialOffset.";
+        setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+        return false;
     }
 
     if (mPriv->device) {
-        errorText = QLatin1String("The device is already set.");
-        goto errorLabel;
+        warning() << "BaseChannelFileTransferType::remoteProvideFile(): "
+                     "The device is already set.";
+        setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+        return false;
     }
 
     if (!deviceIsAlreadyOpened) {
         if (!input->open(QIODevice::ReadOnly)) {
-            errorText = QLatin1String("Unable to open the device .");
-            goto errorLabel;
+            warning() << "BaseChannelFileTransferType::remoteProvideFile(): "
+                         "Unable to open the device .";
+            setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+            return false;
         }
 
         if (!input->isSequential()) {
             if (!input->seek(initialOffset())) {
-                errorText = QLatin1String("Unable to seek the device to the initial offset.");
-                goto errorLabel;
+                warning() << "BaseChannelFileTransferType::remoteProvideFile(): "
+                             "Unable to seek the device to the initial offset.";
+                setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
+                return false;
             }
             deviceOffset = initialOffset();
         }
     }
 
     if (!input->isReadable()) {
-        errorText = QLatin1String("The device is not readable.");
-        goto errorLabel;
-    }
-
-    if (!errorText.isEmpty()) {
-        errorLabel:
-        warning() << "BaseChannelFileTransferType::remoteProvideFile(): Invalid call:" << errorText;
+        warning() << "BaseChannelFileTransferType::remoteProvideFile(): "
+                     "The device is not readable.";
         setState(Tp::FileTransferStateCancelled, Tp::FileTransferStateChangeReasonLocalError);
-
         return false;
     }
 
     mPriv->deviceOffset = deviceOffset;
-
     mPriv->device = input;
     mPriv->weOpenedDevice = !deviceIsAlreadyOpened;
 
-    connect(mPriv->device, SIGNAL(readyRead()), this, SLOT(doTransfer()));
+    connect(mPriv->device, &QIODevice::readyRead, this, &BaseChannelFileTransferType::doTransfer);
 
     tryToOpenAndTransfer();
 
@@ -1570,7 +1585,6 @@ void BaseChannelFileTransferType::tryToOpenAndTransfer()
     if (state() == Tp::FileTransferStateOpen) {
         if (mPriv->clientSocket && mPriv->device) {
             QMetaObject::invokeMethod(this, "doTransfer", Qt::QueuedConnection);
-
         }
     }
 }
