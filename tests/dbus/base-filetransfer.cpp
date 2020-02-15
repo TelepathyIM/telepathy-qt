@@ -148,200 +148,20 @@ class Connection : public Tp::BaseConnection
 public:
     Connection(const QDBusConnection &dbusConnection,
             const QString &cmName, const QString &protocolName,
-            const QVariantMap &parameters) :
-        Tp::BaseConnection(dbusConnection, cmName, protocolName, parameters)
-    {
-        g_connection = ConnectionPtr(this);
-
-        /* Connection.Interface.Contacts */
-        m_contactsIface = Tp::BaseConnectionContactsInterface::create();
-        m_contactsIface->setGetContactAttributesCallback(Tp::memFun(this, &Connection::getContactAttributes));
-        m_contactsIface->setContactAttributeInterfaces(QStringList()
-                                                       << TP_QT_IFACE_CONNECTION
-                                                       << TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES
-                                                       << TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS
-                                                       );
-        plugInterface(Tp::AbstractConnectionInterfacePtr::dynamicCast(m_contactsIface));
-
-        /* Connection.Interface.ContactCapabilities */
-        m_contactCapabilitiesIface = Tp::BaseConnectionContactCapabilitiesInterface::create();
-        m_contactCapabilitiesIface->setGetContactCapabilitiesCallback(Tp::memFun(this, &Connection::getContactCapabilities));
-        plugInterface(Tp::AbstractConnectionInterfacePtr::dynamicCast(m_contactCapabilitiesIface));
-
-        /* Connection.Interface.Requests */
-        m_requestsIface = Tp::BaseConnectionRequestsInterface::create(this);
-        m_requestsIface->requestableChannelClasses << c_requestableChannelClassFileTransfer;
-        plugInterface(Tp::AbstractConnectionInterfacePtr::dynamicCast(m_requestsIface));
-
-        setConnectCallback(Tp::memFun(this, &Connection::connectCB));
-        setCreateChannelCallback(Tp::memFun(this, &Connection::createChannelCB));
-        setInspectHandlesCallback(Tp::memFun(this, &Connection::inspectHandles));
-        setRequestHandlesCallback(Tp::memFun(this, &Connection::requestHandles));
-
-        mContactHandles.insert(1, QLatin1String("selfContact"));
-        mContactHandles.insert(2, QLatin1String("ftContact"));
-
-        setSelfContact(1, QLatin1String("selfContact"));
-    }
+            const QVariantMap &parameters);
     ~Connection() override { }
 
-    Tp::BaseChannelPtr receiveFile(const Tp::FileTransferChannelCreationProperties &properties, uint initiatorHandle)
-    {
-        if (!mContactHandles.contains(initiatorHandle)) {
-            return Tp::BaseChannelPtr();
-        }
-
-        Tp::DBusError error;
-
-        QVariantMap request = properties.createRequest();
-        request[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")] = selfHandle();
-        request[TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorHandle")] = initiatorHandle;
-
-        Tp::BaseChannelPtr channel = createChannel(request, /* suppressHandler */ false, &error);
-
-        if (error.isValid()) {
-            qDebug() << error.message();
-            return Tp::BaseChannelPtr();
-        }
-
-        return channel;
-    }
+    Tp::BaseChannelPtr receiveFile(const Tp::FileTransferChannelCreationProperties &properties, uint initiatorHandle);
 
 protected:
-    void connectCB(Tp::DBusError *error)
-    {
-        setStatus(Tp::ConnectionStatusConnected, Tp::ConnectionStatusReasonRequested);
-        Q_UNUSED(error)
-    }
+    void connectCB(Tp::DBusError *error);
+    Tp::BaseChannelPtr createChannelCB(const QVariantMap &request, Tp::DBusError *error);
 
-    Tp::BaseChannelPtr createChannelCB(const QVariantMap &request, Tp::DBusError *error)
-    {
-        const QString channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
-        uint targetHandleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
-        uint targetHandle = 0;
-        QString targetID;
+    QStringList inspectHandles(uint handleType, const Tp::UIntList &handles, Tp::DBusError *error);
+    Tp::UIntList requestHandles(uint handleType, const QStringList &identifiers, Tp::DBusError *error);
 
-        if (channelType != TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER) {
-            error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Unexpected channel type"));
-            return Tp::BaseChannelPtr();
-        }
-
-        switch (targetHandleType) {
-        case Tp::HandleTypeContact:
-            if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"))) {
-                targetHandle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
-                targetID = mContactHandles.value(targetHandle);
-            } else if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"))) {
-                targetID = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
-                targetHandle = mContactHandles.key(targetID);
-            }
-            break;
-        default:
-            error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Unexpected target handle type"));
-            return Tp::BaseChannelPtr();
-            break;
-        }
-
-        if (targetID.isEmpty()) {
-            error->set(TP_QT_ERROR_INVALID_HANDLE, QLatin1String("Unexpected target (unknown handle/ID)."));
-            return Tp::BaseChannelPtr();
-        }
-
-        Tp::BaseChannelPtr baseChannel = Tp::BaseChannel::create(this, channelType, Tp::HandleType(targetHandleType), targetHandle);
-        Tp::BaseChannelFileTransferTypePtr fileTransferChannel = Tp::BaseChannelFileTransferType::create(request);
-        baseChannel->plugInterface(Tp::AbstractChannelInterfacePtr::dynamicCast(fileTransferChannel));
-        baseChannel->setTargetID(targetID);
-
-        g_channel = baseChannel;
-
-        return baseChannel;
-    }
-
-    QStringList inspectHandles(uint handleType, const Tp::UIntList &handles, Tp::DBusError *error)
-    {
-        if (status() != Tp::ConnectionStatusConnected) {
-            error->set(TP_QT_ERROR_DISCONNECTED, QLatin1String("Disconnected"));
-            return QStringList();
-        }
-
-        if (handleType != Tp::HandleTypeContact) {
-            error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Unexpected handle type"));
-            return QStringList();
-        }
-
-        QStringList result;
-
-        Q_FOREACH (uint handle, handles) {
-            if (!mContactHandles.contains(handle)) {
-                error->set(TP_QT_ERROR_INVALID_HANDLE, QLatin1String("Unknown handle"));
-                return QStringList();
-            }
-
-            result << mContactHandles.value(handle);
-        }
-
-        return result;
-    }
-
-    Tp::UIntList requestHandles(uint handleType, const QStringList &identifiers, Tp::DBusError *error)
-    {
-        Tp::UIntList result;
-
-        if (handleType != Tp::HandleTypeContact) {
-            error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("requestHandles: Invalid handle type."));
-            return result;
-        }
-
-        Q_FOREACH (const QString &identifier, identifiers) {
-            uint handle = mContactHandles.key(identifier, 0);
-            if (!handle) {
-                error->set(TP_QT_ERROR_INVALID_ARGUMENT, QString(QLatin1String("requestHandles: Unexpected identifier (%1).")).arg(identifier));
-                break;
-            }
-            result << handle;
-        }
-
-        return result;
-    }
-
-    Tp::ContactAttributesMap getContactAttributes(const Tp::UIntList &handles, const QStringList &interfaces, Tp::DBusError *error)
-    {
-        Tp::ContactAttributesMap contactAttributes;
-
-        Q_FOREACH (uint handle, handles) {
-            if (!mContactHandles.contains(handle)) {
-                break;
-            }
-
-            QVariantMap attributes;
-            attributes[TP_QT_IFACE_CONNECTION + QLatin1String("/contact-id")] = mContactHandles.value(handle);
-
-            if (interfaces.contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES)) {
-                attributes[TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES + QLatin1String("/capabilities")] =
-                        QVariant::fromValue(getContactCapabilities(Tp::UIntList() << handle, error).value(handle));
-            }
-
-            contactAttributes[handle] = attributes;
-        }
-
-        return contactAttributes;
-    }
-
-    Tp::ContactCapabilitiesMap getContactCapabilities(const Tp::UIntList &handles, Tp::DBusError *error)
-    {
-        Tp::ContactCapabilitiesMap capabilities;
-
-        Q_FOREACH (uint handle, handles) {
-            if (!mContactHandles.contains(handle)) {
-                error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("getContactCapabilities: Unexpected handle."));
-                return Tp::ContactCapabilitiesMap();
-            }
-
-            capabilities[handle] = Tp::RequestableChannelClassList() << c_requestableChannelClassFileTransfer;
-        }
-
-        return capabilities;
-    }
+    Tp::ContactAttributesMap getContactAttributes(const Tp::UIntList &handles, const QStringList &interfaces, Tp::DBusError *error);
+    Tp::ContactCapabilitiesMap getContactCapabilities(const Tp::UIntList &handles, Tp::DBusError *error);
 
 protected:
     Tp::BaseConnectionContactsInterfacePtr m_contactsIface;
@@ -349,8 +169,202 @@ protected:
     Tp::BaseConnectionRequestsInterfacePtr m_requestsIface;
 
     QMap<uint,QString> mContactHandles;
-
 };
+
+Connection::Connection(const QDBusConnection &dbusConnection,
+        const QString &cmName, const QString &protocolName,
+        const QVariantMap &parameters) :
+    Tp::BaseConnection(dbusConnection, cmName, protocolName, parameters)
+{
+    g_connection = ConnectionPtr(this);
+
+    /* Connection.Interface.Contacts */
+    m_contactsIface = Tp::BaseConnectionContactsInterface::create();
+    m_contactsIface->setGetContactAttributesCallback(Tp::memFun(this, &Connection::getContactAttributes));
+    m_contactsIface->setContactAttributeInterfaces(QStringList()
+                                                   << TP_QT_IFACE_CONNECTION
+                                                   << TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES
+                                                   << TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS
+                                                   );
+    plugInterface(Tp::AbstractConnectionInterfacePtr::dynamicCast(m_contactsIface));
+
+    /* Connection.Interface.ContactCapabilities */
+    m_contactCapabilitiesIface = Tp::BaseConnectionContactCapabilitiesInterface::create();
+    m_contactCapabilitiesIface->setGetContactCapabilitiesCallback(Tp::memFun(this, &Connection::getContactCapabilities));
+    plugInterface(Tp::AbstractConnectionInterfacePtr::dynamicCast(m_contactCapabilitiesIface));
+
+    /* Connection.Interface.Requests */
+    m_requestsIface = Tp::BaseConnectionRequestsInterface::create(this);
+    m_requestsIface->requestableChannelClasses << c_requestableChannelClassFileTransfer;
+    plugInterface(Tp::AbstractConnectionInterfacePtr::dynamicCast(m_requestsIface));
+
+    setConnectCallback(Tp::memFun(this, &Connection::connectCB));
+    setCreateChannelCallback(Tp::memFun(this, &Connection::createChannelCB));
+    setInspectHandlesCallback(Tp::memFun(this, &Connection::inspectHandles));
+    setRequestHandlesCallback(Tp::memFun(this, &Connection::requestHandles));
+
+    mContactHandles.insert(1, QLatin1String("selfContact"));
+    mContactHandles.insert(2, QLatin1String("ftContact"));
+
+    setSelfContact(1, QLatin1String("selfContact"));
+}
+
+Tp::BaseChannelPtr Connection::receiveFile(const Tp::FileTransferChannelCreationProperties &properties, uint initiatorHandle)
+{
+    if (!mContactHandles.contains(initiatorHandle)) {
+        return Tp::BaseChannelPtr();
+    }
+
+    Tp::DBusError error;
+
+    QVariantMap request = properties.createRequest();
+    request[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")] = selfHandle();
+    request[TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorHandle")] = initiatorHandle;
+
+    Tp::BaseChannelPtr channel = createChannel(request, /* suppressHandler */ false, &error);
+
+    if (error.isValid()) {
+        qDebug() << error.message();
+        return Tp::BaseChannelPtr();
+    }
+
+    return channel;
+}
+
+void Connection::connectCB(Tp::DBusError *error)
+{
+    setStatus(Tp::ConnectionStatusConnected, Tp::ConnectionStatusReasonRequested);
+    Q_UNUSED(error)
+}
+
+Tp::BaseChannelPtr Connection::createChannelCB(const QVariantMap &request, Tp::DBusError *error)
+{
+    const QString channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+    if (channelType != TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER) {
+        error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Unexpected channel type"));
+        return Tp::BaseChannelPtr();
+    }
+
+    uint targetHandleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+    uint targetHandle = 0;
+    QString targetID;
+
+    switch (targetHandleType) {
+    case Tp::HandleTypeContact:
+        if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"))) {
+            targetHandle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
+            targetID = mContactHandles.value(targetHandle);
+        } else if (request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"))) {
+            targetID = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
+            targetHandle = mContactHandles.key(targetID);
+        }
+        break;
+    default:
+        error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Unexpected target handle type"));
+        return Tp::BaseChannelPtr();
+        break;
+    }
+
+    if (targetID.isEmpty()) {
+        error->set(TP_QT_ERROR_INVALID_HANDLE, QLatin1String("Unexpected target (unknown handle/ID)."));
+        return Tp::BaseChannelPtr();
+    }
+
+    Tp::BaseChannelPtr baseChannel = Tp::BaseChannel::create(this, channelType, Tp::HandleType(targetHandleType), targetHandle);
+    Tp::BaseChannelFileTransferTypePtr fileTransferChannel = Tp::BaseChannelFileTransferType::create(request);
+    baseChannel->plugInterface(Tp::AbstractChannelInterfacePtr::dynamicCast(fileTransferChannel));
+    baseChannel->setTargetID(targetID);
+
+    g_channel = baseChannel;
+
+    return baseChannel;
+}
+
+QStringList Connection::inspectHandles(uint handleType, const Tp::UIntList &handles, Tp::DBusError *error)
+{
+    if (status() != Tp::ConnectionStatusConnected) {
+        error->set(TP_QT_ERROR_DISCONNECTED, QLatin1String("Disconnected"));
+        return QStringList();
+    }
+
+    if (handleType != Tp::HandleTypeContact) {
+        error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Unexpected handle type"));
+        return QStringList();
+    }
+
+    QStringList result;
+
+    Q_FOREACH (uint handle, handles) {
+        if (!mContactHandles.contains(handle)) {
+            error->set(TP_QT_ERROR_INVALID_HANDLE, QLatin1String("Unknown handle"));
+            return QStringList();
+        }
+
+        result << mContactHandles.value(handle);
+    }
+
+    return result;
+}
+
+Tp::UIntList Connection::requestHandles(uint handleType, const QStringList &identifiers, Tp::DBusError *error)
+{
+    Tp::UIntList result;
+
+    if (handleType != Tp::HandleTypeContact) {
+        error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("requestHandles: Invalid handle type."));
+        return result;
+    }
+
+    Q_FOREACH (const QString &identifier, identifiers) {
+        uint handle = mContactHandles.key(identifier, 0);
+        if (!handle) {
+            error->set(TP_QT_ERROR_INVALID_ARGUMENT, QString(QLatin1String("requestHandles: Unexpected identifier (%1).")).arg(identifier));
+            break;
+        }
+        result << handle;
+    }
+
+    return result;
+}
+
+Tp::ContactAttributesMap Connection::getContactAttributes(const Tp::UIntList &handles, const QStringList &interfaces, Tp::DBusError *error)
+{
+    Tp::ContactAttributesMap contactAttributes;
+
+    Q_FOREACH (uint handle, handles) {
+        if (!mContactHandles.contains(handle)) {
+            break;
+        }
+
+        QVariantMap attributes;
+        attributes[TP_QT_IFACE_CONNECTION + QLatin1String("/contact-id")] = mContactHandles.value(handle);
+
+        if (interfaces.contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES)) {
+            attributes[TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES + QLatin1String("/capabilities")] =
+                    QVariant::fromValue(getContactCapabilities(Tp::UIntList() << handle, error).value(handle));
+        }
+
+        contactAttributes[handle] = attributes;
+    }
+
+    return contactAttributes;
+}
+
+Tp::ContactCapabilitiesMap Connection::getContactCapabilities(const Tp::UIntList &handles, Tp::DBusError *error)
+{
+    Tp::ContactCapabilitiesMap capabilities;
+
+    Q_FOREACH (uint handle, handles) {
+        if (!mContactHandles.contains(handle)) {
+            error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("getContactCapabilities: Unexpected handle."));
+            return Tp::ContactCapabilitiesMap();
+        }
+
+        capabilities[handle] = Tp::RequestableChannelClassList() << c_requestableChannelClassFileTransfer;
+    }
+
+    return capabilities;
+}
 
 } // namespace FTTest
 
@@ -887,19 +901,26 @@ void TestBaseFileTranfserChannel::testReceiveFile_data()
     QTest::addColumn<bool>("useSequentialDevice");
     QTest::addColumn<bool>("useAutoSkip");
 
-    QTest::newRow("Complete (sequential)")                             << 2048 << 0    << int(NoCancel) << true  << false;
-    QTest::newRow("Complete (random-access)")                          << 2048 << 0    << int(NoCancel) << false << false;
-    QTest::newRow("Complete with an offset (sequential)")              << 2048 << 1000 << int(NoCancel) << true  << false;
-    QTest::newRow("Complete with an offset (sequential, autoskip)")    << 2048 << 1000 << int(NoCancel) << true  << true;
-    QTest::newRow("Complete with an offset (random-access)")           << 2048 << 1000 << int(NoCancel) << false << false;
-    QTest::newRow("Complete with an offset (random-access, autoskip)") << 2048 << 1000 << int(NoCancel) << false << true;
+    constexpr bool sequentialDeviceYes = true;
+    constexpr bool sequentialDeviceNo = false;
+    constexpr bool autoSkipYes = true;
+    constexpr bool autoSkipNo = false;
+    constexpr int noOffset = 0;
+    constexpr int someOffset = 1000;
+
+    QTest::newRow("Complete (sequential)")                             << 2048 << noOffset   << int(NoCancel) << sequentialDeviceYes << autoSkipNo;
+    QTest::newRow("Complete (random-access)")                          << 2048 << noOffset   << int(NoCancel) << sequentialDeviceNo  << autoSkipNo;
+    QTest::newRow("Complete with an offset (sequential)")              << 2048 << someOffset << int(NoCancel) << sequentialDeviceYes << autoSkipNo;
+    QTest::newRow("Complete with an offset (sequential, autoskip)")    << 2048 << someOffset << int(NoCancel) << sequentialDeviceYes << autoSkipYes;
+    QTest::newRow("Complete with an offset (random-access)")           << 2048 << someOffset << int(NoCancel) << sequentialDeviceNo  << autoSkipNo;
+    QTest::newRow("Complete with an offset (random-access, autoskip)") << 2048 << someOffset << int(NoCancel) << sequentialDeviceNo  << autoSkipYes;
 
     // It makes no sense to use random-access device in follow tests, because we either don't use the device
-    QTest::newRow("Cancel before accept")             << 2048 << 0 << int(CancelBeforeAccept)  << true << false;
-    QTest::newRow("Cancel before provide")            << 2048 << 0 << int(CancelBeforeProvide) << true << false;
+    QTest::newRow("Cancel before accept")             << 2048 << noOffset << int(CancelBeforeAccept)  << sequentialDeviceYes << autoSkipNo;
+    QTest::newRow("Cancel before provide")            << 2048 << noOffset << int(CancelBeforeProvide) << sequentialDeviceYes << autoSkipNo;
     // or need sequential device to control data flow
-    QTest::newRow("Cancel before the data")           << 2048 << 0 << int(CancelBeforeData)    << true << false;
-    QTest::newRow("Cancel in the middle of the data") << 2048 << 0 << int(CancelBeforeComplete)<< true << false;
+    QTest::newRow("Cancel before the data")           << 2048 << noOffset << int(CancelBeforeData)    << sequentialDeviceYes << autoSkipNo;
+    QTest::newRow("Cancel in the middle of the data") << 2048 << noOffset << int(CancelBeforeComplete)<< sequentialDeviceYes << autoSkipNo;
 }
 
 void TestBaseFileTranfserChannel::cleanup()
