@@ -222,6 +222,7 @@ public:
     static ChannelClassSpec roomList(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec outgoingFileTransfer(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec incomingFileTransfer(const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec downloadFileTransfer(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec outgoingStreamTube(const QString &service = QString(),
             const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec incomingStreamTube(const QString &service = QString(),

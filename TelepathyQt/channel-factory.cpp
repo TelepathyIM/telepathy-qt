@@ -282,6 +282,26 @@ void ChannelFactory::addFeaturesForIncomingFileTransfers(const Features &feature
     addFeaturesFor(ChannelClassSpec::incomingFileTransfer(additionalProps), features);
 }
 
+Features ChannelFactory::featuresForDownloadFileTransfers(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::downloadFileTransfer(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForDownloadFileTransfers(const Features &features, const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::downloadFileTransfer(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForDownloadFileTransfers(const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::downloadFileTransfer(additionalProps));
+}
+
+void ChannelFactory::setConstructorForDownloadFileTransfers(const ChannelFactory::ConstructorConstPtr &ctor, const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::downloadFileTransfer(additionalProps), ctor);
+}
+
 ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForIncomingFileTransfers(
         const QVariantMap &additionalProps) const
 {

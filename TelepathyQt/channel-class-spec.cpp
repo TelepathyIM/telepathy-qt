@@ -516,6 +516,22 @@ ChannelClassSpec ChannelClassSpec::incomingFileTransfer(const QVariantMap &addit
     }
 }
 
+ChannelClassSpec ChannelClassSpec::downloadFileTransfer(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.mPriv.constData()) {
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER,
+                HandleTypeNone, true);
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
 ChannelClassSpec ChannelClassSpec::outgoingStreamTube(const QString &service,
                                                       const QVariantMap &additionalProperties)
 {
