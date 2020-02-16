@@ -257,6 +257,7 @@ public:
     qulonglong transferredBytes() const;
     void setTransferredBytes(qulonglong count);
     qulonglong initialOffset() const;
+    void setTransferComplete();
 
     QString uri() const;
 
