@@ -142,6 +142,22 @@ public:
     void setConstructorForRoomLists(const ConstructorConstPtr &ctor,
             const QVariantMap &additionalProps = QVariantMap());
 
+    Features featuresForDownloadFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForDownloadFileTransfers(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForDownloadFileTransfers(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForDownloadFileTransfers(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForDownloadFileTransfers(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForDownloadFileTransfers(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
     Features featuresForOutgoingFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
     void addFeaturesForOutgoingFileTransfers(const Features &features,
             const QVariantMap &additionalProps = QVariantMap());
