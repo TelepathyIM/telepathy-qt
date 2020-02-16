@@ -108,6 +108,7 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
     setSubclassForOutgoingDBusTubes<OutgoingDBusTubeChannel>();
     setSubclassForIncomingRoomDBusTubes<IncomingDBusTubeChannel>();
     setSubclassForOutgoingRoomDBusTubes<OutgoingDBusTubeChannel>();
+    setSubclassForDownloadFileTransfers<IncomingFileTransferChannel>();
     setSubclassForIncomingFileTransfers<IncomingFileTransferChannel>();
     setSubclassForOutgoingFileTransfers<OutgoingFileTransferChannel>();
     setSubclassForIncomingStreamTubes<IncomingStreamTubeChannel>();
