@@ -1150,9 +1150,7 @@ void BaseChannelFileTransferType::setTransferredBytes(qulonglong count)
     QMetaObject::invokeMethod(mPriv->adaptee, "transferredBytesChanged", Q_ARG(qulonglong, count)); //Can simply use emit in Qt5
 
     if (transferredBytes() == size()) {
-        mPriv->clientSocket->close();
-        mPriv->serverSocket->close();
-        setState(Tp::FileTransferStateCompleted, Tp::FileTransferStateChangeReasonNone);
+        setTransferComplete();
     }
 }
 
@@ -1360,6 +1358,17 @@ qulonglong BaseChannelFileTransferType::transferredBytes() const
 qulonglong BaseChannelFileTransferType::initialOffset() const
 {
     return mPriv->initialOffset;
+}
+
+void BaseChannelFileTransferType::setTransferComplete()
+{
+    if (state() == Tp::FileTransferStateCompleted) {
+        return;
+    }
+
+    mPriv->clientSocket->close();
+    mPriv->serverSocket->close();
+    setState(Tp::FileTransferStateCompleted, Tp::FileTransferStateChangeReasonNone);
 }
 
 QString BaseChannelFileTransferType::uri() const
