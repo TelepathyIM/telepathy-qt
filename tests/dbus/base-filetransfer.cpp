@@ -30,6 +30,7 @@
 #include <TelepathyQt/BaseChannel>
 #include <TelepathyQt/IODevice>
 
+#include <TelepathyQt/ChannelClassSpec>
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ConnectionCapabilities>
 #include <TelepathyQt/ConnectionLowlevel>
@@ -156,6 +157,8 @@ public:
 protected:
     void connectCB(Tp::DBusError *error);
     Tp::BaseChannelPtr createChannelCB(const QVariantMap &request, Tp::DBusError *error);
+    Tp::BaseChannelPtr createChannelForTransfer(const QVariantMap &request, Tp::DBusError *error);
+    Tp::BaseChannelPtr createChannelForFileId(const QVariantMap &request, Tp::DBusError *error);
 
     QStringList inspectHandles(uint handleType, const Tp::UIntList &handles, Tp::DBusError *error);
     Tp::UIntList requestHandles(uint handleType, const QStringList &identifiers, Tp::DBusError *error);
@@ -239,13 +242,27 @@ void Connection::connectCB(Tp::DBusError *error)
 
 Tp::BaseChannelPtr Connection::createChannelCB(const QVariantMap &request, Tp::DBusError *error)
 {
+    // Tp::ChannelClassSpec spec(request);
+
+
     const QString channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
     if (channelType != TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER) {
         error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("Unexpected channel type"));
         return Tp::BaseChannelPtr();
     }
 
-    uint targetHandleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+    const QString fileId = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".FileID")).toString();
+    if (!fileId.isEmpty()) {
+        return createChannelForFileId(request, error);
+    }
+
+    return createChannelForTransfer(request, error);
+}
+
+Tp::BaseChannelPtr Connection::createChannelForTransfer(const QVariantMap &request, Tp::DBusError *error)
+{
+    const Tp::ChannelClassSpec spec(request);
+    Tp::HandleType targetHandleType = spec.targetHandleType();
     uint targetHandle = 0;
     QString targetID;
 
@@ -270,10 +287,24 @@ Tp::BaseChannelPtr Connection::createChannelCB(const QVariantMap &request, Tp::D
         return Tp::BaseChannelPtr();
     }
 
-    Tp::BaseChannelPtr baseChannel = Tp::BaseChannel::create(this, channelType, Tp::HandleType(targetHandleType), targetHandle);
+    Tp::BaseChannelPtr baseChannel = Tp::BaseChannel::create(this, TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER,
+                                                             targetHandleType, targetHandle);
     Tp::BaseChannelFileTransferTypePtr fileTransferChannel = Tp::BaseChannelFileTransferType::create(request);
     baseChannel->plugInterface(Tp::AbstractChannelInterfacePtr::dynamicCast(fileTransferChannel));
     baseChannel->setTargetID(targetID);
+
+    g_channel = baseChannel;
+
+    return baseChannel;
+}
+
+Tp::BaseChannelPtr Connection::createChannelForFileId(const QVariantMap &request, Tp::DBusError *error)
+{
+    const QString fileId = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".FileID")).toString();
+
+    Tp::BaseChannelPtr baseChannel = Tp::BaseChannel::create(this, TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    Tp::BaseChannelFileTransferTypePtr fileTransferChannel = Tp::BaseChannelFileTransferType::create(request);
+    baseChannel->plugInterface(Tp::AbstractChannelInterfacePtr::dynamicCast(fileTransferChannel));
 
     g_channel = baseChannel;
 
@@ -387,10 +418,13 @@ private Q_SLOTS:
 
     void testConnectionCapability();
     void testContactCapability();
+public:
     void testSendFile();
     void testSendFile_data();
     void testReceiveFile();
     void testReceiveFile_data();
+private Q_SLOTS:
+    void getFileById();
 
     void cleanup();
     void cleanupTestCase();
@@ -921,6 +955,171 @@ void TestBaseFileTranfserChannel::testReceiveFile_data()
     // or need sequential device to control data flow
     QTest::newRow("Cancel before the data")           << 2048 << noOffset << int(CancelBeforeData)    << sequentialDeviceYes << autoSkipNo;
     QTest::newRow("Cancel in the middle of the data") << 2048 << noOffset << int(CancelBeforeComplete)<< sequentialDeviceYes << autoSkipNo;
+}
+
+void TestBaseFileTranfserChannel::getFileById()
+{
+    //QFETCH(int, fileSize);
+    int fileSize = 2000;
+    int initialOffset = 0;
+    int cancelCondition = NoCancel;
+
+    QCOMPARE(mCliConnection->status(), Tp::ConnectionStatusConnected);
+    QVERIFY(!mCliContact.isNull());
+
+    const QByteArray fileContent = generateFileContent(fileSize);
+    QCOMPARE(fileContent.size(), fileSize);
+
+    Tp::FileTransferChannelCreationProperties fileTransferProperties(QLatin1String("file-transfer-test-incoming.txt"), c_fileContentType, fileContent.size());
+    fileTransferProperties.setUri(QLatin1String("file:///tmp/file-transfer-test-incoming.txt"));
+    fileTransferProperties.setLastModificationTime(c_fileTimestamp);
+
+    const QString fileId = QLatin1String("my-file-id");
+
+    QVariantMap request;
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                   TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".FileID"),
+                   fileId);
+
+    Tp::PendingChannel *pendingChannel = mCliConnection->lowlevel()->createChannel(request);
+
+    {
+        QSignalSpy opFinishedSpy(pendingChannel, &Tp::PendingChannel::finished);
+        QVERIFY(opFinishedSpy.wait());
+    }
+
+    QVERIFY(pendingChannel->isValid());
+
+    Tp::ChannelPtr cliChannel = pendingChannel->channel();
+    Tp::IncomingFileTransferChannelPtr cliTransferChannel = Tp::IncomingFileTransferChannelPtr::qObjectCast(cliChannel);
+    QVERIFY(cliTransferChannel);
+
+    Tp::PendingReady *pendingChannelReady = cliTransferChannel->becomeReady(Tp::OutgoingFileTransferChannel::FeatureCore);
+    {
+        QSignalSpy opFinishedSpy(pendingChannelReady, &Tp::PendingChannel::finished);
+        QVERIFY(opFinishedSpy.wait());
+    }
+    QVERIFY(pendingChannelReady->isValid());
+    QCOMPARE(cliTransferChannel->channelType(), TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    QVERIFY(cliTransferChannel->isRequested());
+    QCOMPARE(cliTransferChannel->state(), Tp::FileTransferStatePending);
+
+    Tp::BaseChannelFileTransferTypePtr svcTransferChannel = Tp::BaseChannelFileTransferTypePtr::dynamicCast(g_channel->interface(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER));
+    QVERIFY(!svcTransferChannel.isNull());
+    QCOMPARE(g_channel->channelType(), TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    QVERIFY(g_channel->requested());
+    QCOMPARE(int(svcTransferChannel->state()), int(Tp::FileTransferStatePending));
+
+    Tp::IODevice cliInputDevice;
+    cliInputDevice.open(QIODevice::ReadWrite);
+
+    ClientFileTransferStateSpy spyClientState;
+    connect(cliTransferChannel.data(), SIGNAL(stateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)), &spyClientState, SLOT(trigger(Tp::FileTransferState,Tp::FileTransferStateChangeReason)));
+    QSignalSpy spySvcState(svcTransferChannel.data(), SIGNAL(stateChanged(uint,uint)));
+
+    Tp::PendingOperation *acceptFileOperation = cliTransferChannel->acceptFile(initialOffset, &cliInputDevice);
+    connect(acceptFileOperation, SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectSuccessfulCall(Tp::PendingOperation*)));
+    QCOMPARE(mLoop->exec(), 0);
+
+    if (spySvcState.isEmpty()) {
+        spySvcState.wait();
+    }
+
+    QCOMPARE(uint(svcTransferChannel->state()), uint(Tp::FileTransferStateAccepted));
+    QCOMPARE(spySvcState.count(), 1);
+    QCOMPARE(spySvcState.first().at(0).toUInt(), uint(Tp::FileTransferStateAccepted));
+
+    QTRY_COMPARE_WITH_TIMEOUT(spyClientState.count(), 1, c_defaultTimeout);
+    QCOMPARE(uint(cliTransferChannel->state()), uint(Tp::FileTransferStateAccepted));
+
+    spySvcState.clear();
+    spyClientState.clear();
+
+    bool useSequentialDevice = true;
+    bool useAutoSkip = true;
+
+    Tp::IODevice svcOutputDeviceSequential;
+    QBuffer svcOutputDeviceRandomAccess;
+
+    QSignalSpy spyClientTransferredBytes(cliTransferChannel.data(), SIGNAL(transferredBytesChanged(qulonglong)));
+
+    if (useSequentialDevice) {
+        svcOutputDeviceSequential.open(QIODevice::ReadWrite);
+        if (useAutoSkip) {
+            svcTransferChannel->remoteProvideFile(&svcOutputDeviceSequential);
+        } else {
+            svcTransferChannel->remoteProvideFile(&svcOutputDeviceSequential, initialOffset);
+        }
+    } else {
+        svcOutputDeviceRandomAccess.setData(fileContent);
+        svcTransferChannel->remoteProvideFile(&svcOutputDeviceRandomAccess); // Use auto seek for random-access device
+    }
+
+    if (spySvcState.isEmpty()) {
+        spySvcState.wait();
+    }
+
+    QCOMPARE(uint(svcTransferChannel->state()), uint(Tp::FileTransferStateOpen));
+    QCOMPARE(spySvcState.count(), 1);
+    QCOMPARE(spySvcState.first().at(0).toUInt(), uint(Tp::FileTransferStateOpen));
+
+    if (useSequentialDevice) {
+        QTRY_VERIFY_WITH_TIMEOUT(spyClientState.count() == 1, c_defaultTimeout);
+        QCOMPARE(uint(cliTransferChannel->state()), uint(Tp::FileTransferStateOpen));
+    } else {
+        QTRY_VERIFY_WITH_TIMEOUT(spyClientState.count() >= 1, c_defaultTimeout);
+        uint currentState = cliTransferChannel->state();
+        QVERIFY((currentState == Tp::FileTransferStateOpen) || (currentState == Tp::FileTransferStateCompleted));
+    }
+
+    if (cancelCondition == CancelBeforeData) {
+        QCOMPARE(requestCloseCliChannel(cliTransferChannel), 0);
+
+        QTRY_COMPARE_WITH_TIMEOUT(uint(svcTransferChannel->state()), uint(Tp::FileTransferStateCancelled), c_defaultTimeout);
+        QTRY_COMPARE_WITH_TIMEOUT(spySvcState.last().at(0).toUInt(), uint(Tp::FileTransferStateCancelled), c_defaultTimeout);
+        QTRY_COMPARE_WITH_TIMEOUT(spySvcState.last().at(1).toUInt(), uint(Tp::FileTransferStateChangeReasonLocalStopped), c_defaultTimeout);
+        return;
+    }
+
+    if (useSequentialDevice) {
+        int actualWriteOffset = useAutoSkip ? 0 : initialOffset;
+        int writtenBytes = svcOutputDeviceSequential.write(fileContent.mid(actualWriteOffset, (fileSize - actualWriteOffset) / 2));
+
+        QTRY_VERIFY_WITH_TIMEOUT(!spyClientTransferredBytes.isEmpty(), c_defaultTimeout);
+        QTRY_COMPARE_WITH_TIMEOUT(spyClientTransferredBytes.last().at(0).toInt(), writtenBytes + actualWriteOffset, c_defaultTimeout);
+
+        if (cancelCondition == CancelBeforeComplete) {
+            QCOMPARE(requestCloseCliChannel(cliTransferChannel), 0);
+
+            if (spySvcState.isEmpty()) {
+                spySvcState.wait();
+            }
+
+            QTRY_COMPARE_WITH_TIMEOUT(uint(svcTransferChannel->state()), uint(Tp::FileTransferStateCancelled), c_defaultTimeout);
+            QTRY_COMPARE_WITH_TIMEOUT(spySvcState.last().at(0).toUInt(), uint(Tp::FileTransferStateCancelled), c_defaultTimeout);
+            QTRY_COMPARE_WITH_TIMEOUT(spySvcState.last().at(1).toUInt(), uint(Tp::FileTransferStateChangeReasonLocalStopped), c_defaultTimeout);
+            return;
+        }
+
+        writtenBytes += svcOutputDeviceSequential.write(fileContent.mid(actualWriteOffset + writtenBytes));
+    }
+    if (!svcTransferChannel->size()) {
+        // If the size is unknown then transfer should be completed manually
+        svcTransferChannel->setTransferComplete();
+    }
+
+    QTRY_VERIFY_WITH_TIMEOUT(!spyClientTransferredBytes.isEmpty(), c_defaultTimeout);
+    QTRY_COMPARE_WITH_TIMEOUT(spyClientTransferredBytes.last().at(0).toInt(), fileSize, c_defaultTimeout);
+
+    QTRY_COMPARE_WITH_TIMEOUT(spyClientState.count(), 2, c_defaultTimeout);
+    QCOMPARE(uint(cliTransferChannel->state()), uint(Tp::FileTransferStateCompleted));
+
+    QVERIFY(cliInputDevice.isOpen());
+    QVERIFY(cliInputDevice.isReadable());
+    QByteArray cliData = cliInputDevice.readAll();
+    QCOMPARE(cliData, fileContent.mid(initialOffset));
 }
 
 void TestBaseFileTranfserChannel::cleanup()
