@@ -244,6 +244,7 @@ public:
 
     QString contentType() const;
     QString filename() const;
+    QString fileId() const;
     qulonglong size() const;
     uint contentHashType() const;
     QString contentHash() const;
