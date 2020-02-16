@@ -809,6 +809,7 @@ struct TP_QT_NO_EXPORT BaseChannelFileTransferType::Private {
         : adaptee(new BaseChannelFileTransferType::Adaptee(parent))
     {
         contentType = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentType")).toString();
+        fileId = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".FileID")).toString();
         filename = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Filename")).toString();
         size = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Size")).toULongLong();
         contentHashType = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentHashType")).toUInt();
@@ -828,7 +829,13 @@ struct TP_QT_NO_EXPORT BaseChannelFileTransferType::Private {
         }
 
         if (request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested")).toBool()) {
-            direction = BaseChannelFileTransferType::Outgoing;
+            if (!fileId.isEmpty()) {
+                // If the request has FileID then it is a file content request.
+                // We're going to get data so consider this transfer as an incoming one.
+                direction = BaseChannelFileTransferType::Incoming;
+            } else {
+                direction = BaseChannelFileTransferType::Outgoing;
+            }
         } else {
             direction = BaseChannelFileTransferType::Incoming;
         }
@@ -840,6 +847,7 @@ struct TP_QT_NO_EXPORT BaseChannelFileTransferType::Private {
     qulonglong size = 0;
     uint contentHashType = 0;
     QString contentHash;
+    QString fileId;
     QString description;
     QDateTime date;
     qulonglong transferredBytes = 0;
@@ -1261,6 +1269,10 @@ QVariantMap BaseChannelFileTransferType::immutableProperties() const
                QVariant::fromValue(contentType()));
     map.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Filename"),
                QVariant::fromValue(filename()));
+    if (!mPriv->fileId.isEmpty()) {
+        map.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".FileID"),
+                   QVariant::fromValue(fileId()));
+    }
     map.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Size"),
                QVariant::fromValue(size()));
     map.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentHashType"),
@@ -1314,6 +1326,11 @@ QString BaseChannelFileTransferType::contentType() const
 QString BaseChannelFileTransferType::filename() const
 {
     return mPriv->filename;
+}
+
+QString BaseChannelFileTransferType::fileId() const
+{
+    return mPriv->fileId;
 }
 
 qulonglong BaseChannelFileTransferType::size() const
