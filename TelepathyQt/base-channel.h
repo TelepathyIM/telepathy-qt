@@ -280,6 +280,9 @@ protected:
     virtual bool createSocket(uint addressType, uint accessControl, const QDBusVariant &accessControlParam, DBusError *error);
     virtual QDBusVariant socketAddress() const;
 
+    void setContentType(const QString &contentType);
+    void setFileName(const QString &fileName);
+    void setSize(qulonglong size);
     void setClientSocket(QIODevice *socket);
 
     void close() override;

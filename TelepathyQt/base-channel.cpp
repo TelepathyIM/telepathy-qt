@@ -1148,6 +1148,33 @@ QDBusVariant BaseChannelFileTransferType::socketAddress() const
     return QDBusVariant();
 }
 
+void BaseChannelFileTransferType::setContentType(const QString &contentType)
+{
+    if (isRegistered()) {
+        warning() << "BaseChannelFileTransferType: Unable to set contentType for a registered channel";
+        return;
+    }
+    mPriv->contentType = contentType;
+}
+
+void BaseChannelFileTransferType::setFileName(const QString &fileName)
+{
+    if (isRegistered()) {
+        warning() << "BaseChannelFileTransferType: Unable to set fileName for a registered channel";
+        return;
+    }
+    mPriv->fileName = fileName;
+}
+
+void BaseChannelFileTransferType::setSize(qulonglong size)
+{
+    if (isRegistered()) {
+        warning() << "BaseChannelFileTransferType: Unable to set size for a registered channel";
+        return;
+    }
+    mPriv->size = size;
+}
+
 void BaseChannelFileTransferType::setTransferredBytes(qulonglong count)
 {
     if (mPriv->transferredBytes == count) {
