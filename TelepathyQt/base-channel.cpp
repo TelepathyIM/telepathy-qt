@@ -810,7 +810,7 @@ struct TP_QT_NO_EXPORT BaseChannelFileTransferType::Private {
     {
         contentType = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentType")).toString();
         fileId = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".FileID")).toString();
-        filename = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Filename")).toString();
+        fileName = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Filename")).toString();
         size = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Size")).toULongLong();
         contentHashType = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentHashType")).toUInt();
         contentHash = request.value(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentHash")).toString();
@@ -843,7 +843,7 @@ struct TP_QT_NO_EXPORT BaseChannelFileTransferType::Private {
 
     uint state = Tp::FileTransferStatePending;
     QString contentType;
-    QString filename;
+    QString fileName;
     qulonglong size = 0;
     uint contentHashType = 0;
     QString contentHash;
@@ -1325,7 +1325,12 @@ QString BaseChannelFileTransferType::contentType() const
 
 QString BaseChannelFileTransferType::filename() const
 {
-    return mPriv->filename;
+    return mPriv->fileName;
+}
+
+QString BaseChannelFileTransferType::fileName() const
+{
+    return mPriv->fileName;
 }
 
 QString BaseChannelFileTransferType::fileId() const
