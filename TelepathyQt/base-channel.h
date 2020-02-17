@@ -243,7 +243,9 @@ public:
     Direction direction() const;
 
     QString contentType() const;
+    QT_DEPRECATED_X("Use fileName() instead")
     QString filename() const;
+    QString fileName() const;
     QString fileId() const;
     qulonglong size() const;
     uint contentHashType() const;
