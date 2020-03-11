@@ -243,6 +243,6 @@ private:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::Contact::InfoFields);
+Q_DECLARE_METATYPE(Tp::Contact::InfoFields)
 
 #endif

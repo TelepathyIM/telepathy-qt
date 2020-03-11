@@ -68,7 +68,7 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Tp::ManagerFile);
+Q_DECLARE_METATYPE(Tp::ManagerFile)
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 

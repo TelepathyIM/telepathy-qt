@@ -84,7 +84,7 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Tp::KeyFile);
+Q_DECLARE_METATYPE(Tp::KeyFile)
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 

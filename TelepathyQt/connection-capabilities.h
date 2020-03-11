@@ -69,6 +69,6 @@ protected:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::ConnectionCapabilities);
+Q_DECLARE_METATYPE(Tp::ConnectionCapabilities)
 
 #endif

@@ -90,7 +90,7 @@ public:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::MessageContentPart);
-Q_DECLARE_METATYPE(Tp::MessageContentPartList);
+Q_DECLARE_METATYPE(Tp::MessageContentPart)
+Q_DECLARE_METATYPE(Tp::MessageContentPartList)
 
 #endif

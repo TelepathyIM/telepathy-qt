@@ -96,6 +96,6 @@ private:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::FileTransferChannelCreationProperties);
+Q_DECLARE_METATYPE(Tp::FileTransferChannelCreationProperties)
 
 #endif
