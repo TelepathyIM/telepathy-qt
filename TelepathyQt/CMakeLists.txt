@@ -33,6 +33,8 @@ set(telepathy_qt_SRCS
     channel-factory.cpp
     channel-internal.h
     channel-request.cpp
+    channel-requests-properties-internal.cpp
+    channel-requests-properties-internal.h
     channel.cpp
     client-registrar-internal.h
     client-registrar.cpp
