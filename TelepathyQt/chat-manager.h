@@ -28,6 +28,7 @@
 
 #include <TelepathyQt/Feature>
 #include <TelepathyQt/Object>
+#include <TelepathyQt/PendingOperation>
 #include <TelepathyQt/Types>
 
 #include <QList>
@@ -50,6 +51,15 @@ public:
     ConnectionPtr connection() const;
 
     Features supportedFeatures() const;
+
+    PendingOperation *markTextChatRead(const QString &contactIdentifier,
+                                       const QString &messageToken);
+
+    PendingOperation *markTextChatroomRead(const QString &roomIdentifier,
+                                           const QString &messageToken);
+
+    PendingOperation *markChatRead(const QVariantMap &channelRequest,
+                                   const QString &messageToken);
 
 private:
     friend class Connection;
