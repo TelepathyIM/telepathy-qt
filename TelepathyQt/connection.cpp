@@ -957,6 +957,11 @@ const Feature Connection::FeatureAccountBalance = Feature(QLatin1String(Connecti
 const Feature Connection::FeatureConnected = Feature(QLatin1String(Connection::staticMetaObject.className()), 7);
 
 /**
+ * Feature used to mark chat messages as read.
+ */
+const Feature Connection::FeatureChatRead = Feature(QLatin1String(Connection::staticMetaObject.className()), 8);
+
+/**
  * Create a new connection object using QDBusConnection::sessionBus().
  *
  * A warning is printed if the factories are not for QDBusConnection::sessionBus().

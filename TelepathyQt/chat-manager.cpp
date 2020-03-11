@@ -145,6 +145,10 @@ Features ChatManager::supportedFeatures() const
 
 QString ChatManager::featureToInterface(const Feature &feature)
 {
+    if (feature == Connection::FeatureChatRead) {
+        return TP_QT_IFACE_CONNECTION_INTERFACE_CHAT_READ;
+    }
+
     warning() << "ChatManager doesn't know which interface corresponds to feature"
               << feature;
     return QString();
@@ -156,7 +160,10 @@ void ChatManager::ensureTracking(const Feature &feature)
         return;
     }
 
-    {
+    if (feature == Connection::FeatureChatRead) {
+        // nothing to do here, but we don't want to warn
+        ;
+    } else {
         warning() << " Unknown feature" << feature
                   << "when trying to figure out how to connect change notification!";
     }

@@ -72,6 +72,7 @@ public:
     static const Feature FeatureRosterGroups;
     static const Feature FeatureAccountBalance; // TODO unit tests for this
     static const Feature FeatureConnected;
+    static const Feature FeatureChatRead;
 
     static ConnectionPtr create(const QString &busName,
             const QString &objectPath,
