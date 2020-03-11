@@ -143,6 +143,24 @@ Features ChatManager::supportedFeatures() const
     return mPriv->supportedFeatures;
 }
 
+PendingOperation *Tp::ChatManager::markTextChatRead(const QString &contactIdentifier, const QString &messageToken)
+{
+    QVariantMap request = textChatRequest(contactIdentifier);
+    return markChatRead(request, messageToken);
+}
+
+PendingOperation *Tp::ChatManager::markTextChatroomRead(const QString &roomIdentifier, const QString &messageToken)
+{
+    QVariantMap request = textChatroomRequest(roomIdentifier);
+    return markChatRead(request, messageToken);
+}
+
+PendingOperation *Tp::ChatManager::markChatRead(const QVariantMap &channelRequest, const QString &messageToken)
+{
+    return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
+            QLatin1String("Connection does not support MarkChatRead"), ChatManagerPtr(this));
+}
+
 QString ChatManager::featureToInterface(const Feature &feature)
 {
     if (feature == Connection::FeatureChatRead) {
