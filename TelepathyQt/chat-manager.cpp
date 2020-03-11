@@ -25,6 +25,7 @@
 
 #include "TelepathyQt/channel-requests-properties-internal.h"
 #include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/pending-chat-read.h"
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ConnectionLowlevel>
@@ -157,8 +158,7 @@ PendingOperation *Tp::ChatManager::markTextChatroomRead(const QString &roomIdent
 
 PendingOperation *Tp::ChatManager::markChatRead(const QVariantMap &channelRequest, const QString &messageToken)
 {
-    return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
-            QLatin1String("Connection does not support MarkChatRead"), ChatManagerPtr(this));
+    return new PendingChatReadOperation(connection(), channelRequest, messageToken);
 }
 
 QString ChatManager::featureToInterface(const Feature &feature)
