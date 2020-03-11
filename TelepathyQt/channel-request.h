@@ -144,6 +144,6 @@ private:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::ChannelRequestHints);
+Q_DECLARE_METATYPE(Tp::ChannelRequestHints)
 
 #endif

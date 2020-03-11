@@ -259,6 +259,6 @@ typedef QListIterator<uint> ReferencedHandlesIterator;
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::ReferencedHandles);
+Q_DECLARE_METATYPE(Tp::ReferencedHandles)
 
 #endif

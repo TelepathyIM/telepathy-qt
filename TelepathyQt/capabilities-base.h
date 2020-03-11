@@ -85,6 +85,6 @@ private:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::CapabilitiesBase);
+Q_DECLARE_METATYPE(Tp::CapabilitiesBase)
 
 #endif

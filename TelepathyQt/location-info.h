@@ -90,6 +90,6 @@ private:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::LocationInfo);
+Q_DECLARE_METATYPE(Tp::LocationInfo)
 
 #endif

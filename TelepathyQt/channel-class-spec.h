@@ -322,7 +322,7 @@ inline uint qHash(const QList<ChannelClassSpec> &specList)
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::ChannelClassSpec);
-Q_DECLARE_METATYPE(Tp::ChannelClassSpecList);
+Q_DECLARE_METATYPE(Tp::ChannelClassSpec)
+Q_DECLARE_METATYPE(Tp::ChannelClassSpecList)
 
 #endif

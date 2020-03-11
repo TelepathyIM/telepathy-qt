@@ -40,6 +40,6 @@ typedef QPair<ChannelClassSpec, Features> ChannelClassFeatures;
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::ChannelClassFeatures);
+Q_DECLARE_METATYPE(Tp::ChannelClassFeatures)
 
 #endif

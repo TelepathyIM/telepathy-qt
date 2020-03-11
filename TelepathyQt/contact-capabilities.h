@@ -64,6 +64,6 @@ protected:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::ContactCapabilities);
+Q_DECLARE_METATYPE(Tp::ContactCapabilities)
 
 #endif

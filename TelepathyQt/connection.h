@@ -243,6 +243,6 @@ private:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::Connection::ErrorDetails);
+Q_DECLARE_METATYPE(Tp::Connection::ErrorDetails)
 
 #endif

@@ -320,8 +320,8 @@ private:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::AbstractClientObserver::ObserverInfo);
-Q_DECLARE_METATYPE(Tp::AbstractClientHandler::Capabilities);
-Q_DECLARE_METATYPE(Tp::AbstractClientHandler::HandlerInfo);
+Q_DECLARE_METATYPE(Tp::AbstractClientObserver::ObserverInfo)
+Q_DECLARE_METATYPE(Tp::AbstractClientHandler::Capabilities)
+Q_DECLARE_METATYPE(Tp::AbstractClientHandler::HandlerInfo)
 
 #endif

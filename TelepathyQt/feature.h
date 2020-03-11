@@ -88,7 +88,7 @@ inline uint qHash(const Features &features)
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::Feature);
-Q_DECLARE_METATYPE(Tp::Features);
+Q_DECLARE_METATYPE(Tp::Feature)
+Q_DECLARE_METATYPE(Tp::Features)
 
 #endif

@@ -247,6 +247,6 @@ private:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::Channel::GroupMemberChangeDetails);
+Q_DECLARE_METATYPE(Tp::Channel::GroupMemberChangeDetails)
 
 #endif
