@@ -269,7 +269,11 @@ bool ReferencedHandles::removeOne(uint handle)
 
 void ReferencedHandles::swap(int i, int j)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
+    mPriv->handles.swapItemsAt(i, j);
+#else
     mPriv->handles.swap(i, j);
+#endif
 }
 
 uint ReferencedHandles::takeAt(int i)
