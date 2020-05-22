@@ -213,7 +213,7 @@ class GTypesGenerator(object):
         for mapping in mappings:
             self.do_mapping_header(mapping)
 
-        for sig in self.need_mappings:
+        for sig in sorted(self.need_mappings):
             self.h('GType %stype_dbus_hash_%s (void);\n\n' %
                               (self.prefix_, self.need_mappings[sig]))
             self.c('GType\n%stype_dbus_hash_%s (void)\n{\n' %
@@ -231,7 +231,7 @@ class GTypesGenerator(object):
         for struct in structs:
             self.do_struct_header(struct)
 
-        for sig in self.need_structs:
+        for sig in sorted(self.need_structs):
             self.h('GType %stype_dbus_struct_%s (void);\n\n' %
                               (self.prefix_, self.need_structs[sig]))
             self.c('GType\n%stype_dbus_struct_%s (void)\n{\n' %
@@ -247,7 +247,7 @@ class GTypesGenerator(object):
             self.c('  return t;\n')
             self.c('}\n\n')
 
-        for sig in self.need_struct_arrays:
+        for sig in sorted(self.need_struct_arrays):
             self.h('GType %stype_dbus_array_%s (void);\n\n' %
                               (self.prefix_, self.need_struct_arrays[sig]))
             self.c('GType\n%stype_dbus_array_%s (void)\n{\n' %
@@ -260,7 +260,7 @@ class GTypesGenerator(object):
             self.c('  return t;\n')
             self.c('}\n\n')
 
-        for sig in self.need_other_arrays:
+        for sig in sorted(self.need_other_arrays):
             self.h('GType %stype_dbus_array_of_%s (void);\n\n' %
                               (self.prefix_, self.need_other_arrays[sig]))
             self.c('GType\n%stype_dbus_array_of_%s (void)\n{\n' %
