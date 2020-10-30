@@ -1,5 +1,4 @@
 #include <tests/lib/test.h>
-#include <tests/lib/test-thread-helper.h>
 
 #define TP_QT_ENABLE_LOWLEVEL_API
 
@@ -30,10 +29,6 @@ private Q_SLOTS:
 
     void cleanup();
     void cleanupTestCase();
-
-private:
-    static void testNoProtocolsCreateCM(BaseConnectionManagerPtr &cm);
-    static void testProtocolsCreateCM(BaseConnectionManagerPtr &cm);
 };
 
 void TestBaseCM::initTestCase()
@@ -46,16 +41,6 @@ void TestBaseCM::init()
     initImpl();
 }
 
-void TestBaseCM::testNoProtocolsCreateCM(BaseConnectionManagerPtr &cm)
-{
-    cm = BaseConnectionManager::create(QLatin1String("testcm"));
-    Tp::DBusError err;
-    QVERIFY(cm->registerObject(&err));
-    QVERIFY(!err.isValid());
-
-    QCOMPARE(cm->protocols().size(), 0);
-}
-
 void TestBaseCM::testNoProtocols()
 {
     qDebug() << "Introspecting non-existing CM";
@@ -63,22 +48,25 @@ void TestBaseCM::testNoProtocols()
     ConnectionManagerPtr cliCM = ConnectionManager::create(
             QLatin1String("testcm"));
     PendingReady *pr = cliCM->becomeReady(ConnectionManager::FeatureCore);
-    connect(pr, SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(expectFailure(Tp::PendingOperation*)));
-    QCOMPARE(mLoop->exec(), 0);
+    QTRY_VERIFY(pr->isFinished());
+    QVERIFY(pr->isError());
 
     qDebug() << "Creating CM";
 
-    TestThreadHelper<BaseConnectionManagerPtr> helper;
-    TEST_THREAD_HELPER_EXECUTE(&helper, &testNoProtocolsCreateCM);
+    BaseConnectionManagerPtr svcCM = BaseConnectionManager::create(
+                QLatin1String("testcm"));
+    Tp::DBusError err;
+    QVERIFY(svcCM->registerObject(&err));
+    QVERIFY(!err.isValid());
+
+    QCOMPARE(svcCM->protocols().size(), 0);
 
     qDebug() << "Introspecting new CM";
 
     cliCM = ConnectionManager::create(QLatin1String("testcm"));
     pr = cliCM->becomeReady(ConnectionManager::FeatureCore);
-    connect(pr, SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(expectSuccessfulCall(Tp::PendingOperation*)));
-    QCOMPARE(mLoop->exec(), 0);
+    QTRY_VERIFY(pr->isFinished());
+    QVERIFY(!pr->isError());
 
     QCOMPARE(cliCM->supportedProtocols().size(), 0);
 
@@ -86,75 +74,67 @@ void TestBaseCM::testNoProtocols()
 
     PendingConnection *pc = cliCM->lowlevel()->requestConnection(
             QLatin1String("jabber"), QVariantMap());
-    connect(pc, SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(expectFailure(Tp::PendingOperation*)));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mLastError, TP_QT_ERROR_NOT_IMPLEMENTED);
-}
-
-void TestBaseCM::testProtocolsCreateCM(BaseConnectionManagerPtr &cm)
-{
-    cm = BaseConnectionManager::create(QLatin1String("testcm"));
-
-    BaseProtocolPtr protocol = BaseProtocol::create(QLatin1String("myprotocol"));
-    QVERIFY(!protocol.isNull());
-    QVERIFY(cm->addProtocol(protocol));
-
-    QVERIFY(cm->hasProtocol(QLatin1String("myprotocol")));
-    QCOMPARE(cm->protocol(QLatin1String("myprotocol")), protocol);
-    QCOMPARE(cm->protocols().size(), 1);
-
-    QVERIFY(!cm->hasProtocol(QLatin1String("otherprotocol")));
-    QVERIFY(cm->protocol(QLatin1String("otherprotocol")).isNull());
-
-    //can't add the same protocol twice
-    QVERIFY(!cm->addProtocol(protocol));
-
-    Tp::DBusError err;
-    QVERIFY(cm->registerObject(&err));
-    QVERIFY(!err.isValid());
-
-    //can't add another protocol after registerObject()
-    protocol = BaseProtocol::create(QLatin1String("otherprotocol"));
-    QVERIFY(!protocol.isNull());
-    QVERIFY(!cm->addProtocol(protocol));
-    QCOMPARE(cm->protocols().size(), 1);
-    protocol.reset();
-
-    QVariantMap props = cm->immutableProperties();
-    QVERIFY(props.contains(TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".Protocols")));
-
-    ProtocolPropertiesMap protocols = qvariant_cast<Tp::ProtocolPropertiesMap>(
-            props[TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".Protocols")]);
-    QVERIFY(protocols.contains(QLatin1String("myprotocol")));
-    QVERIFY(!protocols.contains(QLatin1String("otherprotocol")));
+    QTRY_VERIFY(pc->isFinished());
+    QVERIFY(pc->isError());
+    QCOMPARE(pc->errorName(), QString(TP_QT_ERROR_NOT_IMPLEMENTED));
 }
 
 void TestBaseCM::testProtocols()
 {
     qDebug() << "Creating CM";
 
-    TestThreadHelper<BaseConnectionManagerPtr> helper;
-    TEST_THREAD_HELPER_EXECUTE(&helper, &testProtocolsCreateCM);
+    BaseConnectionManagerPtr svcCM = BaseConnectionManager::create(
+                QLatin1String("testcm"));
+
+    BaseProtocolPtr protocol = BaseProtocol::create(QLatin1String("myprotocol"));
+    QVERIFY(!protocol.isNull());
+    QVERIFY(svcCM->addProtocol(protocol));
+
+    QVERIFY(svcCM->hasProtocol(QLatin1String("myprotocol")));
+    QCOMPARE(svcCM->protocol(QLatin1String("myprotocol")), protocol);
+    QCOMPARE(svcCM->protocols().size(), 1);
+
+    QVERIFY(!svcCM->hasProtocol(QLatin1String("otherprotocol")));
+    QVERIFY(svcCM->protocol(QLatin1String("otherprotocol")).isNull());
+
+    //can't add the same protocol twice
+    QVERIFY(!svcCM->addProtocol(protocol));
+
+    Tp::DBusError err;
+    QVERIFY(svcCM->registerObject(&err));
+    QVERIFY(!err.isValid());
+
+    //can't add another protocol after registerObject()
+    protocol = BaseProtocol::create(QLatin1String("otherprotocol"));
+    QVERIFY(!protocol.isNull());
+    QVERIFY(!svcCM->addProtocol(protocol));
+    QCOMPARE(svcCM->protocols().size(), 1);
+    protocol.reset();
+
+    QVariantMap props = svcCM->immutableProperties();
+    QVERIFY(props.contains(TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".Protocols")));
+
+    ProtocolPropertiesMap protocols = qvariant_cast<Tp::ProtocolPropertiesMap>(
+            props[TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".Protocols")]);
+    QVERIFY(protocols.contains(QLatin1String("myprotocol")));
+    QVERIFY(!protocols.contains(QLatin1String("otherprotocol")));
 
     qDebug() << "Introspecting CM";
 
     ConnectionManagerPtr cliCM = ConnectionManager::create(
             QLatin1String("testcm"));
     PendingReady *pr = cliCM->becomeReady(ConnectionManager::FeatureCore);
-    connect(pr, SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(expectSuccessfulCall(Tp::PendingOperation*)));
-    QCOMPARE(mLoop->exec(), 0);
+    QTRY_VERIFY(pr->isFinished());
+    QVERIFY(!pr->isError());
 
     QCOMPARE(cliCM->supportedProtocols().size(), 1);
     QVERIFY(cliCM->hasProtocol(QLatin1String("myprotocol")));
 
     PendingConnection *pc = cliCM->lowlevel()->requestConnection(
             QLatin1String("myprotocol"), QVariantMap());
-    connect(pc, SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(expectFailure(Tp::PendingOperation*)));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mLastError, TP_QT_ERROR_NOT_IMPLEMENTED);
+    QTRY_VERIFY(pc->isFinished());
+    QVERIFY(pc->isError());
+    QCOMPARE(pc->errorName(), QString(TP_QT_ERROR_NOT_IMPLEMENTED));
 }
 
 void TestBaseCM::cleanup()
