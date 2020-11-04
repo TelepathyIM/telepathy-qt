@@ -61,17 +61,17 @@ struct TP_QT_NO_EXPORT TextChannel::Private
     void contactFound(ContactPtr contact);
 
     // Public object
-    TextChannel *parent;
+    TextChannel *parent = nullptr;
 
-    Client::ChannelTypeTextInterface *textInterface;
-    Client::DBus::PropertiesInterface *properties;
+    Client::ChannelTypeTextInterface *textInterface = nullptr;
+    Client::DBus::PropertiesInterface *properties = nullptr;
 
-    ReadinessHelper *readinessHelper;
+    ReadinessHelper *readinessHelper = nullptr;
 
     // FeatureMessageCapabilities and FeatureMessageQueue
     QVariantMap props;
-    bool getAllInFlight;
-    bool gotProperties;
+    bool getAllInFlight = false;
+    bool gotProperties = false;
 
     // requires FeatureMessageCapabilities
     QList<ChannelTextMessageType> supportedMessageTypes;
@@ -80,20 +80,20 @@ struct TP_QT_NO_EXPORT TextChannel::Private
     DeliveryReportingSupportFlags deliveryReportingSupport;
 
     // FeatureMessageQueue
-    bool initialMessagesReceived;
+    bool initialMessagesReceived = false;
     struct MessageEvent
     {
         MessageEvent(const ReceivedMessage &message)
-            : isMessage(true), message(message),
-                removed(0)
+            : isMessage(true)
+            , message(message)
         { }
         MessageEvent(uint removed)
-            : isMessage(false), message(), removed(removed)
+            : removed(removed)
         { }
 
-        bool isMessage;
+        bool isMessage = false;
         ReceivedMessage message;
-        uint removed;
+        uint removed = 0;
     };
     QList<ReceivedMessage> messages;
     QList<MessageEvent *> incompleteMessages;
@@ -120,12 +120,7 @@ TextChannel::Private::Private(TextChannel *parent)
     : parent(parent),
       textInterface(parent->interface<Client::ChannelTypeTextInterface>()),
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
-      readinessHelper(parent->readinessHelper()),
-      getAllInFlight(false),
-      gotProperties(false),
-      messagePartSupport(nullptr),
-      deliveryReportingSupport(nullptr),
-      initialMessagesReceived(false)
+      readinessHelper(parent->readinessHelper())
 {
     ReadinessHelper::Introspectables introspectables;
 
