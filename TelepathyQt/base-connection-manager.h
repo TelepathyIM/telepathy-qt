@@ -79,6 +79,10 @@ public:
     bool hasProtocol(const QString &protocolName) const;
     bool addProtocol(const BaseProtocolPtr &protocol);
 
+    QList<AbstractConnectionManagerInterfacePtr> interfaces() const;
+    AbstractConnectionManagerInterfacePtr interface(const QString  &interfaceName) const;
+    bool plugInterface(const AbstractConnectionManagerInterfacePtr &interface);
+
     bool registerObject(DBusError *error = nullptr);
 
     QList<BaseConnectionPtr> connections() const;
@@ -100,6 +104,26 @@ private:
 
     class Adaptee;
     friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT AbstractConnectionManagerInterface : public AbstractDBusServiceInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(AbstractConnectionManagerInterface)
+
+public:
+    AbstractConnectionManagerInterface(const QString &interfaceName);
+    ~AbstractConnectionManagerInterface() override;
+
+protected:
+    virtual void setBaseConnectionManager(BaseConnectionManager *manager);
+
+private:
+    friend class BaseConnectionManager;
+
     struct Private;
     friend struct Private;
     Private *mPriv;

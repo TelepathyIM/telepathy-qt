@@ -35,6 +35,7 @@ namespace Tp
 class AbstractCallContentInterface;
 class AbstractChannelInterface;
 class AbstractConnectionInterface;
+class AbstractConnectionManagerInterface;
 class AbstractProtocolInterface;
 class BaseCallContent;
 class BaseCallContentDTMFInterface;
@@ -82,6 +83,7 @@ class DBusService;
 typedef SharedPtr<AbstractCallContentInterface> AbstractCallContentInterfacePtr;
 typedef SharedPtr<AbstractChannelInterface> AbstractChannelInterfacePtr;
 typedef SharedPtr<AbstractConnectionInterface> AbstractConnectionInterfacePtr;
+typedef SharedPtr<AbstractConnectionManagerInterface> AbstractConnectionManagerInterfacePtr;
 typedef SharedPtr<AbstractProtocolInterface> AbstractProtocolInterfacePtr;
 typedef SharedPtr<BaseCallContent> BaseCallContentPtr;
 typedef SharedPtr<BaseCallContentDTMFInterface> BaseCallContentDTMFInterfacePtr;

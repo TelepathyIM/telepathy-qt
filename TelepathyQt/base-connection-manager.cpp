@@ -417,4 +417,26 @@ void BaseConnectionManager::removeConnection()
  * \param connection The newly created connection
  */
 
+/**
+ * \class AbstractConnectionManagerInterface
+ * \ingroup serviceconn
+ * \headerfile TelepathyQt/base-connection-manager.h <TelepathyQt/BaseConnectionManager>
+ *
+ * \brief Base class for all the ConnectionManager object interface implementations.
+ */
+
+AbstractConnectionManagerInterface::AbstractConnectionManagerInterface(const QString &interfaceName)
+    : AbstractDBusServiceInterface(interfaceName)
+{
+}
+
+AbstractConnectionManagerInterface::~AbstractConnectionManagerInterface()
+{
+}
+
+void AbstractConnectionManagerInterface::setBaseConnectionManager(BaseConnectionManager *manager)
+{
+    Q_UNUSED(manager)
+}
+
 }
