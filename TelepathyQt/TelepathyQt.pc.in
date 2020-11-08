@@ -3,7 +3,7 @@ includedir=${INCLUDE_INSTALL_DIR}
 
 Name: TelepathyQt${QT_VERSION_MAJOR}
 Description: Qt utility library for the Telepathy framework
-Version: ${PACKAGE_VERSION}
+Version: ${TelepathyQt_VERSION}
 Requires.private: Qt${QT_VERSION_PC}Core >= ${QT_MIN_VERSION}, Qt${QT_VERSION_PC}Core < ${QT_MAX_VERSION}, Qt${QT_VERSION_PC}DBus >= ${QT_MIN_VERSION}, Qt${QT_VERSION_PC}DBus < ${QT_MAX_VERSION}, Qt${QT_VERSION_PC}Network >= ${QT_MIN_VERSION}, Qt${QT_VERSION_PC}Network < ${QT_MAX_VERSION}, Qt${QT_VERSION_PC}Xml >= ${QT_MIN_VERSION}, Qt${QT_VERSION_PC}Xml < ${QT_MAX_VERSION}
 Libs: -L${LIB_INSTALL_DIR} -ltelepathy-qt${QT_VERSION_MAJOR}
 Cflags: -I${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}

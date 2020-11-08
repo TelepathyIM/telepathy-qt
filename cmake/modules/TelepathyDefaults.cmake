@@ -54,7 +54,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
         set(DEPRECATED_DECLARATIONS_FLAGS)
     endif ()
 
-    if(${TP_QT_NANO_VERSION} EQUAL 0)
+    if(NOT TelepathyQt_VERSION_TWEAK)
         set(NOT_RELEASE 0)
     else()
         set(NOT_RELEASE 1)

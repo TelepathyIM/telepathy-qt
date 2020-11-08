@@ -1,31 +1,15 @@
-project(TelepathyQt)
-
 cmake_minimum_required(VERSION 3.5)
 
 if(${CMAKE_VERSION} VERSION_LESS 3.15)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
-# Making releases:
-#   set the new version number:
-#     odd minor -> development series
-#     even minor -> stable series
-#     increment micro for each release within a series
-#   set nano_version to 0
-#   make the release, tag it
-#   set nano_version to 1
-set(TP_QT_MAJOR_VERSION 0)
-set(TP_QT_MINOR_VERSION 9)
-set(TP_QT_MICRO_VERSION 8)
-set(TP_QT_NANO_VERSION  0)
+project(TelepathyQt
+    VERSION 0.9.8
+    LANGUAGES C CXX
+)
 
 set(PACKAGE_NAME telepathy-qt)
-
-if (${TP_QT_NANO_VERSION} EQUAL 0)
-    set(PACKAGE_VERSION ${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
-else ()
-    set(PACKAGE_VERSION ${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
-endif ()
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is
 # checked
@@ -34,7 +18,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 # Default build type is RelWithDebInfo for release versions and Debug for developement
 # versions
 if(NOT CMAKE_BUILD_TYPE)
-    if(TP_QT_NANO_VERSION EQUAL 0)
+    if(NOT TelepathyQt_VERSION_TWEAK)
         set(CMAKE_BUILD_TYPE RelWithDebInfo)
     else()
         set(CMAKE_BUILD_TYPE Debug)
@@ -95,11 +79,7 @@ set(TP_QT_SERVICE_ABI_VERSION 1)
 
 # This variable is used for the library's long version. It is generated dynamically, so don't change its
 # value! Change TP_QT_ABI_VERSION and TP_QT_*_VERSION instead.
-if (${TP_QT_NANO_VERSION} EQUAL 0)
-    set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
-else ()
-    set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
-endif ()
+set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TelepathyQt_VERSION})
 
 # The doxygen macro requires Qt to have been looked up to enable crosslinking
 include(Doxygen)

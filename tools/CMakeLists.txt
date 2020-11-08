@@ -47,27 +47,27 @@ endif ()
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/maintainer-upload-release-check.sh "
 #!/bin/sh
-case ${PACKAGE_VERSION} in
+case ${TelepathyQt_VERSION} in
         (*.*.*.*)
-                echo \"${PACKAGE_VERSION} is not a release\" >&2;
+                echo \"${TelepathyQt_VERSION} is not a release\" >&2;
                 exit 2;
                 ;;
 esac
-test -f ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
-if ! test -f ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc; then
-    gpg --detach-sign -a ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz;
+test -f ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz
+if ! test -f ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz.asc; then
+    gpg --detach-sign -a ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz;
 fi;
-gpg --verify ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc
+gpg --verify ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz.asc
 ")
 
 add_custom_target(_maintainer-upload-release-check ${SH} ${CMAKE_CURRENT_BINARY_DIR}/maintainer-upload-release-check.sh)
 
 add_custom_target(maintainer-upload-release
-        rsync -vzP ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
-telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/releases/${PACKAGE_NAME}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
+        rsync -vzP ${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz
+telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/releases/${PACKAGE_NAME}/${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz
         COMMAND
-        rsync -vzP ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc
-telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/releases/${PACKAGE_NAME}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc
+        rsync -vzP ${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz.asc
+telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/releases/${PACKAGE_NAME}/${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz.asc
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_dependencies(maintainer-upload-release _maintainer-upload-release-check maintainer-upload-release-docs)

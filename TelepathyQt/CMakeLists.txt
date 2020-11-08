@@ -860,7 +860,7 @@ configure_package_config_file(TelepathyQtConfig.cmake.in
 
 # this file is used by to check if the installed version can be used.
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVersion.cmake
-                                 VERSION ${PACKAGE_VERSION} COMPATIBILITY SameMajorVersion)
+                                 VERSION ${TelepathyQt_VERSION} COMPATIBILITY SameMajorVersion)
 
 install(EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
         DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
@@ -1054,7 +1054,7 @@ if(ENABLE_SERVICE_SUPPORT)
 
     # this file is used by to check if the installed version can be used.
     write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfigVersion.cmake
-                                     VERSION ${PACKAGE_VERSION} COMPATIBILITY SameMajorVersion)
+                                     VERSION ${TelepathyQt_VERSION} COMPATIBILITY SameMajorVersion)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfigVersion.cmake
                   ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfig.cmake

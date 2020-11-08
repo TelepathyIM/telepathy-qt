@@ -1,40 +1,40 @@
 # setup make dist
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
-                   COMMAND git archive --format=tar --prefix=${PACKAGE_NAME}-${PACKAGE_VERSION}/ HEAD |
-                           gzip > ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz
+                   COMMAND git archive --format=tar --prefix=${PACKAGE_NAME}-${TelepathyQt_VERSION}/ HEAD |
+                           gzip > ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(create-source-working-dir
-                  rm -rf ${PACKAGE_NAME}-${PACKAGE_VERSION} &&
-                  gzip -df ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz &&
-                  tar -xf ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar &&
-                  rm ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar* &&
-                  cd ${PACKAGE_NAME}-${PACKAGE_VERSION}/ &&
+                  rm -rf ${PACKAGE_NAME}-${TelepathyQt_VERSION} &&
+                  gzip -df ${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz &&
+                  tar -xf ${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar &&
+                  rm ${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar* &&
+                  cd ${PACKAGE_NAME}-${TelepathyQt_VERSION}/ &&
                   rm -rf doc && mkdir doc && cp -R ${CMAKE_BINARY_DIR}/doc/html doc/
 
                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                  DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
+                  DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz
                   COMMENT "Generating working source dir for the dist tarball")
 add_dependencies(create-source-working-dir doxygen-doc)
 
 add_custom_target(dist-hook
-                  chmod u+w ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}/ChangeLog &&
-                  git log --stat > ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}/ChangeLog ||
-                  git log > ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}/ChangeLog
+                  chmod u+w ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}/ChangeLog &&
+                  git log --stat > ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}/ChangeLog ||
+                  git log > ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}/ChangeLog
 
                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                   COMMENT "Updating Changelog")
 add_dependencies(dist-hook create-source-working-dir)
 
-add_custom_target(dist tar --format=ustar -chf - ${PACKAGE_NAME}-${PACKAGE_VERSION} |
-                       GZIP=--best gzip -c > ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
+add_custom_target(dist tar --format=ustar -chf - ${PACKAGE_NAME}-${TelepathyQt_VERSION} |
+                       GZIP=--best gzip -c > ${PACKAGE_NAME}-${TelepathyQt_VERSION}.tar.gz
                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
                   COMMENT "Generating dist tarball")
 add_dependencies(dist dist-hook)
 
 # setup make distcheck
 add_custom_target(distcheck rm -rf build && mkdir build && cd build && cmake .. && make && make check
-                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}/
+                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${TelepathyQt_VERSION}/
                   COMMENT "Testing successful tarball build")
 add_dependencies(distcheck dist)
 
@@ -48,9 +48,9 @@ if (ENABLE_CPACK)
     SET(CPACK_PACKAGE_VENDOR "Collabora Ltd.")
     SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README")
     SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
-    SET(CPACK_PACKAGE_VERSION_MAJOR ${TP_QT_MAJOR_VERSION})
-    SET(CPACK_PACKAGE_VERSION_MINOR ${TP_QT_MINOR_VERSION})
-    SET(CPACK_PACKAGE_VERSION_PATCH ${TP_QT_MICRO_VERSION})
+    SET(CPACK_PACKAGE_VERSION_MAJOR ${TelepathyQt_VERSION_MAJOR})
+    SET(CPACK_PACKAGE_VERSION_MINOR ${TelepathyQt_VERSION_MINOR})
+    SET(CPACK_PACKAGE_VERSION_PATCH ${TelepathyQt_VERSION_PATCH})
     SET(CPACK_PACKAGE_INSTALL_DIRECTORY "TelepathyQt")
     SET(CPACK_PACKAGE_CONTACT "telepathy@lists.freedesktop.org")
     set(CPACK_SOURCE_IGNORE_FILES
