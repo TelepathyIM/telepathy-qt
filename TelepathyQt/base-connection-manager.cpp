@@ -439,4 +439,28 @@ void AbstractConnectionManagerInterface::setBaseConnectionManager(BaseConnection
     Q_UNUSED(manager)
 }
 
+BaseConnectionManagerAccountApiInterface::~BaseConnectionManagerAccountApiInterface()
+{
+
+}
+
+void BaseConnectionManagerAccountApiInterface::setRequestApiCallback(const BaseConnectionManagerAccountApiInterface::RequestApiCallback &cb)
+{
+
+}
+
+#define TP_QT_IFACE_CONNECTION_MANAGER_INTERFACE_ACCOUNT_API (QLatin1String("org.freedesktop.Telepathy.ConnectionManager.Interface.AccountApi"))
+
+BaseConnectionManagerAccountApiInterface::BaseConnectionManagerAccountApiInterface()
+    : AbstractConnectionManagerInterface(TP_QT_IFACE_CONNECTION_MANAGER_INTERFACE_ACCOUNT_API)
+{
+
+}
+
+void BaseConnectionManagerAccountApiInterface::createAdaptor()
+{
+    // (void) new Service::ConnectionInterfaceAliasingAdaptor(dbusObject()->dbusConnection(),
+    //         mPriv->adaptee, dbusObject());
+}
+
 }

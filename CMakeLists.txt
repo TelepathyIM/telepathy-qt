@@ -86,7 +86,7 @@ set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TelepathyQt_VERSION})
 # The doxygen macro requires Qt to have been looked up to enable crosslinking
 include(Doxygen)
 
-add_definitions(-DQT_NO_CAST_FROM_ASCII)
+#add_definitions(-DQT_NO_CAST_FROM_ASCII)
 
 set(ENABLE_DEBUG_OUTPUT ON CACHE BOOL "If activated, compiles support for printing debug output to stderr")
 if (ENABLE_DEBUG_OUTPUT)

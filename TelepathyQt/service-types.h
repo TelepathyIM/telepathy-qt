@@ -70,6 +70,7 @@ class BaseConnectionContactInfoInterface;
 class BaseConnectionContactListInterface;
 class BaseConnectionContactsInterface;
 class BaseConnectionManager;
+class BaseConnectionManagerAccountApiInterface;
 class BaseConnectionRequestsInterface;
 class BaseConnectionSimplePresenceInterface;
 class BaseProtocol;
@@ -118,6 +119,7 @@ typedef SharedPtr<BaseConnectionContactInfoInterface> BaseConnectionContactInfoI
 typedef SharedPtr<BaseConnectionContactListInterface> BaseConnectionContactListInterfacePtr;
 typedef SharedPtr<BaseConnectionContactsInterface> BaseConnectionContactsInterfacePtr;
 typedef SharedPtr<BaseConnectionManager> BaseConnectionManagerPtr;
+typedef SharedPtr<BaseConnectionManagerAccountApiInterface> BaseConnectionManagerAccountApiInterfacePtr;
 typedef SharedPtr<BaseConnectionRequestsInterface> BaseConnectionRequestsInterfacePtr;
 typedef SharedPtr<BaseConnectionSimplePresenceInterface> BaseConnectionSimplePresenceInterfacePtr;
 typedef SharedPtr<BaseProtocol> BaseProtocolPtr;

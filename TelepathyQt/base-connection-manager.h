@@ -27,13 +27,12 @@
 #error IN_TP_QT_HEADER
 #endif
 
+#include <TelepathyQt/Callbacks>
 #include <TelepathyQt/DBusService>
 #include <TelepathyQt/Global>
 #include <TelepathyQt/Types>
 
 #include <QDBusConnection>
-
-class QString;
 
 namespace Tp
 {
@@ -124,6 +123,37 @@ protected:
 private:
     friend class BaseConnectionManager;
 
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseConnectionManagerAccountApiInterface : public AbstractConnectionManagerInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionManagerAccountApiInterface)
+
+public:
+    static BaseConnectionManagerAccountApiInterfacePtr create()
+    {
+        return BaseConnectionManagerAccountApiInterfacePtr(new BaseConnectionManagerAccountApiInterface());
+    }
+
+    ~BaseConnectionManagerAccountApiInterface() override;
+
+    using RequestApiContextPtr = MethodInvocationContextPtr<QString, QDBusObjectPath>;
+    using RequestApiCallback = Callback1<void, RequestApiContextPtr>;
+    void setRequestApiCallback(const RequestApiCallback &cb);
+
+protected:
+    BaseConnectionManagerAccountApiInterface();
+//    void setBaseConnectionManager(BaseConnectionManager *manager) override;
+
+private:
+    void createAdaptor() override;
+
+    class Adaptee;
+    friend class Adaptee;
     struct Private;
     friend struct Private;
     Private *mPriv;
