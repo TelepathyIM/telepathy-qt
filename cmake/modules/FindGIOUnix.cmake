@@ -21,7 +21,7 @@ pkg_check_modules(PC_LibGIOUnix gio-unix-2.0)
 find_path(GIOUNIX_MAIN_INCLUDE_DIR
           NAMES gio/gunixconnection.h
           HINTS ${PC_LibGIOUnix_INCLUDEDIR}
-          PATH_SUFFIXES gio-unix-2.0)
+          PATH_SUFFIXES gio-unix-2.0 glib-2.0)
 
 set(GIOUNIX_INCLUDE_DIR "${GIOUNIX_MAIN_INCLUDE_DIR}")
 
