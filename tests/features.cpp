@@ -22,6 +22,15 @@ QList<Feature> reverse(const QList<Feature> &list)
     return ret;
 }
 
+QSet<Feature> makeSet(const QList<Feature> &list)
+{
+#if QT_VERSION > QT_VERSION_CHECK(5, 14, 0)
+    return QSet<Feature>(list.begin(), list.end());
+#else
+    return list.toSet();
+#endif
+}
+
 };
 
 class TestFeatures : public QObject
@@ -51,7 +60,7 @@ void TestFeatures::testFeaturesHash()
         fs2 << Feature(QString::number(i), i);
     }
 
-    QCOMPARE(qHash(fs1.toSet()), qHash(fs2.toSet()));
+    QCOMPARE(qHash(makeSet(fs1)), qHash(makeSet(fs2)));
 
     fs2.clear();
     for (int i = 0; i < 5; ++i) {
@@ -60,16 +69,16 @@ void TestFeatures::testFeaturesHash()
         }
     }
 
-    QCOMPARE(qHash(fs1.toSet()), qHash(fs2.toSet()));
+    QCOMPARE(qHash(makeSet(fs1)), qHash(makeSet(fs2)));
 
     fs1 = reverse(fs1);
-    QCOMPARE(qHash(fs1.toSet()), qHash(fs2.toSet()));
+    QCOMPARE(qHash(makeSet(fs1)), qHash(makeSet(fs2)));
 
     fs2 = reverse(fs2);
-    QCOMPARE(qHash(fs1.toSet()), qHash(fs2.toSet()));
+    QCOMPARE(qHash(makeSet(fs1)), qHash(makeSet(fs2)));
 
     fs2 << Feature(QLatin1String("100"), 100);
-    QVERIFY(qHash(fs1.toSet()) != qHash(fs2.toSet()));
+    QVERIFY(qHash(makeSet(fs1)) != qHash(makeSet(fs2)));
 }
 
 QTEST_MAIN(TestFeatures)

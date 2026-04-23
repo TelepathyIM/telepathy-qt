@@ -891,7 +891,7 @@ PendingOperation *Contact::unblock()
  */
 QStringList Contact::groups() const
 {
-    return mPriv->groups.toList();
+    return mPriv->groups.values();
 }
 
 /**
@@ -1102,7 +1102,12 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
         } else if (feature == FeatureRosterGroups) {
             QStringList groups = qdbus_cast<QStringList>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS + QLatin1String("/groups")));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+            mPriv->groups = groups.isEmpty() ? QSet<QString>() :
+                    QSet<QString>(groups.begin(), groups.end());
+#else
             mPriv->groups = groups.toSet();
+#endif
         } else if (feature == FeatureAddresses) {
             VCardFieldAddressMap addresses = qdbus_cast<VCardFieldAddressMap>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/addresses")));

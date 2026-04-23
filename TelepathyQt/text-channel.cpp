@@ -123,8 +123,8 @@ TextChannel::Private::Private(TextChannel *parent)
       readinessHelper(parent->readinessHelper()),
       getAllInFlight(false),
       gotProperties(false),
-      messagePartSupport(nullptr),
-      deliveryReportingSupport(nullptr),
+      messagePartSupport(MessagePartSupportFlags()),
+      deliveryReportingSupport(DeliveryReportingSupportFlags()),
       initialMessagesReceived(false)
 {
     ReadinessHelper::Introspectables introspectables;
@@ -410,12 +410,16 @@ void TextChannel::Private::processMessageQueue()
     ConnectionPtr conn = parent->connection();
     conn->lowlevel()->injectContactIds(contactsRequired);
 
-    parent->connect(conn->contactManager()->contactsForHandles(
-                contactsRequired.keys()),
+    auto contactKeys = contactsRequired.keys();
+    parent->connect(conn->contactManager()->contactsForHandles(contactKeys),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onContactsFinished(Tp::PendingOperation*)));
 
-    awaitingContacts |= contactsRequired.keys().toSet();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    awaitingContacts |= QSet<uint>(contactKeys.begin(), contactKeys.end());
+#else
+    awaitingContacts |= contactKeys.toSet();
+#endif
 }
 
 void TextChannel::Private::processChatStateQueue()
@@ -457,7 +461,7 @@ void TextChannel::Private::processChatStateQueue()
     // TODO: pass id hints to ContactManager if we ever gain support to retrieve contact ids
     //       from ChatState.
     parent->connect(parent->connection()->contactManager()->contactsForHandles(
-                contactsRequired.toList()),
+                contactsRequired.values()),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onContactsFinished(Tp::PendingOperation*)));
 
@@ -1126,7 +1130,7 @@ void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
 
 void TextChannel::onTextSent(uint timestamp, uint type, const QString &text)
 {
-    emit messageSent(Message(timestamp, type, text), nullptr,
+    emit messageSent(Message(timestamp, type, text), MessageSendingFlags(),
             QLatin1String(""));
 }
 
@@ -1196,7 +1200,7 @@ void TextChannel::onTextSendError(uint error, uint timestamp, uint type,
 
     header.insert(QLatin1String("message-received"),
             QDBusVariant(static_cast<qlonglong>(
-#if QT_VERSION_CHECK(5, 8, 0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
                     QDateTime::currentDateTime().toTime_t())));
 #else
                     QDateTime::currentDateTime().toSecsSinceEpoch())));

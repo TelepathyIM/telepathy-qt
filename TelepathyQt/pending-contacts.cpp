@@ -197,7 +197,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         ConnectionPtr conn = manager->connection();
         if (conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
             PendingContactAttributes *attributes =
-                conn->lowlevel()->contactAttributes(otherContacts.toList(),
+                conn->lowlevel()->contactAttributes(otherContacts.values(),
                         interfaces, true);
 
             connect(attributes,
@@ -206,7 +206,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         } else {
             // fallback to just create the contacts
             PendingHandles *handles = conn->lowlevel()->referenceHandles(HandleTypeContact,
-                    otherContacts.toList());
+                    otherContacts.values());
             connect(handles,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(onReferenceHandlesFinished(Tp::PendingOperation*)));
@@ -708,7 +708,15 @@ void PendingAddressingGetContacts::onGetContactsFinished(QDBusPendingCallWatcher
 
         mValidHandles = requested.values();
         mValidAddresses = requested.keys();
-        mInvalidAddresses = mAddresses.toSet().subtract(mValidAddresses.toSet()).toList();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+        auto addresses = mAddresses.isEmpty() ? QSet<QString>() :
+                QSet<QString>(mAddresses.begin(), mAddresses.end());
+        if (!mValidAddresses.isEmpty())
+            addresses.subtract(QSet<QString>(mValidAddresses.begin(), mValidAddresses.end()));
+        mInvalidAddresses = addresses.values();
+#else
+        mInvalidAddresses = mAddresses.toSet().subtract(mValidAddresses.toSet()).values();
+#endif
         mAttributes = reply.argumentAt<1>();
         setFinished();
     } else {

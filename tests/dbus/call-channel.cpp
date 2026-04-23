@@ -272,7 +272,7 @@ void TestCallChannel::init()
     mContentRemoved.reset();
     mCallStateReason = CallStateReason();
     mCallState = CallStateUnknown;
-    mCallFlags = (CallFlags) nullptr;
+    mCallFlags = CallFlags();
     mRemoteMemberFlags.clear();
     mRemoteMembersRemoved.clear();
     mLSSCReturn = (Tp::SendingState) -1;

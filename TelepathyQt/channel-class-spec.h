@@ -309,14 +309,24 @@ inline uint qHash(const QSet<ChannelClassSpec> &specSet)
 inline uint qHash(const ChannelClassSpecList &specList)
 {
     // Make it unique by converting to QSet
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    QSet<ChannelClassSpec> uniqueSet = specList.isEmpty() ? QSet<ChannelClassSpec>() :
+            QSet<ChannelClassSpec>(specList.begin(), specList.end());
+#else
     QSet<ChannelClassSpec> uniqueSet = specList.toSet();
+#endif
     return qHash(uniqueSet);
 }
 
 inline uint qHash(const QList<ChannelClassSpec> &specList)
 {
     // Make it unique by converting to QSet
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    QSet<ChannelClassSpec> uniqueSet = specList.isEmpty() ? QSet<ChannelClassSpec>() :
+            QSet<ChannelClassSpec>(specList.begin(), specList.end());
+#else
     QSet<ChannelClassSpec> uniqueSet = specList.toSet();
+#endif
     return qHash(uniqueSet);
 }
 

@@ -42,7 +42,7 @@ struct TP_QT_NO_EXPORT IncomingStreamTubeChannel::Private
 
     // Public object
     IncomingStreamTubeChannel *parent;
-    static bool initRandom;
+    static bool initRandom; // can be removed with Qt < 5.10 support
 };
 
 bool IncomingStreamTubeChannel::Private::initRandom = true;
@@ -385,11 +385,15 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
     if (accessControl == SocketAccessControlLocalhost) {
         accessControlParam.setVariant(QVariant::fromValue(static_cast<uint>(0)));
     } else if (accessControl == SocketAccessControlCredentials) {
+#if QT_VERSION > QT_VERSION_CHECK(5, 10, 0)
+        credentialByte = static_cast<uchar>(QRandomGenerator::global()->bounded(UCHAR_MAX));
+#else
         if (mPriv->initRandom) {
             qsrand(QTime::currentTime().msec());
             mPriv->initRandom = false;
         }
         credentialByte = static_cast<uchar>(qrand());
+#endif
         accessControlParam.setVariant(QVariant::fromValue(credentialByte));
     } else {
         Q_ASSERT(false);

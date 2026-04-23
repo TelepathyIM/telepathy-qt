@@ -14,41 +14,6 @@
 
 using namespace Tp;
 
-class SmartDir : public QDir
-{
-public:
-    SmartDir(const QString &path) : QDir(path) { }
-    bool rmdir() { return QDir().rmdir(path()); }
-    bool removeDirectory();
-};
-
-bool SmartDir::removeDirectory()
-{
-    bool ret = true;
-
-    QFileInfoList list = entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-    Q_FOREACH (QFileInfo info, list) {
-        if (info.isDir()) {
-            SmartDir subDir(info.filePath());
-            if (!subDir.removeDirectory()) {
-                ret = false;
-            }
-        } else {
-            qDebug() << "deleting" << info.filePath();
-            if (!QFile(info.filePath()).remove()) {
-                ret = false;
-            }
-        }
-    }
-
-    if (ret) {
-        qDebug() << "deleting" << path();
-        ret = rmdir();
-    }
-
-    return ret;
-}
-
 class TestContactsAvatar : public Test
 {
     Q_OBJECT
@@ -79,6 +44,7 @@ private:
     QList<ContactPtr> mContacts;
     bool mGotAvatarRetrieved;
     int mAvatarDatasChanged;
+    QTemporaryDir mTmpDir;
 };
 
 void TestContactsAvatar::onAvatarRetrieved(uint handle, const QString &token,
@@ -173,24 +139,16 @@ void TestContactsAvatar::init()
 
     mGotAvatarRetrieved = false;
     mAvatarDatasChanged = 0;
+
+    /* Make sure our tests does not mess up user's avatar cache */
+    QVERIFY(mTmpDir.isValid());
+    setenv ("XDG_CACHE_HOME", qPrintable(mTmpDir.path()), true);
 }
 
 void TestContactsAvatar::testAvatar()
 {
     QVERIFY(mConn->client()->contactManager()->supportedFeatures().contains(
                 Contact::FeatureAvatarData));
-
-    /* Make sure our tests does not mess up user's avatar cache */
-    qsrand(time(nullptr));
-    static const char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    static const int DirNameLength = 6;
-    QString dirName;
-    for (int i = 0; i < DirNameLength; ++i) {
-        dirName += QLatin1Char(letters[qrand() % qstrlen(letters)]);
-    }
-    QString tmpDir = QString(QLatin1String("%1/%2")).arg(QDir::tempPath()).arg(dirName);
-    QByteArray a = tmpDir.toLatin1();
-    setenv ("XDG_CACHE_HOME", a.constData(), true);
 
     Client::ConnectionInterfaceAvatarsInterface *connAvatarsInterface =
         mConn->client()->optionalInterface<Client::ConnectionInterfaceAvatarsInterface>();
@@ -211,8 +169,6 @@ void TestContactsAvatar::testAvatar()
     mGotAvatarRetrieved = false;
     createContactWithFakeAvatar("bar");
     QVERIFY(!mGotAvatarRetrieved);
-
-    QVERIFY(SmartDir(tmpDir).removeDirectory());
 }
 
 void TestContactsAvatar::testRequestAvatars()

@@ -174,7 +174,7 @@ void ContactManager::PendingRefreshContactInfo::refreshInfo()
         mConn->interface<Client::ConnectionInterfaceContactInfoInterface>();
     Q_ASSERT(contactInfoInterface);
     PendingVoid *nested = new PendingVoid(
-            contactInfoInterface->RefreshContactInfo(mToRequest.toList()),
+            contactInfoInterface->RefreshContactInfo(mToRequest.values()),
             mConn);
     connect(nested,
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -1044,7 +1044,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
 
     PendingContacts *contacts =
         new PendingContacts(ContactManagerPtr(this), handles, features, missingFeatures,
-                interfaces.toList(), satisfyingContacts, otherContacts);
+                interfaces.values(), satisfyingContacts, otherContacts);
     return contacts;
 }
 
@@ -1118,7 +1118,7 @@ PendingContacts *ContactManager::contactsForVCardAddresses(const QString &vcardF
     QSet<QString> interfaces = mPriv->interfacesForFeatures(realFeatures);
 
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), vcardField,
-            vcardAddresses, realFeatures, interfaces.toList());
+            vcardAddresses, realFeatures, interfaces.values());
     return contacts;
 }
 
@@ -1154,7 +1154,7 @@ PendingContacts *ContactManager::contactsForUris(const QStringList &uris,
     QSet<QString> interfaces = mPriv->interfacesForFeatures(realFeatures);
 
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), uris,
-            PendingContacts::ForUris, realFeatures, interfaces.toList());
+            PendingContacts::ForUris, realFeatures, interfaces.values());
     return contacts;
 }
 
@@ -1216,7 +1216,11 @@ void ContactManager::requestContactAvatars(const QList<ContactPtr> &contacts)
         QTimer::singleShot(0, this, SLOT(doRequestAvatars()));
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    mPriv->requestAvatarsQueue.unite(Contacts(contacts.begin(), contacts.end()));
+#else
     mPriv->requestAvatarsQueue.unite(contacts.toSet());
+#endif
 }
 
 /**

@@ -26,9 +26,9 @@ public:
     TestChanGroup(QObject *parent = nullptr)
         : Test(parent), mConn(nullptr), mChanService(nullptr),
           mGotGroupFlagsChanged(false),
-          mGroupFlags((ChannelGroupFlags) nullptr),
-          mGroupFlagsAdded((ChannelGroupFlags) nullptr),
-          mGroupFlagsRemoved((ChannelGroupFlags) nullptr)
+          mGroupFlags(ChannelGroupFlags()),
+          mGroupFlagsAdded(ChannelGroupFlags()),
+          mGroupFlagsRemoved(ChannelGroupFlags())
     { }
 
 protected Q_SLOTS:
@@ -158,9 +158,9 @@ void TestChanGroup::init()
     mChangedRemoved.clear();
     mDetails = Channel::GroupMemberChangeDetails();
     mGotGroupFlagsChanged = false;
-    mGroupFlags = (ChannelGroupFlags) nullptr;
-    mGroupFlagsAdded = (ChannelGroupFlags) nullptr;
-    mGroupFlagsRemoved = (ChannelGroupFlags) nullptr;
+    mGroupFlags = ChannelGroupFlags();
+    mGroupFlagsAdded = ChannelGroupFlags();
+    mGroupFlagsRemoved = ChannelGroupFlags();
 }
 
 void TestChanGroup::testCreateChannel()
@@ -481,7 +481,7 @@ void TestChanGroup::testGroupFlagsChange()
     QVERIFY(textChan->groupFlags() & ChannelGroupFlagCanAdd);
     QVERIFY(textChan->canInviteContacts());
     QCOMPARE(mGroupFlagsAdded, ChannelGroupFlagCanAdd);
-    QCOMPARE(mGroupFlagsRemoved, (ChannelGroupFlags) nullptr);
+    QCOMPARE(mGroupFlagsRemoved, ChannelGroupFlags());
 }
 
 void TestChanGroup::cleanup()

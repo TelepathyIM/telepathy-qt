@@ -359,12 +359,15 @@ static const gchar * const audio_fixed_properties[] = {
     NULL
 };
 
+/* No need to also check video fixed props; audio is enough.
+ *
 static const gchar * const video_fixed_properties[] = {
     TP_PROP_CHANNEL_CHANNEL_TYPE,
     TP_PROP_CHANNEL_TARGET_HANDLE_TYPE,
     TP_PROP_CHANNEL_TYPE_CALL_INITIAL_VIDEO,
     NULL
 };
+*/
 
 static const gchar * const audio_allowed_properties[] = {
     TP_PROP_CHANNEL_TARGET_HANDLE,

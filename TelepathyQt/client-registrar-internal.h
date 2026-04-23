@@ -23,6 +23,8 @@
 #ifndef _TelepathyQt_client_registrar_internal_h_HEADER_GUARD_
 #define _TelepathyQt_client_registrar_internal_h_HEADER_GUARD_
 
+#include <list>
+
 #include <QtCore/QObject>
 #include <QtDBus/QtDBus>
 
@@ -142,7 +144,7 @@ private:
         QList<ChannelRequestPtr> chanReqs;
         AbstractClientObserver::ObserverInfo observerInfo;
     };
-    QLinkedList<SharedPtr<InvocationData> > mInvocations;
+    std::list<SharedPtr<InvocationData> > mInvocations;
 
     ClientRegistrar *mRegistrar;
     QDBusConnection mBus;
@@ -204,7 +206,7 @@ private:
         QList<ChannelPtr> chans;
         ChannelDispatchOperationPtr dispatchOp;
     };
-    QLinkedList<SharedPtr<InvocationData> > mInvocations;
+    std::list<SharedPtr<InvocationData> > mInvocations;
 
 private:
     ClientRegistrar *mRegistrar;
@@ -298,7 +300,7 @@ private:
         QDateTime time;
         AbstractClientHandler::HandlerInfo handlerInfo;
     };
-    QLinkedList<SharedPtr<InvocationData> > mInvocations;
+    std::list<SharedPtr<InvocationData> > mInvocations;
 
 private:
     static void onContextFinished(const MethodInvocationContextPtr<> &context,

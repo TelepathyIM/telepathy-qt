@@ -228,7 +228,7 @@ QStringList ContactManager::Roster::allKnownGroups() const
         return contactListGroupChannels.keys();
     }
 
-    return cachedAllKnownGroups.toList();
+    return cachedAllKnownGroups.values();
 }
 
 PendingOperation *ContactManager::Roster::addGroup(const QString &group)
@@ -1338,12 +1338,18 @@ void ContactManager::Roster::gotContactListGroupsProperties(PendingOperation *op
 
     QVariantMap props = pvm->result();
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    auto groups = qdbus_cast<QStringList>(props[QLatin1String("Groups")]);
+    cachedAllKnownGroups = groups.isEmpty() ? QSet<QString>() :
+            QSet<QString>(groups.begin(), groups.end());
+#else
     cachedAllKnownGroups = qdbus_cast<QStringList>(props[QLatin1String("Groups")]).toSet();
+#endif
     contactListGroupPropertiesReceived = true;
 
     processingContactListChanges = true;
     PendingContacts *pc = contactManager->upgradeContacts(
-            contactManager->allKnownContacts().toList(),
+            contactManager->allKnownContacts().values(),
             Contact::FeatureRosterGroups);
     connect(pc,
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -1694,7 +1700,7 @@ void ContactManager::Roster::introspectContactListContacts()
     interfaces.insert(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST);
 
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            iface->GetContactListAttributes(interfaces.toList(), true), contactManager);
+            iface->GetContactListAttributes(interfaces.values(), true), contactManager);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotContactListContacts(QDBusPendingCallWatcher*)));
@@ -2172,7 +2178,7 @@ ContactManager::Roster::RemoveGroupOp::RemoveGroupOp(const ChannelPtr &channel)
 {
     Contacts contacts = channel->groupContacts();
     if (!contacts.isEmpty()) {
-        connect(channel->groupRemoveContacts(contacts.toList()),
+        connect(channel->groupRemoveContacts(contacts.values()),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onContactsRemoved(Tp::PendingOperation*)));
     } else {

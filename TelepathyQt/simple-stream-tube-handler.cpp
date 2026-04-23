@@ -37,21 +37,21 @@ namespace Tp
 
 namespace
 {
-    ChannelClassSpecList buildFilter(const QStringList &p2pServices,
-            const QStringList &roomServices, bool requested)
+    ChannelClassSpecList buildFilter(QStringList p2pServices,
+            QStringList roomServices, bool requested)
     {
         ChannelClassSpecList filter;
 
-        // Convert to QSet to weed out duplicates
-        foreach (const QString &service, p2pServices.toSet())
+        p2pServices.removeDuplicates();
+        foreach (const QString &service, p2pServices)
         {
             filter.append(requested ?
                     ChannelClassSpec::outgoingStreamTube(service) :
                     ChannelClassSpec::incomingStreamTube(service));
         }
 
-        // Convert to QSet to weed out duplicates
-        foreach (const QString &service, roomServices.toSet())
+        roomServices.removeDuplicates();
+        foreach (const QString &service, roomServices)
         {
             filter.append(requested ?
                     ChannelClassSpec::outgoingRoomStreamTube(service) :
@@ -153,7 +153,7 @@ void SimpleStreamTubeHandler::handleChannels(
         invocation->hints = requestsSatisfied.first()->hints();
     }
 
-    mInvocations.append(invocation);
+    mInvocations.push_back(invocation);
 
     if (invocation->tubes.isEmpty()) {
         warning() << "SSTH::HandleChannels got no suitable channels, admitting we're Confused";
@@ -171,29 +171,31 @@ void SimpleStreamTubeHandler::handleChannels(
 
 void SimpleStreamTubeHandler::onReadyOpFinished(Tp::PendingOperation *op)
 {
-    Q_ASSERT(!mInvocations.isEmpty());
+    Q_ASSERT(!mInvocations.empty());
     Q_ASSERT(!op || op->isFinished());
 
-    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
-            op != nullptr && i != mInvocations.end(); ++i) {
-        if ((*i)->readyOp != op) {
+    for (const auto &i : mInvocations) {
+        if (op == nullptr)
+            break;
+        if (i->readyOp != op) {
             continue;
         }
 
-        (*i)->readyOp = nullptr;
+        i->readyOp = nullptr;
 
         if (op->isError()) {
             warning() << "Preparing proxies for SSTubeHandler failed with" << op->errorName()
                 << op->errorMessage();
-            (*i)->error = op->errorName();
-            (*i)->message = op->errorMessage();
+            i->error = op->errorName();
+            i->message = op->errorMessage();
         }
 
         break;
     }
 
-    while (!mInvocations.isEmpty() && !mInvocations.first()->readyOp) {
-        SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
+    while (!mInvocations.empty() && !mInvocations.front()->readyOp) {
+        auto invocation = mInvocations.front();
+	mInvocations.pop_front();
 
         if (!invocation->error.isEmpty()) {
             // We guarantee that the proxies were ready - so we can't invoke the client if they

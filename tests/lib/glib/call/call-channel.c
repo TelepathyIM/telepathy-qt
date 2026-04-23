@@ -675,8 +675,8 @@ call_hangup (TpBaseCallChannel *base,
 static TpBaseCallContent *
 call_add_content (TpBaseCallChannel *base,
     const gchar *content_name,
-    guint content_type,
-      TpMediaStreamDirection initial_direction,
+    TpMediaStreamType content_type,
+    TpMediaStreamDirection initial_direction,
     GError **error)
 {
   ExampleCallChannel *self = EXAMPLE_CALL_CHANNEL (base);

@@ -33,7 +33,6 @@
 #include <QFileInfo>
 #include <QStringList>
 #include <QXmlAttributes>
-#include <QXmlDefaultHandler>
 #include <QXmlInputSource>
 #include <QXmlSimpleReader>
 
@@ -97,35 +96,34 @@ void Profile::Private::Data::clear()
 }
 
 
-class TP_QT_NO_EXPORT Profile::Private::XmlHandler :
-                public QXmlDefaultHandler
+class TP_QT_NO_EXPORT Profile::Private::XmlHandler
 {
 public:
     XmlHandler(const QString &serviceName, bool allowNonIMType, Profile::Private::Data *outputData);
 
-    bool startElement(const QString &namespaceURI, const QString &localName,
-            const QString &qName, const QXmlAttributes &attributes) override;
-    bool endElement(const QString &namespaceURI, const QString &localName,
-            const QString &qName) override;
-    bool characters(const QString &str) override;
-    bool fatalError(const QXmlParseException &exception) override;
-    QString errorString() const override;
+    bool parse(QXmlStreamReader *reader);
+    QString errorString() const;
 
 private:
-    bool attributeValueAsBoolean(const QXmlAttributes &attributes,
+    bool attributeValueAsBoolean(const QXmlStreamAttributes &attributes,
             const QString &qName);
 
     QString mServiceName;
     bool allowNonIMType;
     Profile::Private::Data *mData;
-    QStack<QString> mElements;
-    QString mCurrentText;
+
+    bool parseServiceElem(QXmlStreamReader *reader);
+    bool parseParametersElem(QXmlStreamReader *reader);
+    bool parseParamElem(QXmlStreamReader *reader);
+    bool parsePresencesElem(QXmlStreamReader *reader);
+    bool parsePresenceElem(QXmlStreamReader *reader);
+    bool parseUnsupportedCCsElem(QXmlStreamReader *reader);
+    bool parseCCElem(QXmlStreamReader *reader);
+    bool parsePropElem(QXmlStreamReader *reader);
+
     Profile::Parameter mCurrentParameter;
     RequestableChannelClass mCurrentCC;
-    QString mCurrentPropertyName;
-    QString mCurrentPropertyType;
     QString mErrorString;
-    bool mMetServiceTag;
 
     static const QString xmlNs;
 
@@ -178,59 +176,36 @@ const QString Profile::Private::XmlHandler::elemAttrIcon = QLatin1String("icon")
 const QString Profile::Private::XmlHandler::elemAttrMessage = QLatin1String("message");
 const QString Profile::Private::XmlHandler::elemAttrDisabled = QLatin1String("disabled");
 
+
 Profile::Private::XmlHandler::XmlHandler(const QString &serviceName,
         bool allowNonIMType,
         Profile::Private::Data *outputData)
     : mServiceName(serviceName),
       allowNonIMType(allowNonIMType),
-      mData(outputData),
-      mMetServiceTag(false)
+      mData(outputData)
 {
 }
 
-bool Profile::Private::XmlHandler::startElement(const QString &namespaceURI,
-        const QString &localName, const QString &qName,
-        const QXmlAttributes &attributes)
-{
-    if (!mMetServiceTag && qName != elemService) {
-        mErrorString = QLatin1String("the file is not a profile file");
-        return false;
-    }
-
-    if (namespaceURI != xmlNs) {
-        // ignore all elements with unknown xmlns
-        debug() << "Ignoring unknown xmlns" << namespaceURI;
-        return true;
-    }
-
-#define CHECK_ELEMENT_IS_CHILD_OF(parentElement) \
-    if (mElements.top() != parentElement) { \
-        mErrorString = QString(QLatin1String("element '%1' is not a " \
-                    "child of element '%2'")) \
-            .arg(qName) \
-            .arg(parentElement); \
-        return false; \
-    }
 #define CHECK_ELEMENT_ATTRIBUTES_COUNT(value) \
     if (attributes.count() != value) { \
         mErrorString = QString(QLatin1String("element '%1' contains more " \
                     "than %2 attributes")) \
-            .arg(qName) \
+            .arg(reader->name()) \
             .arg(value); \
         return false; \
     }
 #define CHECK_ELEMENT_HAS_ATTRIBUTE(attribute) \
-    if (attributes.index(attribute) == -1) { \
+    if (!attributes.hasAttribute(attribute)) { \
         mErrorString = QString(QLatin1String("mandatory attribute '%1' " \
                     "missing on element '%2'")) \
             .arg(attribute) \
-            .arg(qName); \
+            .arg(reader->name()); \
         return false; \
     }
 #define CHECK_ELEMENT_ATTRIBUTES(allowedAttrs) \
     for (int i = 0; i < attributes.count(); ++i) { \
         bool valid = false; \
-        QString attrName = attributes.qName(i); \
+        QString attrName; attrName.append(attributes.at(i).name()); \
         foreach (const QString &allowedAttr, allowedAttrs) { \
             if (attrName == allowedAttr) { \
                 valid = true; \
@@ -241,12 +216,16 @@ bool Profile::Private::XmlHandler::startElement(const QString &namespaceURI,
             mErrorString = QString(QLatin1String("invalid attribute '%1' on " \
                         "element '%2'")) \
                 .arg(attrName) \
-                .arg(qName); \
+                .arg(reader->name()); \
             return false; \
         } \
     }
 
-    if (qName == elemService) {
+bool Profile::Private::XmlHandler::parseServiceElem(QXmlStreamReader *reader)
+{
+    const QXmlStreamAttributes &attributes = reader->attributes();
+
+    if (reader->name() == elemService) {
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrId);
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrType);
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrManager);
@@ -265,135 +244,205 @@ bool Profile::Private::XmlHandler::startElement(const QString &namespaceURI,
             return false;
         }
 
-        mMetServiceTag = true;
-        mData->type = attributes.value(elemAttrType);
+        mData->type = attributes.value(elemAttrType).toString();
         if (mData->type != QLatin1String("IM") && !allowNonIMType) {
             mErrorString = QString(QLatin1String("unknown value of element "
                         "'type': %1"))
-                .arg(mCurrentText);
+                .arg(mData->type);
             return false;
         }
-        mData->provider = attributes.value(elemAttrProvider);
-        mData->cmName = attributes.value(elemAttrManager);
-        mData->protocolName = attributes.value(elemAttrProtocol);
-        mData->iconName = attributes.value(elemAttrIcon);
-    } else if (qName == elemParams) {
-        CHECK_ELEMENT_IS_CHILD_OF(elemService);
+        mData->provider = attributes.value(elemAttrProvider).toString();
+        mData->cmName = attributes.value(elemAttrManager).toString();
+        mData->protocolName = attributes.value(elemAttrProtocol).toString();
+        mData->iconName = attributes.value(elemAttrIcon).toString();
+    } else {
+        Tp::warning() << "Ignoring unknown element" << reader->name();
+        reader->skipCurrentElement();
+    }
+
+    return true;
+}
+
+bool Profile::Private::XmlHandler::parseParametersElem(QXmlStreamReader *reader)
+{
+    const QXmlStreamAttributes &attributes = reader->attributes();
+
+    if (reader->name() == elemParams) {
         CHECK_ELEMENT_ATTRIBUTES_COUNT(0);
-    } else if (qName == elemParam) {
-        CHECK_ELEMENT_IS_CHILD_OF(elemParams);
+
+        do {
+            while (reader->readNextStartElement()) {
+                if (!parseParamElem(reader))
+                    return false;
+            }
+
+            // try again if we hit the end element of a child node
+        } while (!reader->hasError() && reader->name() != elemParams);
+    } else {
+        Tp::warning() << "Ignoring unknown element" << reader->name();
+        reader->skipCurrentElement();
+    }
+
+    return true;
+}
+
+bool Profile::Private::XmlHandler::parseParamElem(QXmlStreamReader *reader)
+{
+    const QXmlStreamAttributes &attributes = reader->attributes();
+
+    if (reader->name() == elemParam) {
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrName);
         QStringList allowedAttrs = QStringList() << elemAttrName <<
             elemAttrType << elemAttrMandatory << elemAttrLabel;
         CHECK_ELEMENT_ATTRIBUTES(allowedAttrs);
 
-        QString paramType = attributes.value(elemAttrType);
+        QString paramType = attributes.value(elemAttrType).toString();
         if (paramType.isEmpty()) {
             paramType = QLatin1String("s");
         }
-        mCurrentParameter.setName(attributes.value(elemAttrName));
+        mCurrentParameter.setName(attributes.value(elemAttrName).toString());
         mCurrentParameter.setDBusSignature(QDBusSignature(paramType));
-        mCurrentParameter.setLabel(attributes.value(elemAttrLabel));
+        mCurrentParameter.setLabel(attributes.value(elemAttrLabel).toString());
         mCurrentParameter.setMandatory(attributeValueAsBoolean(attributes,
                     elemAttrMandatory));
-    } else if (qName == elemPresences) {
-        CHECK_ELEMENT_IS_CHILD_OF(elemService);
+        const QString &currentText =
+                reader->readElementText(QXmlStreamReader::SkipChildElements);
+        mCurrentParameter.setValue(parseValueWithDBusSignature(currentText,
+                    mCurrentParameter.dbusSignature().signature()));
+        mData->parameters.append(Profile::Parameter(mCurrentParameter));
+    } else {
+        Tp::warning() << "Ignoring unknown element" << reader->name();
+        reader->skipCurrentElement();
+    }
+
+    return true;
+}
+
+bool Profile::Private::XmlHandler::parsePresencesElem(QXmlStreamReader *reader)
+{
+    const QXmlStreamAttributes &attributes = reader->attributes();
+
+    if (reader->name() == elemPresences) {
         QStringList allowedAttrs = QStringList() << elemAttrAllowOthers;
         CHECK_ELEMENT_ATTRIBUTES(allowedAttrs);
 
         mData->allowOtherPresences = attributeValueAsBoolean(attributes,
                 elemAttrAllowOthers);
-    } else if (qName == elemPresence) {
-        CHECK_ELEMENT_IS_CHILD_OF(elemPresences);
+
+        do {
+            while (reader->readNextStartElement()) {
+                if (!parsePresenceElem(reader))
+                    return false;
+            }
+
+            // try again if we hit the end element of a child node
+        } while (!reader->hasError() && reader->name() != elemPresences);
+    } else {
+        Tp::warning() << "Ignoring unknown element" << reader->name();
+        reader->skipCurrentElement();
+    }
+
+    return true;
+}
+
+bool Profile::Private::XmlHandler::parsePresenceElem(QXmlStreamReader *reader)
+{
+    const QXmlStreamAttributes &attributes = reader->attributes();
+
+    if (reader->name() == elemPresence) {
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrId);
         QStringList allowedAttrs = QStringList() << elemAttrId <<
             elemAttrLabel << elemAttrIcon << elemAttrMessage <<
             elemAttrDisabled;
         CHECK_ELEMENT_ATTRIBUTES(allowedAttrs);
-
         mData->presences.append(Profile::Presence(
-                    attributes.value(elemAttrId),
-                    attributes.value(elemAttrLabel),
-                    attributes.value(elemAttrIcon),
-                    attributes.value(elemAttrMessage),
+                    attributes.value(elemAttrId).toString(),
+                    attributes.value(elemAttrLabel).toString(),
+                    attributes.value(elemAttrIcon).toString(),
+                    attributes.value(elemAttrMessage).toString(),
                     attributeValueAsBoolean(attributes, elemAttrDisabled)));
-    } else if (qName == elemUnsupportedCCs) {
-        CHECK_ELEMENT_IS_CHILD_OF(elemService);
+    } else {
+        Tp::warning() << "Ignoring unknown element" << reader->name();
+        reader->skipCurrentElement();
+    }
+
+    return true;
+}
+
+bool Profile::Private::XmlHandler::parseUnsupportedCCsElem(QXmlStreamReader *reader)
+{
+    const QXmlStreamAttributes &attributes = reader->attributes();
+
+    if (reader->name() == elemUnsupportedCCs) {
         CHECK_ELEMENT_ATTRIBUTES_COUNT(0);
-    } else if (qName == elemCC) {
-        CHECK_ELEMENT_IS_CHILD_OF(elemUnsupportedCCs);
+
+        do {
+            while (reader->readNextStartElement()) {
+                if (!parseCCElem(reader))
+                    return false;
+            }
+
+            // try again if we hit the end element of a child node
+        } while (!reader->hasError() && reader->name() != elemUnsupportedCCs);
+    } else {
+        Tp::warning() << "Ignoring unknown element" << reader->name();
+        reader->skipCurrentElement();
+    }
+
+    return true;
+}
+
+bool Profile::Private::XmlHandler::parseCCElem(QXmlStreamReader *reader)
+{
+    const QXmlStreamAttributes &attributes = reader->attributes();
+
+    if (reader->name() == elemCC) {
         CHECK_ELEMENT_ATTRIBUTES_COUNT(0);
-    } else if (qName == elemProperty) {
-        CHECK_ELEMENT_IS_CHILD_OF(elemCC);
+
+        do {
+            while (reader->readNextStartElement()) {
+                if (!parsePropElem(reader))
+                    return false;
+            }
+            // try again if we hit the end element of a child node
+        } while (!reader->hasError() && reader->name() != elemCC);
+
+        mData->unsupportedChannelClassSpecs.append(RequestableChannelClassSpec(mCurrentCC));
+        mCurrentCC.fixedProperties.clear();
+    } else {
+        Tp::warning() << "Ignoring unknown element" << reader->name();
+        reader->skipCurrentElement();
+    }
+
+    return true;
+}
+
+bool Profile::Private::XmlHandler::parsePropElem(QXmlStreamReader *reader)
+{
+    const QXmlStreamAttributes &attributes = reader->attributes();
+
+    if (reader->name() == elemProperty) {
         CHECK_ELEMENT_ATTRIBUTES_COUNT(2);
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrName);
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrType);
 
-        mCurrentPropertyName = attributes.value(elemAttrName);
-        mCurrentPropertyType = attributes.value(elemAttrType);
+        QString propertyName = attributes.value(elemAttrName).toString();
+        QString propertyType = attributes.value(elemAttrType).toString();
+        const QString &propertyText =
+                reader->readElementText(QXmlStreamReader::SkipChildElements);
+        mCurrentCC.fixedProperties[propertyName] =
+            parseValueWithDBusSignature(propertyText, propertyType);
     } else {
-        if (qName != elemName) {
-            Tp::warning() << "Ignoring unknown element" << qName;
-        } else {
-            // check if we are inside <service>
-            CHECK_ELEMENT_IS_CHILD_OF(elemService);
-            // no element here supports attributes
-            CHECK_ELEMENT_ATTRIBUTES_COUNT(0);
-        }
+        Tp::warning() << "Ignoring unknown element" << reader->name();
+        reader->skipCurrentElement();
     }
 
-#undef CHECK_ELEMENT_IS_CHILD_OF
+    return true;
+}
+
 #undef CHECK_ELEMENT_ATTRIBUTES_COUNT
 #undef CHECK_ELEMENT_HAS_ATTRIBUTE
 #undef CHECK_ELEMENT_ATTRIBUTES
-
-    mElements.push(qName);
-    mCurrentText.clear();
-    return true;
-}
-
-bool Profile::Private::XmlHandler::endElement(const QString &namespaceURI,
-        const QString &localName, const QString &qName)
-{
-    if (namespaceURI != xmlNs) {
-        // ignore all elements with unknown xmlns
-        debug() << "Ignoring unknown xmlns" << namespaceURI;
-        return true;
-    } else if (qName == elemName) {
-        mData->name = mCurrentText;
-    } else if (qName == elemParam) {
-        mCurrentParameter.setValue(parseValueWithDBusSignature(mCurrentText,
-                    mCurrentParameter.dbusSignature().signature()));
-        mData->parameters.append(Profile::Parameter(mCurrentParameter));
-    } else if (qName == elemCC) {
-        mData->unsupportedChannelClassSpecs.append(RequestableChannelClassSpec(mCurrentCC));
-        mCurrentCC.fixedProperties.clear();
-    } else if (qName == elemProperty) {
-        mCurrentCC.fixedProperties[mCurrentPropertyName] =
-            parseValueWithDBusSignature(mCurrentText,
-                    mCurrentPropertyType);
-    }
-
-    mElements.pop();
-    return true;
-}
-
-bool Profile::Private::XmlHandler::characters(const QString &str)
-{
-    mCurrentText += str;
-    return true;
-}
-
-bool Profile::Private::XmlHandler::fatalError(
-        const QXmlParseException &exception)
-{
-    mErrorString = QString(QLatin1String("parse error at line %1, column %2: "
-                "%3"))
-        .arg(exception.lineNumber())
-        .arg(exception.columnNumber())
-        .arg(exception.message());
-    return false;
-}
 
 QString Profile::Private::XmlHandler::errorString() const
 {
@@ -401,9 +450,9 @@ QString Profile::Private::XmlHandler::errorString() const
 }
 
 bool Profile::Private::XmlHandler::attributeValueAsBoolean(
-        const QXmlAttributes &attributes, const QString &qName)
+        const QXmlStreamAttributes &attributes, const QString &qName)
 {
-    QString tmpStr = attributes.value(qName);
+    QString tmpStr = attributes.value(qName).toString();
     if (tmpStr == QLatin1String("1") ||
         tmpStr == QLatin1String("true")) {
         return true;
@@ -411,7 +460,6 @@ bool Profile::Private::XmlHandler::attributeValueAsBoolean(
         return false;
     }
 }
-
 
 Profile::Private::Private()
     : valid(false),
@@ -488,20 +536,79 @@ void Profile::Private::lookupProfile()
     }
 }
 
+bool Profile::Private::XmlHandler::parse(QXmlStreamReader *reader)
+{
+    if (!reader->readNextStartElement() || !reader->isStartElement() ||
+            reader->namespaceUri() != xmlNs || reader->name() != elemService) {
+        mErrorString = QString(QLatin1String("the file is not a profile file"));
+        return false;
+    }
+
+    // top level element should be <service id=[...] >
+    if (!parseServiceElem(reader))
+        return false;
+
+    while (reader->readNextStartElement()) {
+        if (reader->namespaceUri() != xmlNs) {
+            // ignore all elements with unknown xmlns
+            debug() << "Ignoring unknown xmlns" << reader->namespaceUri();
+            continue;
+        }
+
+        if (reader->name() == elemName) {
+            // <name> foo </name>
+            mData->name = reader->readElementText(QXmlStreamReader::SkipChildElements);
+        } else if (reader->name() == elemParams) {
+            // <parameters>
+            //   <parameter name=[...] > foo </parameter>
+            //   <parameter name=[...] />
+            // </parameters>
+            if (!parseParametersElem(reader))
+                return false;
+        } else if (reader->name() == elemPresences) {
+            // <presences allow-others="1">
+            //   <presence id=[...] />
+            // </presences>
+            if (!parsePresencesElem(reader))
+                return false;
+        } else if (reader->name() == elemUnsupportedCCs) {
+            // <unsupported-channel-classes>
+            //   <channel-class>
+            //     <property name=[...]>1</property>
+            //     <property name=[...]>Channel.Type.Text</property>
+            //   </channel-class>
+            //   <channel-class>
+            //     [...]
+            //   </channel-class>
+            // </unsupported-channel-classes>
+            if (!parseUnsupportedCCsElem(reader))
+                return false;
+        } else {
+            Tp::warning() << "Ignoring unknown element" << reader->name() << " in main loop";
+            reader->skipCurrentElement();
+        }
+    }
+    if (reader->hasError()) {
+        mErrorString = QString(QLatin1String(
+                    "parse error at line %1, column %2: %3"))
+            .arg(reader->lineNumber())
+            .arg(reader->columnNumber())
+            .arg(reader->errorString());
+        return false;
+    }
+
+    return true;
+}
+
 bool Profile::Private::parse(QFile *file)
 {
     invalidate();
 
     fake = false;
-    QFileInfo fi(file->fileName());
     XmlHandler xmlHandler(serviceName, allowNonIMType, &data);
+    QXmlStreamReader reader(file);
 
-    QXmlSimpleReader xmlReader;
-    xmlReader.setContentHandler(&xmlHandler);
-    xmlReader.setErrorHandler(&xmlHandler);
-
-    QXmlInputSource xmlInputSource(file);
-    if (!xmlReader.parse(xmlInputSource)) {
+    if (!xmlHandler.parse(&reader)) {
         warning() << QString(QLatin1String("Error parsing profile file %1: %2"))
             .arg(file->fileName())
             .arg(xmlHandler.errorString());

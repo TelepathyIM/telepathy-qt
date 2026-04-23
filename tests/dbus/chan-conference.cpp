@@ -95,7 +95,7 @@ void TestConferenceChan::initTestCase()
     guint handle3 = tp_handle_ensure(mContactRepo, "someone3@localhost", nullptr, nullptr);
 
     QByteArray chanPath;
-    GPtrArray *initialChannels = g_ptr_array_new();
+    GPtrArray *initialChannels = g_ptr_array_new_with_free_func((GDestroyNotify) g_free);
 
     mTextChan1Path = mConn->objectPath() + QLatin1String("/TextChannel/1");
     chanPath = mTextChan1Path.toLatin1();
@@ -136,7 +136,6 @@ void TestConferenceChan::initTestCase()
                 "initial-channels", initialChannels,
                 NULL));
 
-    g_ptr_array_foreach(initialChannels, (GFunc) g_free, nullptr);
     g_ptr_array_free(initialChannels, TRUE);
 }
 

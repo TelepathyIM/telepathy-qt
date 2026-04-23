@@ -121,7 +121,7 @@ QStringList ContactCapabilities::dbusTubeServices() const
         }
     }
 
-    return ret.toList();
+    return ret.values();
 }
 
 /**
@@ -162,7 +162,7 @@ QStringList ContactCapabilities::streamTubeServices() const
         }
     }
 
-    return ret.toList();
+    return ret.values();
 }
 
 } // Tp

@@ -425,7 +425,7 @@ void TestConnRosterGroups::testRosterGroups()
 
     causeCongestion(mConn, mConn->selfContact());
 
-    QVERIFY(connect(contactManager->addContactsToGroup(group, contacts.toList()),
+    QVERIFY(connect(contactManager->addContactsToGroup(group, contacts.values()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -446,7 +446,7 @@ void TestConnRosterGroups::testRosterGroups()
 
     causeCongestion(mConn, mConn->selfContact());
 
-    QVERIFY(connect(contactManager->removeContactsFromGroup(group, contacts.toList()),
+    QVERIFY(connect(contactManager->removeContactsFromGroup(group, contacts.values()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);

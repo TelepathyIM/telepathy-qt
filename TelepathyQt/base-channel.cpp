@@ -298,10 +298,10 @@ Tp::ChannelDetails BaseChannel::details() const
 {
     Tp::ChannelDetails details;
     details.channel = QDBusObjectPath(objectPath());
-    details.properties.unite(immutableProperties());
+    details.properties.insert(immutableProperties());
 
     foreach(const AbstractChannelInterfacePtr & iface, mPriv->interfaces) {
-        details.properties.unite(iface->immutableProperties());
+        details.properties.insert(iface->immutableProperties());
     }
 
     return details;

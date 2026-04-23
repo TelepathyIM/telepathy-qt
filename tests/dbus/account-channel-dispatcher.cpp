@@ -576,7 +576,7 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
     QVERIFY(connect(pcr,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(onPendingChannelRequestFinished(Tp::PendingOperation *))));
-    mLoop->exec(0);
+    mLoop->exec();
 
     mChannelRequest = pcr->channelRequest();
 
@@ -593,7 +593,7 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
         QVERIFY(connect(mChannelRequest->becomeReady(),
                         SIGNAL(finished(Tp::PendingOperation *)),
                         SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-        mLoop->exec(0);
+        mLoop->exec();
         QCOMPARE(mChannelRequest->userActionTime(), mUserActionTime);
         QCOMPARE(mChannelRequest->account().data(), mAccount.data());
 
@@ -611,7 +611,7 @@ void TestAccountChannelDispatcher::testPC(PendingChannel *pc, PendingChannel **p
     QVERIFY(connect(pc,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(onPendingChannelFinished(Tp::PendingOperation *))));
-    mLoop->exec(0);
+    mLoop->exec();
 
     ChannelPtr channel = pc->channel();
     if (channelOut) {
@@ -1090,7 +1090,7 @@ void TestAccountChannelDispatcher::testCreateAndHandleChannelHandledAgain()
     connect(notifier,
             SIGNAL(handledAgain(QDateTime,Tp::ChannelRequestHints)),
             SLOT(onChannelHandledAgain(QDateTime,Tp::ChannelRequestHints)));
-    QDateTime timestamp(QDate::currentDate());
+    QDateTime timestamp(QDateTime::fromSecsSinceEpoch(QDateTime::currentSecsSinceEpoch()));
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 8, 0)
     mChannelDispatcherAdaptor->invokeHandler(timestamp.toTime_t());

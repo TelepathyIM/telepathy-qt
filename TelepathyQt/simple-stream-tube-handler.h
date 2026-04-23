@@ -29,10 +29,11 @@
 #include <TelepathyQt/Types>
 
 #include <QDateTime>
-#include <QLinkedList>
 #include <QHash>
 #include <QQueue>
 #include <QSet>
+
+#include <list>
 
 namespace Tp
 {
@@ -110,7 +111,7 @@ private:
         QDateTime time;
         ChannelRequestHints hints;
     };
-    QLinkedList<SharedPtr<InvocationData> > mInvocations;
+    std::list<SharedPtr<InvocationData> > mInvocations;
     QHash<StreamTubeChannelPtr, AccountPtr> mTubes;
     bool mBypassApproval;
 };

@@ -109,7 +109,7 @@ public:
         if (sc) {
             // increase the strongref, but never up from zero
             // or less (negative is used on untracked objects)
-            register int tmp = sc->strongref.fetchAndAddOrdered(0);
+            int tmp = sc->strongref.fetchAndAddOrdered(0);
             while (tmp > 0) {
                 // try to increment from "tmp" to "tmp + 1"
                 if (sc->strongref.testAndSetRelaxed(tmp, tmp + 1)) {

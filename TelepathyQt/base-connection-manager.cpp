@@ -383,7 +383,7 @@ bool BaseConnectionManager::registerObject(const QString &busName, const QString
  */
 QList<BaseConnectionPtr> BaseConnectionManager::connections() const
 {
-    return mPriv->connections.toList();
+    return mPriv->connections.values();
 }
 
 void BaseConnectionManager::addConnection(const BaseConnectionPtr &connection)

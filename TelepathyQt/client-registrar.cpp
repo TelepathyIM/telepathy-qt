@@ -212,7 +212,7 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onReadyOpFinished(Tp::PendingOperation*)));
 
-    mInvocations.append(invocation);
+    mInvocations.push_back(invocation);
 
     debug() << "Preparing proxies for ObserveChannels of" << channelDetailsList.size() << "channels"
         << "for client" << mClient;
@@ -220,29 +220,29 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
 
 void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
 {
-    Q_ASSERT(!mInvocations.isEmpty());
+    Q_ASSERT(!mInvocations.empty());
     Q_ASSERT(op->isFinished());
 
-    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
-            i != mInvocations.end(); ++i) {
-        if ((*i)->readyOp != op) {
+    for (const auto &i : mInvocations) {
+        if (i->readyOp != op) {
             continue;
         }
 
-        (*i)->readyOp = nullptr;
+        i->readyOp = nullptr;
 
         if (op->isError()) {
             warning() << "Preparing proxies for ObserveChannels failed with" << op->errorName()
                 << op->errorMessage();
-            (*i)->error = op->errorName();
-            (*i)->message = op->errorMessage();
+            i->error = op->errorName();
+            i->message = op->errorMessage();
         }
 
         break;
     }
 
-    while (!mInvocations.isEmpty() && !mInvocations.first()->readyOp) {
-        SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
+    while (!mInvocations.empty() && !mInvocations.front()->readyOp) {
+        auto invocation = mInvocations.front();
+        mInvocations.pop_front();
 
         if (!invocation->error.isEmpty()) {
             // We guarantee that the proxies were ready - so we can't invoke the client if they
@@ -318,34 +318,34 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onReadyOpFinished(Tp::PendingOperation*)));
 
-    mInvocations.append(invocation);
+    mInvocations.push_back(invocation);
 }
 
 void ClientApproverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
 {
-    Q_ASSERT(!mInvocations.isEmpty());
+    Q_ASSERT(!mInvocations.empty());
     Q_ASSERT(op->isFinished());
 
-    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
-            i != mInvocations.end(); ++i) {
-        if ((*i)->readyOp != op) {
+    for (const auto &i : mInvocations) {
+        if (i->readyOp != op) {
             continue;
         }
 
-        (*i)->readyOp = nullptr;
+        i->readyOp = nullptr;
 
         if (op->isError()) {
             warning() << "Preparing proxies for AddDispatchOperation failed with" << op->errorName()
                 << op->errorMessage();
-            (*i)->error = op->errorName();
-            (*i)->message = op->errorMessage();
+            i->error = op->errorName();
+            i->message = op->errorMessage();
         }
 
         break;
     }
 
-    while (!mInvocations.isEmpty() && !mInvocations.first()->readyOp) {
-        SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
+    while (!mInvocations.empty() && !mInvocations.front()->readyOp) {
+        auto invocation = mInvocations.front();
+        mInvocations.pop_front();
 
         if (!invocation->error.isEmpty()) {
             // We guarantee that the proxies were ready - so we can't invoke the client if they
@@ -473,7 +473,7 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onReadyOpFinished(Tp::PendingOperation*)));
 
-    mInvocations.append(invocation);
+    mInvocations.push_front(invocation);
 
     debug() << "Preparing proxies for HandleChannels of" << channelDetailsList.size() << "channels"
         << "for client" << mClient;
@@ -481,29 +481,29 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
 
 void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
 {
-    Q_ASSERT(!mInvocations.isEmpty());
+    Q_ASSERT(!mInvocations.empty());
     Q_ASSERT(op->isFinished());
 
-    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
-            i != mInvocations.end(); ++i) {
-        if ((*i)->readyOp != op) {
+    for (const auto &i : mInvocations) {
+        if (i->readyOp != op) {
             continue;
         }
 
-        (*i)->readyOp = nullptr;
+        i->readyOp = nullptr;
 
         if (op->isError()) {
             warning() << "Preparing proxies for HandleChannels failed with" << op->errorName()
                 << op->errorMessage();
-            (*i)->error = op->errorName();
-            (*i)->message = op->errorMessage();
+            i->error = op->errorName();
+            i->message = op->errorMessage();
         }
 
         break;
     }
 
-    while (!mInvocations.isEmpty() && !mInvocations.first()->readyOp) {
-        SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
+    while (!mInvocations.empty() && !mInvocations.front()->readyOp) {
+        auto invocation = mInvocations.front();
+        mInvocations.pop_front();
 
         if (!invocation->error.isEmpty()) {
             RequestTemporaryHandler *tempHandler = dynamic_cast<RequestTemporaryHandler *>(mClient);

@@ -64,7 +64,7 @@ Feature::~Feature()
 
 Feature &Feature::operator=(const Feature &other)
 {
-    *this = other;
+    QPair<QString, uint>::operator=(other);
     this->mPriv = other.mPriv;
     return *this;
 }

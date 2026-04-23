@@ -778,7 +778,7 @@ media_list_streams (TpSvcChannelTypeStreamedMedia *iface,
 
   tp_svc_channel_type_streamed_media_return_from_list_streams (context,
       array);
-  g_ptr_array_foreach (array, (GFunc) g_value_array_free, NULL);
+  g_ptr_array_set_free_func (array, (GDestroyNotify) g_value_array_free);
   g_ptr_array_free (array, TRUE);
 }
 

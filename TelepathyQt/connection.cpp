@@ -353,7 +353,7 @@ Connection::Private::~Private()
                 if (!type.toRelease.empty()) {
                     debug() << " Was going to release" <<
                         type.toRelease.size() << "handles, doing that now";
-                    baseInterface->ReleaseHandles(handleType, type.toRelease.toList());
+                    baseInterface->ReleaseHandles(handleType, type.toRelease.values());
                 }
             }
 
@@ -2373,7 +2373,7 @@ void Connection::doReleaseSweep(uint handleType)
 
     debug() << " Releasing" << handleContext->types[handleType].toRelease.size() << "handles";
 
-    mPriv->baseInterface->ReleaseHandles(handleType, handleContext->types[handleType].toRelease.toList());
+    mPriv->baseInterface->ReleaseHandles(handleType, handleContext->types[handleType].toRelease.values());
     handleContext->types[handleType].toRelease.clear();
 }
 

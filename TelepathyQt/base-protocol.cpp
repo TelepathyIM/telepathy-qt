@@ -220,7 +220,7 @@ QVariantMap BaseProtocol::immutableProperties() const
 {
     QVariantMap ret;
     foreach (const AbstractProtocolInterfacePtr &iface, mPriv->interfaces) {
-        ret.unite(iface->immutableProperties());
+        ret.insert(iface->immutableProperties());
     }
     ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces"),
             QVariant::fromValue(mPriv->adaptee->interfaces()));

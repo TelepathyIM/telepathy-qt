@@ -56,7 +56,12 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
       contactIdentifier(contactIdentifier),
       extraChannelFeatures(extraChannelFeatures)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    QSet<ChannelClassSpec> normalizedChannelFilter = channelFilter.isEmpty() ? QSet<ChannelClassSpec>() :
+            QSet<ChannelClassSpec>(channelFilter.begin(), channelFilter.end());
+#else
     QSet<ChannelClassSpec> normalizedChannelFilter = channelFilter.toSet();
+#endif
     QPair<QString, QSet<ChannelClassSpec> > observerUniqueId(
             account->dbusConnection().baseService(), normalizedChannelFilter);
     observer = SharedPtr<Observer>(observers.value(observerUniqueId));
@@ -76,7 +81,7 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
                 .replace(QLatin1String("."), QLatin1String("_")))
             .arg(numObservers++);
         observer = SharedPtr<Observer>(new Observer(cr, fakeAccountFactory,
-                    normalizedChannelFilter.toList(), observerName));
+                    normalizedChannelFilter.values(), observerName));
         if (!cr->registerClient(observer, observerName, false)) {
             warning() << "Unable to register observer" << observerName;
             observer.reset();
@@ -146,7 +151,7 @@ void SimpleObserver::Private::insertChannels(const AccountPtr &channelsAccount,
     }
 
     channels.unite(match);
-    emit parent->newChannels(match.toList());
+    emit parent->newChannels(match.values());
 }
 
 void SimpleObserver::Private::removeChannel(const AccountPtr &channelAccount,
@@ -529,7 +534,7 @@ QList<ChannelClassFeatures> SimpleObserver::extraChannelFeatures() const
  */
 QList<ChannelPtr> SimpleObserver::channels() const
 {
-    return mPriv->channels.toList();
+    return mPriv->channels.values();
 }
 
 /**

@@ -214,8 +214,16 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
             // No preference, let's take the first of the list
             mimeType = info.availableMIMETypes.first();
         } else {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+            auto preferred = QSet<QString>(mPriv->preferredMimeTypes.begin(),
+                    mPriv->preferredMimeTypes.end());
+            auto available = QSet<QString>(info.availableMIMETypes.begin(),
+                    info.availableMIMETypes.end());
+            QSet<QString> supportedMimeTypes = available.intersect(preferred);
+#else
             QSet<QString> supportedMimeTypes = info.availableMIMETypes.toSet().intersect(
                     mPriv->preferredMimeTypes.toSet());
+#endif
             if (supportedMimeTypes.isEmpty()) {
                 // Apparently our handler does not support any of this captcha's mimetypes, skip
                 continue;

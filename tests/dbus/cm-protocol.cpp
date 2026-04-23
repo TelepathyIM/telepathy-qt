@@ -452,16 +452,16 @@ struct CMHelper
         ProtocolPropertiesMap protocols;
         QVariantMap immutableProperties;
         if (withProtocolProps) {
-            immutableProperties.unite(protocolAdaptor->immutableProperties());
+            immutableProperties.insert(protocolAdaptor->immutableProperties());
         }
         if (withProtocolAddressingProps) {
-            immutableProperties.unite(protocolAddressingAdaptor->immutableProperties());
+            immutableProperties.insert(protocolAddressingAdaptor->immutableProperties());
         }
         if (withProtocolAvatarsProps) {
-            immutableProperties.unite(protocolAvatarsAdaptor->immutableProperties());
+            immutableProperties.insert(protocolAvatarsAdaptor->immutableProperties());
         }
         if (withProtocolPresenceProps) {
-            immutableProperties.unite(protocolPresenceAdaptor->immutableProperties());
+            immutableProperties.insert(protocolPresenceAdaptor->immutableProperties());
         }
         protocols.insert(cmName, immutableProperties);
 

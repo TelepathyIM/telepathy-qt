@@ -102,7 +102,7 @@ QString escapeAsIdentifier(const QString &string)
             }
 
             /* escape the unsafe character */
-            qsnprintf(buf, sizeof (buf), "_%02x", (unsigned char)(*ptr));
+            std::snprintf(buf, sizeof (buf), "_%02x", (unsigned char)(*ptr));
             op.append(buf);
 
             /* restart after it */

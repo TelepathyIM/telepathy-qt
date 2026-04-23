@@ -834,7 +834,7 @@ void Channel::Private::buildContacts()
     ContactManagerPtr manager = connection->contactManager();
     UIntList toBuild = QSet<uint>(pendingGroupMembers +
             pendingGroupLocalPendingMembers +
-            pendingGroupRemotePendingMembers).toList();
+            pendingGroupRemotePendingMembers).values();
 
     if (currentGroupMembersChangedInfo &&
             currentGroupMembersChangedInfo->actor != 0) {
@@ -2374,7 +2374,12 @@ Contacts Channel::groupContacts(bool includeSelfContact) const
         warning() << "Channel::groupMembers() used channel not ready";
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    auto c = mPriv->groupContacts.values();
+    Contacts ret = c.isEmpty() ? Contacts() : Contacts(c.begin(), c.end());
+#else
     Contacts ret = mPriv->groupContacts.values().toSet();
+#endif
     if (!includeSelfContact) {
         ret.remove(groupSelfContact());
     }
@@ -2405,7 +2410,12 @@ Contacts Channel::groupLocalPendingContacts(bool includeSelfContact) const
         warning() << "Channel::groupLocalPendingContacts() used with no group interface";
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    auto c = mPriv->groupLocalPendingContacts.values();
+    Contacts ret = c.isEmpty() ? Contacts() : Contacts(c.begin(), c.end());
+#else
     Contacts ret = mPriv->groupLocalPendingContacts.values().toSet();
+#endif
     if (!includeSelfContact) {
         ret.remove(groupSelfContact());
     }
@@ -2437,7 +2447,12 @@ Contacts Channel::groupRemotePendingContacts(bool includeSelfContact) const
             "group interface";
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    auto c = mPriv->groupRemotePendingContacts.values();
+    Contacts ret = c.isEmpty() ? Contacts() : Contacts(c.begin(), c.end());
+#else
     Contacts ret = mPriv->groupRemotePendingContacts.values().toSet();
+#endif
     if (!includeSelfContact) {
         ret.remove(groupSelfContact());
     }
@@ -3123,13 +3138,19 @@ void Channel::gotContacts(PendingOperation *op)
 void Channel::onGroupFlagsChanged(uint added, uint removed)
 {
     debug().nospace() << "Got Channel.Interface.Group::GroupFlagsChanged(" <<
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+        Qt::
+#endif
         hex << added << ", " << removed << ")";
 
     added &= ~(mPriv->groupFlags);
     removed &= mPriv->groupFlags;
 
-    debug().nospace() << "Arguments after filtering (" << hex << added <<
-        ", " << removed << ")";
+    debug().nospace() << "Arguments after filtering (" <<
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+        Qt::
+#endif
+        hex << added << ", " << removed << ")";
 
     uint groupFlags = mPriv->groupFlags;
     groupFlags |= added;
@@ -3424,7 +3445,13 @@ void Channel::gotConferenceInitialInviteeContacts(PendingOperation *op)
     PendingContacts *pending = qobject_cast<PendingContacts *>(op);
 
     if (pending->isValid()) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+        auto c = pending->contacts();
+        mPriv->conferenceInitialInviteeContacts = c.isEmpty() ? Contacts() :
+                Contacts(c.begin(), c.end());
+#else
         mPriv->conferenceInitialInviteeContacts = pending->contacts().toSet();
+#endif
     } else {
         warning().nospace() << "Getting conference initial invitee contacts "
             "failed with " << pending->errorName() << ":" <<

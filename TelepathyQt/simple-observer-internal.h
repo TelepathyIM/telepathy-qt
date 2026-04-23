@@ -152,7 +152,12 @@ public:
     QSet<ChannelClassFeatures> extraChannelFeatures() const { return mExtraChannelFeatures; }
     void registerExtraChannelFeatures(const QList<ChannelClassFeatures> &features)
     {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+        mExtraChannelFeatures.unite(features.isEmpty() ? QSet<ChannelClassFeatures>() :
+                QSet<ChannelClassFeatures>(features.begin(), features.end()));
+#else
         mExtraChannelFeatures.unite(features.toSet());
+#endif
     }
 
     QSet<AccountPtr> accounts() const { return mAccounts; }

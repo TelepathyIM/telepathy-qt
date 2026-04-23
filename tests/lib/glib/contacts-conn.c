@@ -623,7 +623,7 @@ tp_tests_contacts_connection_change_aliases (TpTestsContactsConnection *self,
   tp_svc_connection_interface_aliasing_emit_aliases_changed (self,
       structs);
 
-  g_ptr_array_foreach (structs, (GFunc) g_value_array_free, NULL);
+  g_ptr_array_set_free_func (structs, (GDestroyNotify) g_value_array_free);
   g_ptr_array_free (structs, TRUE);
 }
 
