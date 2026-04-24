@@ -731,6 +731,7 @@ class Generator(object):
 
         self.h('#include <glib-object.h>')
         self.h('#include <dbus/dbus-glib.h>')
+        self.h('#include <telepathy-glib/dbus.h>')
 
         for header in self.headers:
             self.h('#include %s' % header)
