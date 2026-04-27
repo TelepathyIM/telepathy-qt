@@ -68,17 +68,23 @@ include(FeatureSummary)
 # external dependencies
 
 # Required dependencies
-set(QT_VERSION_MAJOR 5)
-SET(QT_VERSION_PC 5)
+set(QT_VERSION_MAJOR 5 CACHE STRING "Qt major version")
+SET(QT_VERSION_PC ${QT_VERSION_MAJOR})
 set(QT_COMPONENTS Core DBus Network Xml)
 
 if(ENABLE_TESTS)
     list(APPEND QT_COMPONENTS Test)
 endif()
 
+set(TP_QT_COMPAT_LIBS "")
+if (QT_VERSION_MAJOR EQUAL 6)
+    list(APPEND QT_COMPONENTS Core5Compat)
+    list(APPEND TP_QT_COMPAT_LIBS Qt${QT_VERSION_MAJOR}::Core5Compat)
+endif ()
+
 set(QT_MIN_VERSION "5.6.0")
-set(QT_MAX_VERSION "6.0.0")
-find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS ${QT_COMPONENTS})
+set(QT_MAX_VERSION "7.0.0")
+find_package(Qt${QT_VERSION_MAJOR} ${QT_MIN_VERSION} REQUIRED COMPONENTS ${QT_COMPONENTS})
 
 set(TP_QT_EXECUTABLE_LINKER_FLAGS "-fPIE")
 set(TP_QT_LIBRARY_LINKER_FLAGS "-fPIC")
@@ -118,7 +124,7 @@ set(CMAKE_REQUIRED_DEFINITIONS "")
 # set the flags (-fPIE) here so that CHECK_CXX_SOURCE_COMPILES works properly if qt5 was built with
 # -reduce-locations
 set(CMAKE_REQUIRED_FLAGS "${TP_QT_EXECUTABLE_LINKER_FLAGS}")
-set(CMAKE_REQUIRED_LIBRARIES Qt5::Core)
+set(CMAKE_REQUIRED_LIBRARIES Qt${QT_VERSION_MAJOR}::Core)
 
 CHECK_CXX_SOURCE_COMPILES("
 #include <QtCore/QtGlobal>

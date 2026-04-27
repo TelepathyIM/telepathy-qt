@@ -253,8 +253,7 @@ void PendingStreamTubeConnection::onTubeStateChanged(TubeChannelState state)
     if (state == TubeChannelStateOpen) {
         // The tube is ready, populate its properties
         if (mPriv->type == SocketAddressTypeIPv4 || mPriv->type == SocketAddressTypeIPv6) {
-            mPriv->tube->setIpAddress(qMakePair<QHostAddress, quint16>(mPriv->hostAddress,
-                    mPriv->port));
+            mPriv->tube->setIpAddress(qMakePair(mPriv->hostAddress, mPriv->port));
         } else {
             // Unix socket
             mPriv->tube->setLocalAddress(mPriv->socketPath);

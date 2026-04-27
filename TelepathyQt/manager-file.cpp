@@ -244,7 +244,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
                     /* map based on the param dbus signature, otherwise use
                      * QString */
                     QVariant value = valueForKey(param, spec->signature);
-                    if (value.type() == QVariant::Invalid) {
+                    if (value.userType() == QMetaType::UnknownType) {
                         warning() << "param" << paramName
                                   << "has invalid signature";
                         protocolsMap.clear();

@@ -59,7 +59,7 @@ bool booleanFromPart(const MessagePartList &parts, uint index, const char *key,
             bool assumeIfAbsent)
 {
     QVariant v = valueFromPart(parts, index, key);
-    if (v.isValid() && v.type() == QVariant::Bool) {
+    if (v.isValid() && v.userType() == QMetaType::Bool) {
         return v.toBool();
     }
     return assumeIfAbsent;
@@ -397,7 +397,7 @@ QString Message::text() const
             }
 
             QVariant content = valueFromPart(mPriv->parts, i, "content");
-            if (content.type() == QVariant::String) {
+            if (content.userType() == QMetaType::QString) {
                 text += content.toString();
             } else {
                 // O RLY?

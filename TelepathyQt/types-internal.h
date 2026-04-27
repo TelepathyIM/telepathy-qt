@@ -56,9 +56,11 @@ TP_QT_EXPORT const QDBusArgument& operator>>(const QDBusArgument& arg, SUSocketA
 } // Tp
 
 // specialise for Tp::SocketAddressIPv4, allowing it to be used in place of QDBusVariant
-template<> inline Tp::SocketAddressIPv4 qdbus_cast<Tp::SocketAddressIPv4>(const QDBusArgument &arg,
-Tp::SocketAddressIPv4 *)
-{
+template<> inline Tp::SocketAddressIPv4 qdbus_cast<Tp::SocketAddressIPv4>(const QDBusArgument &arg
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        , Tp::SocketAddressIPv4 *
+#endif
+) {
     if (arg.currentSignature() == QLatin1String("(su)")) {
         // Use Tp::SUSocketAddress
         Tp::SUSocketAddress saddr = qdbus_cast<Tp::SUSocketAddress>(arg);
@@ -77,8 +79,11 @@ Tp::SocketAddressIPv4 *)
     }
 }
 
-template<> inline Tp::SocketAddressIPv4 qdbus_cast<Tp::SocketAddressIPv4>(const QVariant &v, Tp::SocketAddressIPv4 *)
-{
+template<> inline Tp::SocketAddressIPv4 qdbus_cast<Tp::SocketAddressIPv4>(const QVariant &v
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        , Tp::SocketAddressIPv4 *
+#endif
+) {
     int id = v.userType();
     if (id == qMetaTypeId<QDBusArgument>()) {
         QDBusArgument arg = qvariant_cast<QDBusArgument>(v);
@@ -104,9 +109,11 @@ template<> inline Tp::SocketAddressIPv4 qdbus_cast<Tp::SocketAddressIPv4>(const 
 }
 
 // specialise for Tp::SocketAddressIPv6, allowing it to be used in place of QDBusVariant
-template<> inline Tp::SocketAddressIPv6 qdbus_cast<Tp::SocketAddressIPv6>(const QDBusArgument &arg,
-Tp::SocketAddressIPv6 *)
-{
+template<> inline Tp::SocketAddressIPv6 qdbus_cast<Tp::SocketAddressIPv6>(const QDBusArgument &arg
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        , Tp::SocketAddressIPv6 *
+#endif
+) {
     if (arg.currentSignature() == QLatin1String("(su)")) {
         // Use Tp::SUSocketAddress
         Tp::SUSocketAddress saddr = qdbus_cast<Tp::SUSocketAddress>(arg);
@@ -125,8 +132,11 @@ Tp::SocketAddressIPv6 *)
     }
 }
 
-template<> inline Tp::SocketAddressIPv6 qdbus_cast<Tp::SocketAddressIPv6>(const QVariant &v, Tp::SocketAddressIPv6 *)
-{
+template<> inline Tp::SocketAddressIPv6 qdbus_cast<Tp::SocketAddressIPv6>(const QVariant &v
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        , Tp::SocketAddressIPv6 *
+#endif
+) {
     int id = v.userType();
     if (id == qMetaTypeId<QDBusArgument>()) {
         QDBusArgument arg = qvariant_cast<QDBusArgument>(v);

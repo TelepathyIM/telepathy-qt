@@ -1128,8 +1128,7 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
     QCOMPARE(mNewServerConnectionContact->id(), QLatin1String("first"));
     QCOMPARE(mNewServerConnectionTube, mRequestedTube);
 
-    QHash<QPair<QHostAddress, quint16>, StreamTubeServer::RemoteContact > conns =
-        server->tcpConnections();
+    auto conns = server->tcpConnections();
     QCOMPARE(conns.size(), 1);
     QVERIFY(conns.contains(qMakePair(expectedAddress, expectedPort)));
     QCOMPARE(conns.value(qMakePair(expectedAddress, expectedPort)).account()->objectPath(), mAcc->objectPath());

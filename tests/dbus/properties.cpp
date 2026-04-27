@@ -113,8 +113,8 @@ void TestProperties::testPropertiesMonitoring()
     QCOMPARE(spy.count(), 1);
 
     QList<QVariant> arguments = spy.takeFirst();
-    QVERIFY(arguments.at(0).type() == QVariant::Map);
-    QVERIFY(arguments.at(1).type() == QVariant::StringList);
+    QVERIFY(arguments.at(0).userType() == QMetaType::QVariantMap);
+    QVERIFY(arguments.at(1).userType() == QMetaType::QStringList);
 
     QVariantMap resultMap = arguments.at(0).toMap();
     QCOMPARE(resultMap.size(), 2);

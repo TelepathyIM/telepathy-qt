@@ -61,8 +61,13 @@ public:
 
     QHash<uint, Tp::ContactPtr> contactsForConnections() const;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QHash<QPair<QHostAddress,quint16>, uint> connectionsForSourceAddresses() const;
     QHash<uchar, uint> connectionsForCredentials() const;
+#else
+    QMultiHash<QPair<QHostAddress,quint16>, uint> connectionsForSourceAddresses() const;
+    QMultiHash<uchar, uint> connectionsForCredentials() const;
+#endif
 
 protected:
     OutgoingStreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,

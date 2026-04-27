@@ -39,7 +39,6 @@
 #include <QDBusConnection>
 
 class QString;
-class QStringList;
 
 namespace Tp
 {

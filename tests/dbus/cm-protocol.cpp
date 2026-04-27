@@ -574,7 +574,7 @@ void TestCmProtocol::testIntrospectionWithManager()
     QCOMPARE(info.parameters().size(), 1);
     ProtocolParameter param = info.parameters().at(0);
     QCOMPARE(param.name(), QLatin1String("account"));
-    QCOMPARE(static_cast<uint>(param.type()), static_cast<uint>(QVariant::String));
+    QCOMPARE(static_cast<uint>(param.type()), static_cast<uint>(QMetaType::QString));
     QCOMPARE(param.defaultValue().isNull(), true);
     QCOMPARE(param.dbusSignature().signature(), QLatin1String("s"));
     QCOMPARE(param.isRequired(), true);

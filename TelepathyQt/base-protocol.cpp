@@ -99,7 +99,7 @@ ParamSpecList BaseProtocol::Adaptee::parameters() const
     foreach (const ProtocolParameter &param, mProtocol->parameters()) {
          ParamSpec paramSpec = param.bareParameter();
          if (!(paramSpec.flags & ConnMgrParamFlagHasDefault)) {
-             // we cannot pass QVariant::Invalid over D-Bus, lets build a dummy value
+             // we cannot pass QMetaType::UnknownType over D-Bus, lets build a dummy value
              // that should be ignored according to the spec
              paramSpec.defaultValue = QDBusVariant(
                      parseValueWithDBusSignature(QString(), paramSpec.signature));

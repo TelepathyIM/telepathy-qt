@@ -30,12 +30,12 @@
 #include <TelepathyQt/Channel>
 #include <TelepathyQt/PendingOperation>
 #include <TelepathyQt/PendingSendMessage>
+#include <TelepathyQt/ReceivedMessage>
 
 namespace Tp
 {
 
 class Message;
-class ReceivedMessage;
 
 class TP_QT_EXPORT TextChannel : public Channel
 {
@@ -76,12 +76,21 @@ public Q_SLOTS:
 
     void forget(const QList<ReceivedMessage> &messages);
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     PendingSendMessage *send(const QString &text,
             ChannelTextMessageType type = ChannelTextMessageTypeNormal,
             MessageSendingFlags flags = nullptr);
 
     PendingSendMessage *send(const MessagePartList &parts,
             MessageSendingFlags flags = nullptr);
+#else
+    PendingSendMessage *send(const QString &text,
+            ChannelTextMessageType type = ChannelTextMessageTypeNormal,
+            MessageSendingFlags flags = MessageSendingFlags());
+
+    PendingSendMessage *send(const MessagePartList &parts,
+            MessageSendingFlags flags = MessageSendingFlags());
+#endif
 
     inline PendingOperation *inviteContacts(
             const QList<ContactPtr> &contacts,

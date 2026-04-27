@@ -92,6 +92,13 @@ struct TP_QT_NO_EXPORT PendingOpenTube::Private
     QVariantMap parameters;
 };
 
+// A hack to keep the ABI/API the same for Qt5 builds
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define TPQT6_MULTIHASH QHash
+#else
+#define TPQT6_MULTIHASH QMultiHash
+#endif
+
 struct TP_QT_NO_EXPORT OutgoingStreamTubeChannel::Private
 {
     Private(OutgoingStreamTubeChannel *parent);
@@ -99,8 +106,8 @@ struct TP_QT_NO_EXPORT OutgoingStreamTubeChannel::Private
     OutgoingStreamTubeChannel *parent;
 
     QHash<uint, Tp::ContactPtr> contactsForConnections;
-    QHash<QPair<QHostAddress, quint16>, uint> connectionsForSourceAddresses;
-    QHash<uchar, uint> connectionsForCredentials;
+    TPQT6_MULTIHASH<QPair<QHostAddress, quint16>, uint> connectionsForSourceAddresses;
+    TPQT6_MULTIHASH<uchar, uint> connectionsForCredentials;
 
     QHash<QUuid, QPair<uint, QDBusVariant> > pendingNewConnections;
 

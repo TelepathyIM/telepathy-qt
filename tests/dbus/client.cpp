@@ -27,6 +27,8 @@
 
 #include <telepathy-glib/debug.h>
 
+#include <QRegExp>
+
 using namespace Tp;
 using namespace Tp::Client;
 
@@ -584,15 +586,27 @@ void TestClient::testRegister()
     QDBusConnection bus = mClientRegistrar->dbusConnection();
     QDBusConnectionInterface *busIface = bus.interface();
     QStringList registeredServicesNames = busIface->registeredServiceNames();
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QVERIFY(registeredServicesNames.filter(
                 QRegExp(QLatin1String("^" "org.freedesktop.Telepathy.Client.foo"
                         ".([_A-Za-z][_A-Za-z0-9]*)"))).size() == 1);
+#else
+    QVERIFY(QRegExp(QLatin1String("^" "org.freedesktop.Telepathy.Client.foo"
+            ".([_A-Za-z][_A-Za-z0-9]*)")).filterList(registeredServicesNames)
+            .size() == 1);
+#endif
 
     mClientObject1BusName = QLatin1String("org.freedesktop.Telepathy.Client.foo");
     mClientObject1Path = QLatin1String("/org/freedesktop/Telepathy/Client/foo");
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     mClientObject2BusName = registeredServicesNames.filter(
             QRegExp(QLatin1String("org.freedesktop.Telepathy.Client.foo._*"))).first();
+#else
+    mClientObject2BusName = QRegExp(QLatin1String("org.freedesktop.Telepathy.Client.foo._*"))
+            .filterList(registeredServicesNames).first();
+#endif
     mClientObject2Path = QString(QLatin1String("/%1")).arg(mClientObject2BusName);
     mClientObject2Path.replace(QLatin1String("."), QLatin1String("/"));
 }

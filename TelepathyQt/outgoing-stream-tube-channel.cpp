@@ -353,7 +353,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
 
         setAddressType(SocketAddressTypeIPv4);
         setAccessControl(accessControl);
-        setIpAddress(qMakePair<QHostAddress, quint16>(hostAddress, port));
+        setIpAddress(qMakePair(hostAddress, port));
 
         SocketAddressIPv4 addr;
         addr.address = hostAddress.toString();
@@ -389,7 +389,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
 
         setAddressType(SocketAddressTypeIPv6);
         setAccessControl(accessControl);
-        setIpAddress(qMakePair<QHostAddress, quint16>(hostAddress, port));
+        setIpAddress(qMakePair(hostAddress, port));
 
         SocketAddressIPv6 addr;
         addr.address = hostAddress.toString();
@@ -611,12 +611,12 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
  *     corresponding connection ids.
  * \sa connectionsForCredentials()
  */
-QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connectionsForSourceAddresses() const
+TPQT6_MULTIHASH<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connectionsForSourceAddresses() const
 {
     if (addressType() != SocketAddressTypeIPv4 && addressType() != SocketAddressTypeIPv6) {
         warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
                 "just when offering a TCP socket";
-        return QHash<QPair<QHostAddress, quint16>, uint>();
+        return TPQT6_MULTIHASH<QPair<QHostAddress, quint16>, uint>();
     }
 
     if (isValid() || !isDroppingConnections() ||
@@ -624,13 +624,13 @@ QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connections
         if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
             warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
                 "   calling connectionsForSourceAddresses";
-            return QHash<QPair<QHostAddress, quint16>, uint>();
+            return TPQT6_MULTIHASH<QPair<QHostAddress, quint16>, uint>();
         }
 
         if (state() != TubeChannelStateOpen) {
             warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
                 "just when the tube is open";
-            return QHash<QPair<QHostAddress, quint16>, uint>();
+            return TPQT6_MULTIHASH<QPair<QHostAddress, quint16>, uint>();
         }
     }
 
@@ -654,18 +654,18 @@ QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connections
  * \return The map from credential bytes to the corresponding connection ids.
  * \sa connectionsForSourceAddresses()
  */
-QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
+TPQT6_MULTIHASH<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
 {
     if (addressType() != SocketAddressTypeUnix && addressType() != SocketAddressTypeAbstractUnix) {
         warning() << "OutgoingStreamTubeChannel::connectionsForCredentials() makes sense "
                 "just when offering an Unix socket";
-        return QHash<uchar, uint>();
+        return TPQT6_MULTIHASH<uchar, uint>();
     }
 
     if (accessControl() != SocketAccessControlCredentials) {
         warning() << "OutgoingStreamTubeChannel::connectionsForCredentials() makes sense "
                 "just when offering an Unix socket requiring credentials";
-        return QHash<uchar, uint>();
+        return TPQT6_MULTIHASH<uchar, uint>();
     }
 
     if (isValid() || !isDroppingConnections() ||
@@ -673,13 +673,13 @@ QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
         if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
             warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
                 "calling OutgoingStreamTubeChannel::connectionsForCredentials()";
-            return QHash<uchar, uint>();
+            return TPQT6_MULTIHASH<uchar, uint>();
         }
 
         if (state() != TubeChannelStateOpen) {
             warning() << "OutgoingStreamTubeChannel::connectionsForCredentials() makes sense "
                 "just when the tube is opened";
-            return QHash<uchar, uint>();
+            return TPQT6_MULTIHASH<uchar, uint>();
         }
     }
 
@@ -750,8 +750,7 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
             // Remove stuff from our hashes
             mPriv->contactsForConnections.remove(conn.id);
 
-            QHash<QPair<QHostAddress, quint16>, uint>::iterator srcAddrIter =
-                mPriv->connectionsForSourceAddresses.begin();
+            auto srcAddrIter = mPriv->connectionsForSourceAddresses.begin();
             while (srcAddrIter != mPriv->connectionsForSourceAddresses.end()) {
                 if (srcAddrIter.value() == conn.id) {
                     srcAddrIter = mPriv->connectionsForSourceAddresses.erase(srcAddrIter);
@@ -760,7 +759,7 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
                 }
             }
 
-            QHash<uchar, uint>::iterator credIter = mPriv->connectionsForCredentials.begin();
+            auto credIter = mPriv->connectionsForCredentials.begin();
             while (credIter != mPriv->connectionsForCredentials.end()) {
                 if (credIter.value() == conn.id) {
                     credIter = mPriv->connectionsForCredentials.erase(credIter);
@@ -804,13 +803,21 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
                addressType() == SocketAddressTypeAbstractUnix) {
         if (accessControl() == SocketAccessControlCredentials) {
             uchar credentialByte = qdbus_cast<uchar>(connectionProperties.second.variant());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             mPriv->connectionsForCredentials.insertMulti(credentialByte, connectionProperties.first);
+#else
+            mPriv->connectionsForCredentials.insert(credentialByte, connectionProperties.first);
+#endif
         }
     }
 
     if (address.first != QHostAddress::Null) {
         // We can map it to a source address as well
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         mPriv->connectionsForSourceAddresses.insertMulti(address, connectionProperties.first);
+#else
+        mPriv->connectionsForSourceAddresses.insert(address, connectionProperties.first);
+#endif
     }
 
     // Time for us to emit the signal

@@ -972,12 +972,16 @@ void Profile::Parameter::setDBusSignature(const QDBusSignature &dbusSignature)
 }
 
 /**
- * Return the QVariant::Type of this parameter, constructed using
+ * Return the QMetaType::Type of this parameter, constructed using
  * dbusSignature().
  *
- * \return The QVariant::Type of this parameter.
+ * \return The QMetaType::Type of this parameter.
  */
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QVariant::Type Profile::Parameter::type() const
+#else
+QMetaType::Type Profile::Parameter::type() const
+#endif
 {
     return variantTypeFromDBusSignature(mPriv->dbusSignature.signature());
 }

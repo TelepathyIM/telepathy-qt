@@ -39,7 +39,12 @@ TP_QT_EXPORT QString escapeAsIdentifier(const QString &string);
 
 TP_QT_EXPORT bool checkValidProtocolName(const QString &protocolName);
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 TP_QT_EXPORT QVariant::Type variantTypeFromDBusSignature(const QString &signature);
+#else
+TP_QT_EXPORT QMetaType::Type variantTypeFromDBusSignature(const QString &signature);
+#endif
+
 TP_QT_EXPORT QVariant parseValueWithDBusSignature(const QString &value,
         const QString &dbusSignature);
 

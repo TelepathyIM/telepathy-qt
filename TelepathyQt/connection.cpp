@@ -51,6 +51,7 @@
 #include <QMutexLocker>
 #include <QPair>
 #include <QQueue>
+#include <QRegExp>
 #include <QString>
 #include <QTimer>
 #include <QtGlobal>

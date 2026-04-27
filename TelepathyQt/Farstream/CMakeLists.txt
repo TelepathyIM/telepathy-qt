@@ -41,8 +41,8 @@ if(FARSTREAM_COMPONENTS_FOUND)
 
     # Link
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-farstream
-        Qt5::Core
-        Qt5::DBus
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::DBus
         ${GOBJECT_LIBRARIES}
         ${GLIB2_LIBRARIES}
         ${TELEPATHY_FARSTREAM_LIBRARIES}

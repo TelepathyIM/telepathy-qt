@@ -202,13 +202,19 @@ private:
     T *d;
 };
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define QHASH_RET_TYPE uint
+#else
+#define QHASH_RET_TYPE size_t
+#endif
+
 template<typename T>
-inline uint qHash(const SharedPtr<T> &ptr)
+inline QHASH_RET_TYPE qHash(const SharedPtr<T> &ptr)
 {
-    return QT_PREPEND_NAMESPACE(qHash<T>(ptr.data()));
+    return QT_PREPEND_NAMESPACE(qHash(ptr.data()));
 }
 
-template<typename T> inline uint qHash(const WeakPtr<T> &ptr);
+template<typename T> inline QHASH_RET_TYPE qHash(const WeakPtr<T> &ptr);
 
 template <class T>
 class WeakPtr
@@ -270,17 +276,19 @@ public:
 
 private:
     friend class SharedPtr<T>;
-    friend uint qHash<T>(const WeakPtr<T> &ptr);
+    friend QHASH_RET_TYPE qHash<T>(const WeakPtr<T> &ptr);
 
     RefCounted::SharedCount *sc;
 };
 
 template<typename T>
-inline uint qHash(const WeakPtr<T> &ptr)
+inline QHASH_RET_TYPE qHash(const WeakPtr<T> &ptr)
 {
     T *actualPtr = ptr.sc ? ptr.sc.d : 0;
     return QT_PREPEND_NAMESPACE(qHash<T>(actualPtr));
 }
+
+#undef QHASH_RET_TYPE
 
 } // Tp
 

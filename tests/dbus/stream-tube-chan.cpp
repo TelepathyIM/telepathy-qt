@@ -364,8 +364,12 @@ void TestStreamTubeChan::testCheckRemoteConnectionsCommon()
         // qDebug() << "+++ conn for credentials" << chan->connectionsForCredentials();
         QCOMPARE(chan->connectionsForCredentials().isEmpty(), false);
         QCOMPARE(chan->connectionsForSourceAddresses().isEmpty(), true);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         QCOMPARE(chan->connectionsForCredentials().contains(mCredentialByte), true);
         QCOMPARE(chan->connectionsForCredentials().value(mCredentialByte), mRemoteConnectionId);
+#else
+        QCOMPARE(chan->connectionsForCredentials().contains(mCredentialByte, mRemoteConnectionId), true);
+#endif
     }
 
     mLoop->exit(0);

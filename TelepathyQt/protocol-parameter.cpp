@@ -33,14 +33,22 @@ struct TP_QT_NO_EXPORT ProtocolParameter::Private : public QSharedData
 {
     Private(const ParamSpec &sp)
         : spec(sp),
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+          type(static_cast<QMetaType::Type>(variantTypeFromDBusSignature(spec.signature)))
+#else
           type(variantTypeFromDBusSignature(spec.signature))
+#endif
     {
         init();
     }
 
     Private(const QString &name, const QString &dbusSignature,
             ConnMgrParamFlags flags, const QVariant &defaultValue)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        : type(static_cast<QMetaType::Type>(variantTypeFromDBusSignature(dbusSignature)))
+#else
         : type(variantTypeFromDBusSignature(dbusSignature))
+#endif
     {
         spec.name = name;
         spec.flags = flags;
@@ -52,7 +60,7 @@ struct TP_QT_NO_EXPORT ProtocolParameter::Private : public QSharedData
     void init()
     {
         if (spec.flags & ConnMgrParamFlagHasDefault) {
-            if (spec.defaultValue.variant() == QVariant::Invalid) {
+            if (spec.defaultValue.variant().userType() == QMetaType::UnknownType) {
                 // flags contains HasDefault but no default value is passed,
                 // lets warn and build a default value from signature
                 warning() << "Building ProtocolParameter with flags containing ConnMgrParamFlagHasDefault"
@@ -61,7 +69,7 @@ struct TP_QT_NO_EXPORT ProtocolParameter::Private : public QSharedData
                         parseValueWithDBusSignature(QString(), spec.signature));
             }
         } else {
-            if (spec.defaultValue.variant() != QVariant::Invalid) {
+            if (spec.defaultValue.variant().userType() != QMetaType::UnknownType) {
                 // flags does not contain HasDefault but a default value is passed,
                 // lets add HasDefault to flags
                 debug() << "Building ProtocolParameter with flags not containing ConnMgrParamFlagHasDefault"
@@ -72,7 +80,7 @@ struct TP_QT_NO_EXPORT ProtocolParameter::Private : public QSharedData
     }
 
     ParamSpec spec;
-    QVariant::Type type;
+    QMetaType::Type type;
 };
 
 /**
@@ -168,14 +176,25 @@ QDBusSignature ProtocolParameter::dbusSignature() const
     return QDBusSignature(mPriv->spec.signature);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QVariant::Type ProtocolParameter::type() const
 {
     if (!isValid()) {
         return QVariant::Invalid;
     }
 
+    return static_cast<QVariant::Type>(mPriv->type);
+}
+#else
+QMetaType::Type ProtocolParameter::type() const
+{
+    if (!isValid()) {
+        return QMetaType::UnknownType;
+    }
+
     return mPriv->type;
 }
+#endif
 
 QVariant ProtocolParameter::defaultValue() const
 {
@@ -222,7 +241,11 @@ ParamSpec ProtocolParameter::bareParameter() const
     return mPriv->spec;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 uint qHash(const ProtocolParameter& parameter)
+#else
+size_t qHash(const ProtocolParameter& parameter)
+#endif
 {
     return qHash(parameter.name());
 }

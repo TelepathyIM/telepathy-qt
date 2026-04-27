@@ -182,7 +182,11 @@ public:
 
     QList<Tube> tubes() const;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QHash<QPair<QHostAddress, quint16>, RemoteContact> tcpConnections() const;
+#else
+    QMultiHash<QPair<QHostAddress, quint16>, RemoteContact> tcpConnections() const;
+#endif
 
 Q_SIGNALS:
 

@@ -72,7 +72,7 @@ void TestProfileManager::testProfileManager()
     Profile::Parameter param = profile->parameter(QLatin1String("register"));
     QCOMPARE(param.name(), QLatin1String("register"));
     QCOMPARE(param.dbusSignature(), QDBusSignature(QLatin1String("b")));
-    QCOMPARE(param.type(), QVariant::Bool);
+    QCOMPARE(param.type(), QMetaType::Bool);
     QCOMPARE(param.value(), QVariant(true));
     QCOMPARE(param.label(), QString());
     QCOMPARE(param.isMandatory(), false);

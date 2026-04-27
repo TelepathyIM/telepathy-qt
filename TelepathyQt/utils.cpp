@@ -149,30 +149,39 @@ bool checkValidProtocolName(const QString &protocolName)
 /**
  * \ingroup utils
  */
-QVariant::Type variantTypeFromDBusSignature(const QString &signature)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QVariant::Type
+#else
+QMetaType::Type
+#endif
+                variantTypeFromDBusSignature(const QString &signature)
 {
-    QVariant::Type type;
+    QMetaType::Type type;
     if (signature == QLatin1String("b")) {
-        type = QVariant::Bool;
+        type = QMetaType::Bool;
     } else if (signature == QLatin1String("n") || signature == QLatin1String("i")) {
-        type = QVariant::Int;
+        type = QMetaType::Int;
     } else if (signature == QLatin1String("q") || signature == QLatin1String("u")) {
-        type = QVariant::UInt;
+        type = QMetaType::UInt;
     } else if (signature == QLatin1String("x")) {
-        type = QVariant::LongLong;
+        type = QMetaType::LongLong;
     } else if (signature == QLatin1String("t")) {
-        type = QVariant::ULongLong;
+        type = QMetaType::ULongLong;
     } else if (signature == QLatin1String("d")) {
-        type = QVariant::Double;
+        type = QMetaType::Double;
     } else if (signature == QLatin1String("as")) {
-        type = QVariant::StringList;
+        type = QMetaType::QStringList;
     } else if (signature == QLatin1String("s") || signature == QLatin1String("o")) {
-        type = QVariant::String;
+        type = QMetaType::QString;
     } else {
-        type = QVariant::Invalid;
+        type = QMetaType::UnknownType;
     }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return static_cast<QVariant::Type>(type);
+#else
     return type;
+#endif
 }
 
 /**
@@ -181,14 +190,19 @@ QVariant::Type variantTypeFromDBusSignature(const QString &signature)
 QVariant parseValueWithDBusSignature(const QString &value,
         const QString &dbusSignature)
 {
-    QVariant::Type type = variantTypeFromDBusSignature(dbusSignature);
+    QMetaType::Type type =
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            static_cast<QMetaType::Type>(variantTypeFromDBusSignature(dbusSignature));
+#else
+            variantTypeFromDBusSignature(dbusSignature);
+#endif
 
-    if (type == QVariant::Invalid) {
-        return QVariant(type);
+    if (type == QMetaType::UnknownType) {
+        return QVariant();
     }
 
     switch (type) {
-        case QVariant::Bool:
+        case QMetaType::Bool:
             {
                 if (value.toLower() == QLatin1String("true") ||
                     value == QLatin1String("1")) {
@@ -198,24 +212,24 @@ QVariant parseValueWithDBusSignature(const QString &value,
                 }
                 break;
             }
-        case QVariant::Int:
+        case QMetaType::Int:
             return QVariant(value.toInt());
-        case QVariant::UInt:
+        case QMetaType::UInt:
             return QVariant(value.toUInt());
-        case QVariant::LongLong:
+        case QMetaType::LongLong:
             return QVariant(value.toLongLong());
-        case QVariant::ULongLong:
+        case QMetaType::ULongLong:
             return QVariant(value.toULongLong());
-        case QVariant::Double:
+        case QMetaType::Double:
             return QVariant(value.toDouble());
-        case QVariant::StringList:
+        case QMetaType::QStringList:
             {
                 QStringList list;
                 QByteArray rawValue = value.toLatin1();
                 if (KeyFile::unescapeStringList(rawValue, 0, rawValue.size(), list)) {
                     return QVariant(list);
                 } else {
-                    return QVariant(QVariant::Invalid);
+                    return QVariant();
                 }
             }
         default:

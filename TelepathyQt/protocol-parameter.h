@@ -64,7 +64,11 @@ public:
 
     QString name() const;
     QDBusSignature dbusSignature() const;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QVariant::Type type() const;
+#else
+    QMetaType::Type type() const;
+#endif
     QVariant defaultValue() const;
 
     bool isRequired() const;
@@ -84,7 +88,11 @@ private:
 
 typedef QList<ProtocolParameter> ProtocolParameterList;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 uint qHash(const ProtocolParameter &parameter);
+#else
+size_t qHash(const ProtocolParameter &parameter);
+#endif
 
 } // Tp
 

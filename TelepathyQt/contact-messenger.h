@@ -53,11 +53,19 @@ public:
 
     QList<TextChannelPtr> textChats() const;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     PendingSendMessage *sendMessage(const QString &text,
             ChannelTextMessageType type = ChannelTextMessageTypeNormal,
             MessageSendingFlags flags = nullptr);
     PendingSendMessage *sendMessage(const MessageContentPartList &parts,
             MessageSendingFlags flags = nullptr);
+#else
+    PendingSendMessage *sendMessage(const QString &text,
+            ChannelTextMessageType type = ChannelTextMessageTypeNormal,
+            MessageSendingFlags flags = MessageSendingFlags());
+    PendingSendMessage *sendMessage(const MessageContentPartList &parts,
+            MessageSendingFlags flags = MessageSendingFlags());
+#endif
 
 Q_SIGNALS:
     void messageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,

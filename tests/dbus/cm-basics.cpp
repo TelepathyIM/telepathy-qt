@@ -147,7 +147,7 @@ void TestCmBasics::testBasics()
 
     ProtocolParameter param = info.parameters().at(0);
     QCOMPARE(param.name(), QLatin1String("account"));
-    QCOMPARE(static_cast<uint>(param.type()), static_cast<uint>(QVariant::String));
+    QCOMPARE(static_cast<uint>(param.type()), static_cast<uint>(QMetaType::QString));
     QCOMPARE(param.defaultValue().isNull(), true);
     QCOMPARE(param.dbusSignature().signature(), QLatin1String("s"));
     QCOMPARE(param.isRequired(), true);
@@ -160,7 +160,7 @@ void TestCmBasics::testBasics()
     QVERIFY(!otherParam.isValid());
     QCOMPARE(otherParam.name(), QString());
     QCOMPARE(otherParam.dbusSignature(), QDBusSignature());
-    QCOMPARE(otherParam.type(), QVariant::Invalid);
+    QCOMPARE(otherParam.type(), QMetaType::UnknownType);
     QCOMPARE(otherParam.defaultValue(), QVariant());
     QCOMPARE(otherParam.isRequired(), false);
     QCOMPARE(otherParam.isSecret(), false);
@@ -279,7 +279,7 @@ void TestCmBasics::testLegacy()
 
     ProtocolParameter param = info.parameters().at(0);
     QCOMPARE(param.name(), QLatin1String("account"));
-    QCOMPARE(static_cast<uint>(param.type()), static_cast<uint>(QVariant::String));
+    QCOMPARE(static_cast<uint>(param.type()), static_cast<uint>(QMetaType::QString));
     QCOMPARE(param.defaultValue().isNull(), true);
     QCOMPARE(param.dbusSignature().signature(), QLatin1String("s"));
     QCOMPARE(param.isRequired(), true);

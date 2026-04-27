@@ -159,13 +159,13 @@ FUNCTION (TPQT_CREATE_MOC_COMMAND_TARGET_DEPS infile outfile moc_flags moc_optio
       FILE (APPEND ${_moc_parameters_file} "${arg}\n")
     ENDFOREACH()
     ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
-                       COMMAND ${QT_MOC_EXECUTABLE} @${_moc_outfile_name}_parameters
+                       COMMAND Qt${QT_VERSION_MAJOR}::moc @${_moc_outfile_name}_parameters
                        DEPENDS ${infile}
                        ${_moc_working_dir}
                        VERBATIM)
   ELSE ()
     ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
-                       COMMAND ${QT_MOC_EXECUTABLE}
+                       COMMAND Qt${QT_VERSION_MAJOR}::moc
                        ARGS ${moc_flags} ${moc_options} -o ${outfile} ${infile}
                        DEPENDS ${infile})
   ENDIF ()

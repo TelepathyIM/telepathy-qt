@@ -219,7 +219,7 @@ bool KeyFile::Private::validateKey(const QByteArray &data, int from, int to, QSt
               (ch == '.') || (ch == '@'))) {
             ret = false;
         }
-        result += ch;
+        result += QChar(ch);
     }
     return ret;
 }
@@ -528,7 +528,7 @@ bool KeyFile::unescapeString(const QByteArray &data, int from, int to, QString &
                     return false;
             }
         } else {
-            result += ch;
+            result += QChar(ch);
         }
     }
 

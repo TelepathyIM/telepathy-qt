@@ -874,11 +874,19 @@ QList<StreamTubeServer::Tube> StreamTubeServer::tubes() const
  * \return The connections in a mapping with pairs of their source host addresses and ports as keys
  * and structures containing pointers to the account and remote contacts they're from as values.
  */
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QHash<QPair<QHostAddress, quint16>,
+#else
+QMultiHash<QPair<QHostAddress, quint16>,
+#endif
     StreamTubeServer::RemoteContact>
     StreamTubeServer::tcpConnections() const
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>, RemoteContact> conns;
+#else
+    QMultiHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>, RemoteContact> conns;
+#endif
     if (!monitorsConnections()) {
         warning() << "StreamTubeServer::tcpConnections() used, but connection monitoring is disabled";
         return conns;
@@ -897,8 +905,7 @@ QHash<QPair<QHostAddress, quint16>,
             continue;
         }
 
-        QHash<QPair<QHostAddress,quint16>, uint> srcAddrConns =
-            tube.channel()->connectionsForSourceAddresses();
+        auto srcAddrConns = tube.channel()->connectionsForSourceAddresses();
         QHash<uint, ContactPtr> connContacts =
             tube.channel()->contactsForConnections();
 
@@ -913,8 +920,13 @@ QHash<QPair<QHostAddress, quint16>,
         // Port AC
         foreach (const ContactPtr &contact, connContacts.values()) {
             // Insert them with an invalid source address as the key
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             conns.insertMulti(qMakePair(QHostAddress(QHostAddress::Null), quint16(0)),
                     RemoteContact(tube.account(), contact));
+#else
+            conns.insert(qMakePair(QHostAddress(QHostAddress::Null), quint16(0)),
+                    RemoteContact(tube.account(), contact));
+#endif
         }
     }
 
@@ -1028,8 +1040,7 @@ void StreamTubeServer::onNewConnection(
 
     if (wrapper->mTube->addressType() == SocketAddressTypeIPv4
             || wrapper->mTube->addressType() == SocketAddressTypeIPv6) {
-        QHash<QPair<QHostAddress,quint16>, uint> srcAddrConns =
-            wrapper->mTube->connectionsForSourceAddresses();
+        auto srcAddrConns = wrapper->mTube->connectionsForSourceAddresses();
         QHash<uint, Tp::ContactPtr> connContacts =
             wrapper->mTube->contactsForConnections();
 
@@ -1052,8 +1063,7 @@ void StreamTubeServer::onConnectionClosed(
 
     if (wrapper->mTube->addressType() == SocketAddressTypeIPv4
             || wrapper->mTube->addressType() == SocketAddressTypeIPv6) {
-        QHash<QPair<QHostAddress,quint16>, uint> srcAddrConns =
-            wrapper->mTube->connectionsForSourceAddresses();
+        auto srcAddrConns = wrapper->mTube->connectionsForSourceAddresses();
         QHash<uint, Tp::ContactPtr> connContacts =
             wrapper->mTube->contactsForConnections();
 

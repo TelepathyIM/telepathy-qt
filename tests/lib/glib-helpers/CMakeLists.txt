@@ -16,8 +16,8 @@ if(ENABLE_TP_GLIB_TESTS)
         ${GOBJECT_LIBRARIES}
         ${GLIB2_LIBRARIES}
         ${DBUS_GLIB_LIBRARIES}
-        Qt5::Core
-        Qt5::DBus
-        Qt5::Test
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::DBus
+        Qt${QT_VERSION_MAJOR}::Test
         telepathy-qt${QT_VERSION_MAJOR})
 endif()

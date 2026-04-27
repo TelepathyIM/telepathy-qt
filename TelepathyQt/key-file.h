@@ -29,7 +29,6 @@
 #include <QtGlobal>
 
 class QString;
-class QStringList;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 

@@ -64,7 +64,7 @@ void TestProfile::testProfile()
     Profile::Parameter param = profile->parameter(QLatin1String("server"));
     QCOMPARE(param.name(), QLatin1String("server"));
     QCOMPARE(param.dbusSignature(), QDBusSignature(QLatin1String("s")));
-    QCOMPARE(param.type(), QVariant::String);
+    QCOMPARE(param.type(), QMetaType::QString);
     QCOMPARE(param.value(), QVariant(QLatin1String("profile.com")));
     QCOMPARE(param.label(), QString());
     QCOMPARE(param.isMandatory(), true);
@@ -73,7 +73,7 @@ void TestProfile::testProfile()
     param = profile->parameter(QLatin1String("port"));
     QCOMPARE(param.name(), QLatin1String("port"));
     QCOMPARE(param.dbusSignature(), QDBusSignature(QLatin1String("u")));
-    QCOMPARE(param.type(), QVariant::UInt);
+    QCOMPARE(param.type(), QMetaType::UInt);
     QCOMPARE(param.value(), QVariant(QLatin1String("1111")));
     QCOMPARE(param.label(), QString());
     QCOMPARE(param.isMandatory(), true);
